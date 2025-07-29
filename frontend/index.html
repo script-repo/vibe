@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Win Notes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Win Notes</h1>
+      </div>
+      <nav id="category-list" class="categories"></nav>
+      <button id="add-category-btn" class="add-btn" title="Add category">＋ Add Category</button>
+    </aside>
+
+    <main class="main">
+      <header class="toolbar">
+        <input id="search-input" type="text" placeholder="Search notes…" aria-label="Search notes">
+        <button id="new-note-btn" class="primary-btn">＋ New Note</button>
+      </header>
+      <section id="notes-section" class="notes-section"></section>
+    </main>
+
+    <!-- Modal for creating/editing notes -->
+    <div id="note-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h2 id="modal-title">New Note</h2>
+          <button id="close-modal" class="close-btn" aria-label="Close">×</button>
+        </header>
+        <form id="note-form">
+          <label for="note-title">Title</label>
+          <input id="note-title" type="text" required>
+          <label for="note-category">Category</label>
+          <select id="note-category"></select>
+          <label for="note-content">Content</label>
+          <textarea id="note-content" rows="8" required></textarea>
+          <div class="modal-actions">
+            <button type="submit" class="primary-btn">Save</button>
+            <button type="button" id="delete-note-btn" class="danger-btn hidden">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
