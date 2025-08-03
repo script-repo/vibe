@@ -540,27 +540,30 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     console.log('Window loaded, application should be ready');
 });
-// Add event listener for chat with wins button
-document.addEventListener('DOMContentLoaded', function() {
-    const chatButton = document.getElementById('chat-with-wins');
-    if (chatButton) {
-        chatButton.addEventListener('click', function() {
-            fetch('win_notes.json')
-                .then(response => response.json())
-                .then(data => {
-                    // Send data to LLM API (implementation depends on existing setup)
-                    console.log('Win notes loaded:', data);
-                })
-                .catch(error => console.error('Error loading win notes:', error));
-        });
-    }
-});
-// Settings modal functionality
+// Settings modal and chat functionality
 document.addEventListener('DOMContentLoaded', function() {
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
     const settingsModalClose = document.getElementById('settingsModalClose');
     const settingsForm = document.getElementById('settingsForm');
+    const modelSelect = document.getElementById('model');
+
+    // Populate model options from OpenRouter
+    if (modelSelect) {
+        fetch('https://openrouter.ai/api/v1/models')
+            .then(res => res.json())
+            .then(data => {
+                data.data.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = m.id;
+                    modelSelect.appendChild(opt);
+                });
+                const savedModel = localStorage.getItem('llmModel');
+                if (savedModel) modelSelect.value = savedModel;
+            })
+            .catch(err => console.error('Error loading models:', err));
+    }
 
     function toggleSettingsModal() {
         settingsModal.classList.toggle('hidden');
@@ -577,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
         settingsForm.addEventListener('submit', function(event) {
             event.preventDefault();
             const apiToken = document.getElementById('apiToken').value;
-            const model = document.getElementById('model').value;
+            const model = modelSelect.value;
             // Store in local storage
             localStorage.setItem('openrouterToken', apiToken);
             localStorage.setItem('llmModel', model);
@@ -585,52 +588,81 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load saved settings
+    // Load saved API token
     const savedToken = localStorage.getItem('openrouterToken');
-    const savedModel = localStorage.getItem('llmModel');
     if (savedToken) {
         document.getElementById('apiToken').value = savedToken;
-    }
-    if (savedModel) {
-        document.getElementById('model').value = savedModel;
     }
 
     // Chat with Wins functionality
     const chatButton = document.getElementById('chat-with-wins');
-    if (chatButton) {
-        chatButton.addEventListener('click', function() {
-            fetch('win_notes.json')
-                .then(response => response.json())
-                .then(data => {
-                    const apiToken = localStorage.getItem('openrouterToken');
-                    const model = localStorage.getItem('llmModel');
-                    if (!apiToken || !model) {
-                        alert('Please configure API token and model in settings.');
-                        return;
-                    }
-                    // Send data to LLM API
-                    fetch('https://api.openrouter.ai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiToken}`
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [
-                                { role: 'system', content: 'You are a helpful assistant.' },
-                                { role: 'user', content: `Here are the win notes: ${JSON.stringify(data)}. Please analyze and provide insights.` }
-                            ]
-                        })
+    const chatModal = document.getElementById('chatModal');
+    const chatModalClose = document.getElementById('chatModalClose');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+    let chatHistory = [];
+
+    function openChat() {
+        chatModal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeChat() {
+        chatModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    }
+
+    if (chatModalClose) {
+        chatModalClose.addEventListener('click', closeChat);
+    }
+
+    if (chatButton && chatForm) {
+        chatButton.addEventListener('click', async function() {
+            openChat();
+            try {
+                const data = await fetch('win_notes.json').then(r => r.json());
+                chatHistory = [{ role: 'system', content: `You are a helpful assistant with access to these win notes: ${JSON.stringify(data)}` }];
+                chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
+            } catch (err) {
+                console.error('Error loading win notes:', err);
+            }
+        });
+
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+            chatMessages.innerHTML += `<div class="chat-message user">${escapeHtml(message)}</div>`;
+            chatInput.value = '';
+            chatHistory.push({ role: 'user', content: message });
+
+            const apiToken = localStorage.getItem('openrouterToken');
+            const model = modelSelect.value;
+            if (!apiToken || !model) {
+                alert('Please configure API token and model in settings.');
+                return;
+            }
+
+            try {
+                const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiToken}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: chatHistory
                     })
-                    .then(response => response.json())
-                    .then(response => {
-                        console.log('LLM response:', response);
-                        // Display response (implementation depends on UI)
-                    })
-                    .catch(error => console.error('Error communicating with LLM:', error));
-                })
-                .catch(error => console.error('Error loading win notes:', error));
+                }).then(r => r.json());
+                const reply = resp.choices && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content ? resp.choices[0].message.content : 'No response';
+                chatMessages.innerHTML += `<div class="chat-message assistant">${escapeHtml(reply)}</div>`;
+                chatHistory.push({ role: 'assistant', content: reply });
+            } catch (err) {
+                console.error('Error communicating with LLM:', err);
+                chatMessages.innerHTML += `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
+            }
         });
     }
 });
