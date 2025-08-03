@@ -8,6 +8,9 @@ let winNotesData = [];
 // Path to win notes data
 const WIN_NOTES_URL = 'win_notes.json';
 
+// Path to win notes data
+const WIN_NOTES_URL = './win_notes.json';
+
 // DOM elements - will be set after DOM loads
 let searchInput, resultsGrid, emptyState, resultsCount, modal, modalTitle, modalBody, modalClose, filterChips;
 
@@ -40,6 +43,7 @@ function init() {
             if (!res.ok) throw new Error(`HTTP ${res.status} loading win notes`);
             return res.json();
         })
+
         .then(data => {
             allNotes = data;
             winNotesData = data;
