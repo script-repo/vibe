@@ -4,6 +4,9 @@ let filteredNotes = [];
 let searchTimeout = null;
 let activeFilter = 'all';
 
+// Path to win notes data
+const WIN_NOTES_URL = './win_notes.json';
+
 // DOM elements - will be set after DOM loads
 let searchInput, resultsGrid, emptyState, resultsCount, modal, modalTitle, modalBody, modalClose, filterChips;
 
@@ -31,7 +34,7 @@ function init() {
     bindEvents();
 
     // Load data and initialize
-    fetch('win_notes.json')
+    fetch(WIN_NOTES_URL)
         .then(res => res.json())
         .then(data => {
             allNotes = data;
@@ -572,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
                 } else {
                     try {
-                        winNotesData = await fetch('win_notes.json').then(r => r.json());
+                        winNotesData = await fetch(WIN_NOTES_URL).then(r => r.json());
                         chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
                         chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
                     } catch (err) {
