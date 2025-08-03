@@ -1461,10 +1461,30 @@ body.modal-open {
 
 #chatModal .chat-message {
     margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    line-height: 1.4;
+    white-space: pre-wrap;
 }
 
 #chatModal .chat-message.user {
     text-align: right;
+    background-color: #007bff;
+    color: #fff;
+}
+
+#chatModal .chat-message.assistant {
+    background-color: #f1f1f1;
+    color: #000;
+}
+
+#chatModal .chat-message.system {
+    font-style: italic;
+    color: #555;
+}
+
+#chatModal .chat-message.error {
+    color: red;
 }
 
 #chatModal .chat-form {
