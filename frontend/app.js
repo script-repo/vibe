@@ -289,7 +289,7 @@ function renderCards(notes) {
     }
     
     resultsGrid.innerHTML = notes.map(note => createCardHTML(note)).join('');
-    
+
     // Add click events to cards
     const cards = resultsGrid.querySelectorAll('.card');
     cards.forEach((card, index) => {
@@ -298,13 +298,22 @@ function renderCards(notes) {
             console.log('Card clicked:', notes[index].company);
             openModal(notes[index]);
         });
-        
+
         // Add keyboard accessibility
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'button');
         card.setAttribute('aria-label', `Open details for ${notes[index].company}`);
     });
-    
+
+    // Add copy button events
+    const copyButtons = resultsGrid.querySelectorAll('.card__copy');
+    copyButtons.forEach((button, index) => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            copyWinNote(notes[index]);
+        });
+    });
+
     console.log(`${cards.length} card click handlers added`);
 }
 
@@ -315,6 +324,12 @@ function createCardHTML(note) {
     
     return `
         <div class="card" data-id="${note.id}">
+            <button class="card__copy" aria-label="Copy win note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
             <div class="card__header">
                 <h3 class="card__company">${escapeHtml(note.company)}</h3>
                 <div class="card__meta">
@@ -333,6 +348,35 @@ function createCardHTML(note) {
             </div>
         </div>
     `;
+}
+
+// Copy win note to clipboard
+function copyWinNote(note) {
+    const parts = [
+        `Company: ${note.company}`,
+        `Industry: ${note.industry}`,
+        `Region: ${note.region}`,
+        `Customer Profile: ${note.customer_profile}`,
+        `Business Challenge: ${note.business_challenge}`,
+        `Why Nutanix: ${note.why_nutanix}`,
+        `Solution: ${note.solution}`,
+        `Customer Outcomes: ${note.customer_outcomes}`,
+        `Quotes: ${note.quotes}`,
+        `Partnership: ${note.partnership}`,
+        `Learnings: ${note.learnings}`,
+        `Competition: ${note.competition}`,
+        `Acknowledgements: ${note.acknowledgements}`
+    ];
+
+    const text = parts.filter(Boolean).join('\n\n');
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            console.log('Win note copied to clipboard');
+        })
+        .catch(err => {
+            console.error('Failed to copy win note:', err);
+        });
 }
 
 // Extract portfolio badges from solution text

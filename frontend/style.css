@@ -937,6 +937,26 @@ body {
   overflow: hidden;
 }
 
+.card__copy {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+  background: transparent;
+  border: none;
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.card__copy:hover,
+.card__copy:focus {
+  background: var(--color-bg-2);
+  color: var(--color-primary);
+  outline: none;
+}
+
 .card::before {
   content: '';
   position: absolute;
