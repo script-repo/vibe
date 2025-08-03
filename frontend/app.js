@@ -565,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatButton.addEventListener('click', async function() {
             openChat();
             if (winNotesData.length === 0) {
+
                 if (allNotes.length > 0) {
                     winNotesData = allNotes;
                     chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
@@ -578,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error loading win notes:', err);
                         chatMessages.innerHTML = `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
                     }
+
                 }
             }
         });
@@ -625,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatMessages.appendChild(assistantDiv);
             let assistantText = '';
 
+
             try {
                 const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
@@ -661,6 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (token) {
                                     assistantText += token;
                                     assistantDiv.innerHTML = DOMPurify.sanitize(marked.parse(assistantText));
+
                                     chatMessages.scrollTop = chatMessages.scrollHeight;
                                 }
                             } catch (err) {

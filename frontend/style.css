@@ -1485,6 +1485,7 @@ body.modal-open {
     border-radius: 8px;
     line-height: 1.4;
     white-space: normal;
+
 }
 
 #chatModal .chat-message.user {
