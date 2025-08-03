@@ -937,6 +937,26 @@ body {
   overflow: hidden;
 }
 
+.card__copy {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+  background: transparent;
+  border: none;
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.card__copy:hover,
+.card__copy:focus {
+  background: var(--color-bg-2);
+  color: var(--color-primary);
+  outline: none;
+}
+
 .card::before {
   content: '';
   position: absolute;
@@ -1461,10 +1481,30 @@ body.modal-open {
 
 #chatModal .chat-message {
     margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    line-height: 1.4;
+    white-space: normal;
 }
 
 #chatModal .chat-message.user {
     text-align: right;
+    background-color: #007bff;
+    color: #fff;
+}
+
+#chatModal .chat-message.assistant {
+    background-color: #f1f1f1;
+    color: #000;
+}
+
+#chatModal .chat-message.system {
+    font-style: italic;
+    color: #555;
+}
+
+#chatModal .chat-message.error {
+    color: red;
 }
 
 #chatModal .chat-form {
