@@ -540,3 +540,97 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     console.log('Window loaded, application should be ready');
 });
+// Add event listener for chat with wins button
+document.addEventListener('DOMContentLoaded', function() {
+    const chatButton = document.getElementById('chat-with-wins');
+    if (chatButton) {
+        chatButton.addEventListener('click', function() {
+            fetch('win_notes.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Send data to LLM API (implementation depends on existing setup)
+                    console.log('Win notes loaded:', data);
+                })
+                .catch(error => console.error('Error loading win notes:', error));
+        });
+    }
+});
+// Settings modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsModalClose = document.getElementById('settingsModalClose');
+    const settingsForm = document.getElementById('settingsForm');
+
+    function toggleSettingsModal() {
+        settingsModal.classList.toggle('hidden');
+        document.body.classList.toggle('modal-open');
+    }
+
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', toggleSettingsModal);
+    }
+    if (settingsModalClose) {
+        settingsModalClose.addEventListener('click', toggleSettingsModal);
+    }
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const apiToken = document.getElementById('apiToken').value;
+            const model = document.getElementById('model').value;
+            // Store in local storage
+            localStorage.setItem('openrouterToken', apiToken);
+            localStorage.setItem('llmModel', model);
+            toggleSettingsModal();
+        });
+    }
+
+    // Load saved settings
+    const savedToken = localStorage.getItem('openrouterToken');
+    const savedModel = localStorage.getItem('llmModel');
+    if (savedToken) {
+        document.getElementById('apiToken').value = savedToken;
+    }
+    if (savedModel) {
+        document.getElementById('model').value = savedModel;
+    }
+
+    // Chat with Wins functionality
+    const chatButton = document.getElementById('chat-with-wins');
+    if (chatButton) {
+        chatButton.addEventListener('click', function() {
+            fetch('win_notes.json')
+                .then(response => response.json())
+                .then(data => {
+                    const apiToken = localStorage.getItem('openrouterToken');
+                    const model = localStorage.getItem('llmModel');
+                    if (!apiToken || !model) {
+                        alert('Please configure API token and model in settings.');
+                        return;
+                    }
+                    // Send data to LLM API
+                    fetch('https://api.openrouter.ai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiToken}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: 'system', content: 'You are a helpful assistant.' },
+                                { role: 'user', content: `Here are the win notes: ${JSON.stringify(data)}. Please analyze and provide insights.` }
+                            ]
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(response => {
+                        console.log('LLM response:', response);
+                        // Display response (implementation depends on UI)
+                    })
+                    .catch(error => console.error('Error communicating with LLM:', error));
+                })
+                .catch(error => console.error('Error loading win notes:', error));
+        });
+    }
+});
