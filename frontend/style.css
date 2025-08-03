@@ -1473,10 +1473,25 @@ body.modal-open {
 }
 
 /* Chat modal styles */
+#chatModal .modal__content {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+}
+
+#chatModal .modal__header {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+}
+
 #chatModal .chat-messages {
     max-height: 60vh;
     overflow-y: auto;
     margin-bottom: 1rem;
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+    border: 1px solid #333;
+    padding: 0.5rem;
+    border-radius: 8px;
 }
 
 #chatModal .chat-message {
@@ -1485,7 +1500,6 @@ body.modal-open {
     border-radius: 8px;
     line-height: 1.4;
     white-space: normal;
-
 }
 
 #chatModal .chat-message.user {
@@ -1495,13 +1509,13 @@ body.modal-open {
 }
 
 #chatModal .chat-message.assistant {
-    background-color: #f1f1f1;
-    color: #000;
+    background-color: #2a2a2a;
+    color: #f5f5f5;
 }
 
 #chatModal .chat-message.system {
     font-style: italic;
-    color: #555;
+    color: #aaa;
 }
 
 #chatModal .chat-message.error {
@@ -1515,4 +1529,7 @@ body.modal-open {
 
 #chatModal .chat-form input {
     flex: 1;
+    background-color: #2a2a2a;
+    color: #f5f5f5;
+    border: 1px solid #555;
 }

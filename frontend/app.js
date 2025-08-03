@@ -3,6 +3,10 @@ let allNotes = [];
 let filteredNotes = [];
 let searchTimeout = null;
 let activeFilter = 'all';
+let winNotesData = [];
+
+// Path to win notes data
+const WIN_NOTES_URL = 'win_notes.json';
 
 // DOM elements - will be set after DOM loads
 let searchInput, resultsGrid, emptyState, resultsCount, modal, modalTitle, modalBody, modalClose, filterChips;
@@ -31,10 +35,14 @@ function init() {
     bindEvents();
 
     // Load data and initialize
-    fetch('win_notes.json')
-        .then(res => res.json())
+    fetch(WIN_NOTES_URL)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status} loading win notes`);
+            return res.json();
+        })
         .then(data => {
             allNotes = data;
+            winNotesData = data;
             filteredNotes = [...allNotes];
             console.log(`Loaded ${allNotes.length} win notes`);
             renderCards(filteredNotes);
@@ -154,9 +162,11 @@ function handleFilterClick(event) {
 // Check if note matches filter
 function noteMatchesFilter(note, filter) {
     if (filter === 'all') return true;
-    
-    const solution = (note.solution || '').toUpperCase();
-    return solution.includes(filter.toUpperCase());
+
+    const portfolio = (note.portfolio || '').toLowerCase();
+    const solution = (note.solution || '').toLowerCase();
+    const term = filter.toLowerCase();
+    return portfolio.includes(term) || solution.includes(term);
 }
 
 // Render cards in the grid
@@ -212,7 +222,7 @@ function renderCards(notes) {
 
 // Create HTML for a single card
 function createCardHTML(note) {
-    const portfolioBadges = extractPortfolioBadges(note.solution);
+    const portfolioBadges = extractPortfolioBadges(note.portfolio || note.solution);
     const region = note.region || 'Global';
     
     return `
@@ -272,10 +282,10 @@ function copyWinNote(note) {
         });
 }
 
-// Extract portfolio badges from solution text
-function extractPortfolioBadges(solutionText) {
+// Extract portfolio badges from portfolio or solution text
+function extractPortfolioBadges(portfolioText) {
     const badges = [];
-    const text = solutionText.toUpperCase();
+    const text = (portfolioText || '').toUpperCase();
     
     const products = [
         'NCI', 'NCM', 'NDB', 'NKP', 'AHV', 'PRISM', 'FLOW', 'CALM', 'FRAME',
@@ -289,11 +299,11 @@ function extractPortfolioBadges(solutionText) {
         }
     });
     
-    if (badges.length === 0) {
-        const words = solutionText.split(' ').slice(0, 2);
+    if (badges.length === 0 && portfolioText) {
+        const words = portfolioText.split(' ').slice(0, 2);
         badges.push(words.join(' '));
     }
-    
+
     return badges.slice(0, 3);
 }
 
@@ -559,29 +569,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (chatButton && chatForm) {
-        let winNotesData = [];
 
         // Load win notes on first chat open
         chatButton.addEventListener('click', async function() {
             openChat();
             if (winNotesData.length === 0) {
-
-                if (allNotes.length > 0) {
-                    winNotesData = allNotes;
-                    chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
-                    chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
-                } else {
-                    try {
-                        winNotesData = await fetch('win_notes.json').then(r => r.json());
-                        chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
-                        chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
-                    } catch (err) {
-                        console.error('Error loading win notes:', err);
-                        chatMessages.innerHTML = `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
-                    }
-
+                try {
+                    winNotesData = await fetch(WIN_NOTES_URL).then(r => {
+                        if (!r.ok) throw new Error(`HTTP ${r.status} loading win notes`);
+                        return r.json();
+                    });
+                } catch (err) {
+                    console.error('Error loading win notes:', err);
+                    chatMessages.innerHTML = `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
+                    return;
                 }
             }
+            chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
+            chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
         });
 
         function getRelevantWinNotes(query, maxResults = 3) {
