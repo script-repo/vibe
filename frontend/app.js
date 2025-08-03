@@ -6,9 +6,6 @@ let activeFilter = 'all';
 let winNotesData = [];
 
 // Path to win notes data
-const WIN_NOTES_URL = 'win_notes.json';
-
-// Path to win notes data
 const WIN_NOTES_URL = './win_notes.json';
 
 // DOM elements - will be set after DOM loads
