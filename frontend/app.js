@@ -289,7 +289,7 @@ function renderCards(notes) {
     }
     
     resultsGrid.innerHTML = notes.map(note => createCardHTML(note)).join('');
-    
+
     // Add click events to cards
     const cards = resultsGrid.querySelectorAll('.card');
     cards.forEach((card, index) => {
@@ -298,13 +298,22 @@ function renderCards(notes) {
             console.log('Card clicked:', notes[index].company);
             openModal(notes[index]);
         });
-        
+
         // Add keyboard accessibility
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'button');
         card.setAttribute('aria-label', `Open details for ${notes[index].company}`);
     });
-    
+
+    // Add copy button events
+    const copyButtons = resultsGrid.querySelectorAll('.card__copy');
+    copyButtons.forEach((button, index) => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            copyWinNote(notes[index]);
+        });
+    });
+
     console.log(`${cards.length} card click handlers added`);
 }
 
@@ -315,6 +324,12 @@ function createCardHTML(note) {
     
     return `
         <div class="card" data-id="${note.id}">
+            <button class="card__copy" aria-label="Copy win note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
             <div class="card__header">
                 <h3 class="card__company">${escapeHtml(note.company)}</h3>
                 <div class="card__meta">
@@ -333,6 +348,35 @@ function createCardHTML(note) {
             </div>
         </div>
     `;
+}
+
+// Copy win note to clipboard
+function copyWinNote(note) {
+    const parts = [
+        `Company: ${note.company}`,
+        `Industry: ${note.industry}`,
+        `Region: ${note.region}`,
+        `Customer Profile: ${note.customer_profile}`,
+        `Business Challenge: ${note.business_challenge}`,
+        `Why Nutanix: ${note.why_nutanix}`,
+        `Solution: ${note.solution}`,
+        `Customer Outcomes: ${note.customer_outcomes}`,
+        `Quotes: ${note.quotes}`,
+        `Partnership: ${note.partnership}`,
+        `Learnings: ${note.learnings}`,
+        `Competition: ${note.competition}`,
+        `Acknowledgements: ${note.acknowledgements}`
+    ];
+
+    const text = parts.filter(Boolean).join('\n\n');
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            console.log('Win note copied to clipboard');
+        })
+        .catch(err => {
+            console.error('Failed to copy win note:', err);
+        });
 }
 
 // Extract portfolio badges from solution text
@@ -618,22 +662,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (chatButton && chatForm) {
+        let winNotesData = [];
+
+        // Load win notes on first chat open
         chatButton.addEventListener('click', async function() {
             openChat();
-            try {
-                const data = await fetch('win_notes.json').then(r => r.json());
-                chatHistory = [{ role: 'system', content: `You are a helpful assistant with access to these win notes: ${JSON.stringify(data)}` }];
-                chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
-            } catch (err) {
-                console.error('Error loading win notes:', err);
+            if (winNotesData.length === 0) {
+                try {
+                    winNotesData = await fetch('win_notes.json').then(r => r.json());
+                    chatHistory = [{ role: 'system', content: 'You are a helpful assistant. Use the provided win notes to answer questions about Nutanix wins.' }];
+                    chatMessages.innerHTML = '<div class="chat-message system">Win notes loaded. How can I help?</div>';
+                } catch (err) {
+                    console.error('Error loading win notes:', err);
+                    chatMessages.innerHTML = `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
+                }
             }
         });
+
+        function getRelevantWinNotes(query, maxResults = 3) {
+            const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+            return winNotesData
+                .map(note => {
+                    const text = Object.values(note).join(' ').toLowerCase();
+                    const score = terms.reduce((acc, t) => acc + (text.includes(t) ? 1 : 0), 0);
+                    return { note, score };
+                })
+                .filter(n => n.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, maxResults)
+                .map(n => n.note);
+        }
 
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const message = chatInput.value.trim();
             if (!message) return;
-            chatMessages.innerHTML += `<div class="chat-message user">${escapeHtml(message)}</div>`;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-message user';
+            userDiv.textContent = message;
+            chatMessages.appendChild(userDiv);
             chatInput.value = '';
             chatHistory.push({ role: 'user', content: message });
 
@@ -644,6 +712,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Retrieve relevant notes for context
+            const contextNotes = getRelevantWinNotes(message);
+            const contextMsg = { role: 'system', content: `Relevant win notes: ${JSON.stringify(contextNotes)}` };
+            const messagesForApi = [chatHistory[0], contextMsg, ...chatHistory.slice(1)];
+
+            const assistantDiv = document.createElement('div');
+            assistantDiv.className = 'chat-message assistant';
+            chatMessages.appendChild(assistantDiv);
+
             try {
                 const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
@@ -653,15 +730,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({
                         model: model,
-                        messages: chatHistory
+                        stream: true,
+                        messages: messagesForApi
                     })
-                }).then(r => r.json());
-                const reply = resp.choices && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content ? resp.choices[0].message.content : 'No response';
-                chatMessages.innerHTML += `<div class="chat-message assistant">${escapeHtml(reply)}</div>`;
-                chatHistory.push({ role: 'assistant', content: reply });
+                });
+
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6).trim();
+                            if (dataStr === '[DONE]') {
+                                reader.cancel();
+                                break;
+                            }
+                            try {
+                                const data = JSON.parse(dataStr);
+                                const token = data.choices && data.choices[0] && data.choices[0].delta && data.choices[0].delta.content;
+                                if (token) {
+                                    assistantDiv.textContent += token;
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            } catch (err) {
+                                console.error('Error parsing stream chunk', err);
+                            }
+                        }
+                    }
+                }
+                chatHistory.push({ role: 'assistant', content: assistantDiv.textContent });
             } catch (err) {
                 console.error('Error communicating with LLM:', err);
-                chatMessages.innerHTML += `<div class="chat-message error">${escapeHtml(err.message)}</div>`;
+                assistantDiv.classList.add('error');
+                assistantDiv.textContent = err.message;
             }
         });
     }
