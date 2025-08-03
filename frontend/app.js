@@ -343,7 +343,7 @@ function extractPortfolioBadges(solutionText) {
     const products = [
         'NCI', 'NCM', 'NDB', 'NKP', 'AHV', 'PRISM', 'FLOW', 'CALM', 'FRAME',
         'OBJECTS', 'FILES', 'LEAP', 'KARBON', 'MOVE', 'X-RAY', 'LCM',
-        'NC2', 'XI', 'GPU', 'KUBERNETES', 'K8S', 'ROBO', 'EDGE'
+        'NC2', 'GPU', 'KUBERNETES', 'K8S', 'ROBO', 'EDGE'
     ];
     
     products.forEach(product => {
