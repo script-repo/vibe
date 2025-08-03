@@ -1484,7 +1484,8 @@ body.modal-open {
     padding: 0.5rem 0.75rem;
     border-radius: 8px;
     line-height: 1.4;
-    white-space: pre-wrap;
+    white-space: normal;
+
 }
 
 #chatModal .chat-message.user {
