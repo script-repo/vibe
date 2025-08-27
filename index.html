@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAI GPU Sizer - LLM Memory Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1 class="title">NAI GPU Sizer</h1>
+            <p class="subtitle">Calculate GPU memory requirements for large language models</p>
+        </header>
+
+        <!-- Input Form Section -->
+        <section class="form-section">
+            <div class="glass-card">
+                <h2 class="form-title">Model Configuration</h2>
+                <form id="calculatorForm" class="calculator-form">
+                    <div class="form-group">
+                        <label for="modelName" class="form-label tooltip-trigger" data-tooltip="model_name">
+                            Model Name (Optional)
+                        </label>
+                        <input type="text" id="modelName" class="form-input" placeholder="e.g., GPT-4, Claude-3">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="parameters" class="form-label tooltip-trigger" data-tooltip="parameters">
+                            Parameters (Billions)
+                        </label>
+                        <input type="number" id="parameters" class="form-input" placeholder="e.g., 7, 13, 70" step="0.1" min="0.1" required>
+                        <div class="form-note">
+                            P (parameters) The number of parameters in the model. For example, GPT-3 has 175B parameters, Llama-70B has 70B parameters, etc.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precision" class="form-label tooltip-trigger" data-tooltip="precision">
+                            Precision (Quantization)
+                        </label>
+                        <select id="precision" class="form-input" required>
+                            <option value="">Select precision...</option>
+                            <option value="FP32 (Default)" selected>FP32 (Default) - 32 bits</option>
+                            <option value="FP16">FP16 - 16 bits</option>
+                            <option value="INT8">INT8 - 8 bits</option>
+                            <option value="INT4">INT4 - 4 bits</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bitsPerParam" class="form-label tooltip-trigger" data-tooltip="bits_per_parameter">
+                            Bits per Parameter
+                        </label>
+                        <input type="number" id="bitsPerParam" class="form-input" step="0.1" min="0.1" value="32" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="overhead" class="form-label tooltip-trigger" data-tooltip="overhead">
+                            Overhead Percentage (%)
+                        </label>
+                        <input type="number" id="overhead" class="form-input" value="20" min="0" max="100" step="1" required>
+                    </div>
+
+                    <button type="button" id="calculateBtn" class="calculate-btn">
+                        <span class="btn-text">Calculate GPU Requirements</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <div class="glass-card">
+                <h2 class="results-title">GPU Memory Requirements</h2>
+                
+                <div class="memory-display">
+                    <div class="memory-value">
+                        <span class="memory-number" id="totalMemory">0</span>
+                        <span class="memory-unit">GB</span>
+                    </div>
+                    <p class="memory-label">Total GPU Memory Required</p>
+                </div>
+
+                <div class="gpu-table-container">
+                    <h3 class="table-title">GPU Options</h3>
+                    <div class="gpu-table">
+                        <div class="table-header">
+                            <div class="table-cell">GPU Card</div>
+                            <div class="table-cell">Memory per Card</div>
+                            <div class="table-cell">Quantity Needed</div>
+                        </div>
+                        <div id="gpuTableBody" class="table-body">
+                            <!-- GPU rows will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-content"></div>
+        <div class="tooltip-arrow"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
