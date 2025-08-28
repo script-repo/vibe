@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ePub Reader with Text-to-Speech</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800gravitaires;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+            display: none;
+        }
+
+        .file-info.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .controls.active {
+            display: block;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .speed-control label {
+            color: #666;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .speed-control input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .speed-value {
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .content-display {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .content-display.active {
+            display: block;
+        }
+
+        .content-display h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .content-display p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .content-display p.speaking {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-left: 4px solid #667eea;
+            padding: 10px 15px;
+            border-radius: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chapter-info {
+            flex: 1;
+            text-align: center;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status.active {
+            display: block;
+        }
+
+        .status.speaking {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+        }
+
+        .status.paused {
+            background: rgba(255, 193, 7, 0.1);
+            color: #f39c12;
+        }
+
+        .status.stopped {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        /* Scrollbar styling */
+        .content-display::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content-display::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .content-display::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .content-display::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd9, #6b4291);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 ePub Reader with Text-to-Speech</h1>
+        
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".epub">
+                <label for="fileInput" class="file-input-label">
+                    📖 Select ePub File
+                </label>
+            </div>
+            <div id="fileInfo" class="file-info"></div>
+        </div>
+
+        <div id="controls" class="controls">
+            <div class="control-row chapter-nav">
+                <button id="prevChapter" class="btn-secondary">← Previous</button>
+                <div id="chapterInfo" class="chapter-info">Chapter 1 of 1</div>
+                <button id="nextChapter" class="btn-secondary">Next →</button>
+            </div>
+            
+            <div class="control-row">
+                <button id="playPause" class="btn-primary">▶️ Play</button>
+                <button id="stop" class="btn-primary">⏹️ Stop</button>
+                <button id="skip" class="btn-secondary">⏭️ Skip Paragraph</button>
+            </div>
+            
+            <div class="control-row">
+                <div class="speed-control">
+                    <label for="speedSlider">Speed:</label>
+                    <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                    <span id="speedValue" class="speed-value">1.0x</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="contentDisplay" class="content-display"></div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        let epubContent = [];
+        let currentChapter = 0;
+        let currentParagraph = 0;
+        let isPlaying = false;
+        let isPaused = false;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        let isSpeechSupported = false;
+
+        // Check for Speech Synthesis support
+        if ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) {
+            isSpeechSupported = true;
+            console.log('Speech synthesis supported');
+        } else {
+            console.log('Speech synthesis not supported');
+            // Show warning message
+            setTimeout(() => {
+                alert('Text-to-Speech is not supported in your browser. Please try:\n\n' +
+                      '• Chrome (desktop or mobile)\n' +
+                      '• Safari (iOS 7+ or macOS)\n' +
+                      '• Edge\n' +
+                      '• Firefox (desktop)\n\n' +
+                      'You can still read the text, but audio playback won\'t work.');
+            }, 500);
+        }
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        
+        // Control buttons
+        document.getElementById('playPause').addEventListener('click', togglePlayPause);
+        document.getElementById('stop').addEventListener('click', stopReading);
+        document.getElementById('skip').addEventListener('click', skipParagraph);
+        document.getElementById('prevChapter').addEventListener('click', previousChapter);
+        document.getElementById('nextChapter').addEventListener('click', nextChapter);
+        
+        // Speed control
+        document.getElementById('speedSlider').addEventListener('input', updateSpeed);
+
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.innerHTML = `📄 <strong>${file.name}</strong> (${(file.size / 1024).toFixed(2)} KB)`;
+            fileInfo.classList.add('active');
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const zip = await JSZip.loadAsync(arrayBuffer);
+                
+                // Find and parse container.xml
+                const containerXml = await zip.file('META-INF/container.xml').async('string');
+                const parser = new DOMParser();
+                const containerDoc = parser.parseFromString(containerXml, 'text/xml');
+                const rootfilePath = containerDoc.querySelector('rootfile').getAttribute('full-path');
+                
+                // Parse content.opf
+                const contentOpf = await zip.file(rootfilePath).async('string');
+                const opfDoc = parser.parseFromString(contentOpf, 'text/xml');
+                
+                // Get spine items (reading order)
+                const spine = opfDoc.querySelector('spine');
+                const spineItems = Array.from(spine.querySelectorAll('itemref'));
+                
+                // Get manifest items
+                const manifest = opfDoc.querySelector('manifest');
+                const manifestItems = {};
+                manifest.querySelectorAll('item').forEach(item => {
+                    manifestItems[item.getAttribute('id')] = item.getAttribute('href');
+                });
+                
+                // Extract text content from each spine item
+                epubContent = [];
+                const basePath = rootfilePath.substring(0, rootfilePath.lastIndexOf('/') + 1);
+                
+                for (const spineItem of spineItems) {
+                    const idref = spineItem.getAttribute('idref');
+                    const href = manifestItems[idref];
+                    if (href) {
+                        const fullPath = basePath + href;
+                        const content = await zip.file(fullPath).async('string');
+                        const contentDoc = parser.parseFromString(content, 'text/html');
+                        
+                        // Extract text from body
+                        const body = contentDoc.querySelector('body');
+                        if (body) {
+                            const paragraphs = [];
+                            const textElements = body.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
+                            textElements.forEach(element => {
+                                const text = element.textContent.trim();
+                                if (text) {
+                                    paragraphs.push(text);
+                                }
+                            });
+                            
+                            if (paragraphs.length > 0) {
+                                epubContent.push({
+                                    title: `Chapter ${epubContent.length + 1}`,
+                                    paragraphs: paragraphs
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                if (epubContent.length > 0) {
+                    currentChapter = 0;
+                    currentParagraph = 0;
+                    displayChapter();
+                    document.getElementById('controls').classList.add('active');
+                    updateChapterInfo();
+                } else {
+                    alert('No readable content found in the ePub file.');
+                }
+                
+            } catch (error) {
+                console.error('Error reading ePub:', error);
+                alert('Error reading ePub file. Please make sure it\'s a valid ePub file.');
+            }
+        }
+
+        function displayChapter() {
+            if (epubContent.length === 0) return;
+            
+            const contentDiv = document.getElementById('contentDisplay');
+            const chapter = epubContent[currentChapter];
+            
+            let html = `<h2>${chapter.title}</h2>`;
+            chapter.paragraphs.forEach((paragraph, index) => {
+                html += `<p id="para-${index}">${paragraph}</p>`;
+            });
+            
+            contentDiv.innerHTML = html;
+            contentDiv.classList.add('active');
+        }
+
+        function updateChapterInfo() {
+            const chapterInfo = document.getElementById('chapterInfo');
+            chapterInfo.textContent = `Chapter ${currentChapter + 1} of ${epubContent.length}`;
+            
+            document.getElementById('prevChapter').disabled = currentChapter === 0;
+            document.getElementById('nextChapter').disabled = currentChapter === epubContent.length - 1;
+        }
+
+        function togglePlayPause() {
+            if (!isSpeechSupported) {
+                alert('Text-to-Speech is not supported in your browser.');
+                return;
+            }
+            
+            if (isPlaying) {
+                if (isPaused) {
+                    speechSynthesis.resume();
+                    isPaused = false;
+                    document.getElementById('playPause').innerHTML = '⏸️ Pause';
+                    updateStatus('Speaking...', 'speaking');
+                } else {
+                    speechSynthesis.pause();
+                    isPaused = true;
+                    document.getElementById('playPause').innerHTML = '▶️ Resume';
+                    updateStatus('Paused', 'paused');
+                }
+            } else {
+                startReading();
+            }
+        }
+
+        function startReading() {
+            if (!isSpeechSupported) {
+                alert('Text-to-Speech is not supported in your browser.');
+                return;
+            }
+            
+            if (epubContent.length === 0) return;
+            
+            isPlaying = true;
+            isPaused = false;
+            document.getElementById('playPause').innerHTML = '⏸️ Pause';
+            updateStatus('Speaking...', 'speaking');
+            speakParagraph();
+        }
+
+        function speakParagraph() {
+            if (!isSpeechSupported || !isPlaying || currentChapter >= epubContent.length) {
+                if (!isSpeechSupported) return;
+                stopReading();
+                return;
+            }
+            
+            const chapter = epubContent[currentChapter];
+            if (currentParagraph >= chapter.paragraphs.length) {
+                // Move to next chapter
+                if (currentChapter < epubContent.length - 1) {
+                    currentChapter++;
+                    currentParagraph = 0;
+                    displayChapter();
+                    updateChapterInfo();
+                    speakParagraph();
+                } else {
+                    stopReading();
+                }
+                return;
+            }
+            
+            // Highlight current paragraph
+            document.querySelectorAll('.content-display p').forEach(p => p.classList.remove('speaking'));
+            const currentParaElement = document.getElementById(`para-${currentParagraph}`);
+            if (currentParaElement) {
+                currentParaElement.classList.add('speaking');
+                currentParaElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            const text = chapter.paragraphs[currentParagraph];
+            
+            try {
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.rate = parseFloat(document.getElementById('speedSlider').value);
+                
+                currentUtterance.onend = () => {
+                    currentParagraph++;
+                    if (isPlaying && !isPaused) {
+                        speakParagraph();
+                    }
+                };
+                
+                currentUtterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event);
+                    updateStatus('Error: ' + event.error, 'stopped');
+                };
+                
+                speechSynthesis.speak(currentUtterance);
+            } catch (error) {
+                console.error('Error creating utterance:', error);
+                updateStatus('Error: Unable to speak text', 'stopped');
+            }
+        }
+
+        function stopReading() {
+            if (isSpeechSupported && speechSynthesis) {
+                speechSynthesis.cancel();
+            }
+            isPlaying = false;
+            isPaused = false;
+            currentParagraph = 0;
+            document.getElementById('playPause').innerHTML = '▶️ Play';
+            document.querySelectorAll('.content-display p').forEach(p => p.classList.remove('speaking'));
+            updateStatus('Stopped', 'stopped');
+        }
+
+        function skipParagraph() {
+            if (!isSpeechSupported) {
+                alert('Text-to-Speech is not supported in your browser.');
+                return;
+            }
+            
+            if (isPlaying) {
+                speechSynthesis.cancel();
+                currentParagraph++;
+                speakParagraph();
+            }
+        }
+
+        function previousChapter() {
+            if (currentChapter > 0) {
+                currentChapter--;
+                currentParagraph = 0;
+                displayChapter();
+                updateChapterInfo();
+                if (isPlaying) {
+                    speechSynthesis.cancel();
+                    speakParagraph();
+                }
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapter < epubContent.length - 1) {
+                currentChapter++;
+                currentParagraph = 0;
+                displayChapter();
+                updateChapterInfo();
+                if (isPlaying) {
+                    speechSynthesis.cancel();
+                    speakParagraph();
+                }
+            }
+        }
+
+        function updateSpeed() {
+            const speed = document.getElementById('speedSlider').value;
+            document.getElementById('speedValue').textContent = `${speed}x`;
+            
+            if (currentUtterance) {
+                currentUtterance.rate = parseFloat(speed);
+            }
+        }
+
+        function updateStatus(text, className) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = 'status active ' + className;
+            
+            if (className === 'stopped') {
+                setTimeout(() => {
+                    status.classList.remove('active');
+                }, 3000);
+            }
+        }
+
+        // Clean up when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            speechSynthesis.cancel();
+        });
+    </script>
+</body>
+</html>
