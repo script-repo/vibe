@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyberpunk Pomodoro Timer</title>
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body, #root {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #0ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    
+    .container {
+      background-color: #121212;
+      border: 2px solid #00ffff;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00ffff;
+      text-align: center;
+      width: 100vw;
+      height: 100vh;
+      padding: 30px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    @keyframes flashRed {
+      0%, 100% { background-color: #121212; }
+      50% { background-color: rgba(255, 0, 0, 0.7); }
+    }
+
+    .container.flashing {
+      animation: flashRed 0.5s infinite;
+    }
+    
+    .clock {
+      font-size: 9rem;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    
+    .mode-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      gap: 10px;
+    }
+    
+    .mode-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: transparent;
+      color: #00ffff;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+    }
+    
+    .mode-btn.active {
+      background-color: #00ffff;
+      color: #000;
+    }
+    
+    .progress-container {
+      width: 90%;
+      height: 28px;
+      background-color: rgba(51, 51, 51, 0.5);
+      margin: 20px 0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, #00ffff, #ff00aa);
+      width: 0%;
+      border-radius: 10px;
+    }
+    
+    .timer {
+      font-size: 5rem;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .control-btn {
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: transparent;
+      color: #00ffff;
+      border: 1px solid #00ffff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      box-shadow: 0 0 5px #00ffff;
+    }
+    
+    .control-btn:hover {
+      box-shadow: 0 0 10px #00ffff;
+    }
+    
+    .test-alarm-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: transparent;
+      color: #00ffff;
+      border: 1px solid #00ffff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      box-shadow: 0 0 5px #00ffff;
+    }
+    
+    .test-alarm-btn:hover {
+      box-shadow: 0 0 10px #00ffff;
+    }
+    
+    /* Fixed width for digits */
+    .digit {
+      display: inline-block;
+      width: 0.6em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function CyberpunkPomodoro() {
+      // State hooks
+      const [currentTime, setCurrentTime] = useState('00:00:00');
+      const [isRunning, setIsRunning] = useState(false);
+      const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
+      const [initialTime, setInitialTime] = useState(25 * 60); // To track progress
+      const [mode, setMode] = useState('focus');
+      const [soundEnabled, setSoundEnabled] = useState(true);
+      const [isFlashing, setIsFlashing] = useState(false);
+      
+      // Update current time every second
+      useEffect(() => {
+        const timer = setInterval(() => {
+          const now = new Date();
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const seconds = String(now.getSeconds()).padStart(2, '0');
+          setCurrentTime(`${hours}:${minutes}:${seconds}`);
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      // Timer countdown effect
+      useEffect(() => {
+        let interval;
+        if (isRunning && timeLeft > 0) {
+          interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        } else if (timeLeft === 0 && isRunning) {
+          setIsRunning(false);
+          playAlarm();
+        }
+        return () => clearInterval(interval);
+      }, [isRunning, timeLeft]);
+
+      // Calculate progress percentage
+      const progressPercentage = ((initialTime - timeLeft) / initialTime) * 100;
+
+      // Play the alarm if sound is enabled
+      const playAlarm = () => {
+        if (soundEnabled) {
+          const audio = new Audio("32089__jbum__jsyd_klaxon2.wav");
+          audio.play().catch(err => {
+            console.error("Alarm playback failed:", err);
+          });
+        }
+        
+        // Start flashing
+        setIsFlashing(true);
+        
+        // Stop flashing after 5 seconds
+        setTimeout(() => {
+          setIsFlashing(false);
+        }, 5000);
+      };
+
+      // Toggle timer state
+      const toggleTimer = () => setIsRunning(!isRunning);
+
+      // Reset timer
+      const resetTimer = () => {
+        setIsRunning(false);
+        let newTime;
+        if (mode === 'focus') {
+          newTime = 25 * 60;
+        } else if (mode === 'shortBreak') {
+          newTime = 5 * 60;
+        } else {
+          newTime = 15 * 60;
+        }
+        setTimeLeft(newTime);
+        setInitialTime(newTime);
+      };
+
+      // Switch modes
+      const switchMode = (newMode) => {
+        setMode(newMode);
+        setIsRunning(false);
+        let newTime;
+        if (newMode === 'focus') {
+          newTime = 25 * 60;
+        } else if (newMode === 'shortBreak') {
+          newTime = 5 * 60;
+        } else {
+          newTime = 15 * 60;
+        }
+        setTimeLeft(newTime);
+        setInitialTime(newTime);
+      };
+
+      // Format time as mm:ss
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      };
+
+      // Render digits with fixed width to prevent movement
+      const renderDigits = (timeString) => {
+        return timeString.split('').map((char, index) => (
+          <span key={index} className="digit">{char}</span>
+        ));
+      };
+
+      return (
+        <div className={`container ${isFlashing ? 'flashing' : ''}`}>
+          <div className="clock">
+            {renderDigits(currentTime)}
+          </div>
+          <div className="mode-container">
+            <button
+              className={`mode-btn ${mode === 'focus' ? 'active' : ''}`}
+              onClick={() => switchMode('focus')}
+            >
+              FOCUS
+            </button>
+            <button
+              className={`mode-btn ${mode === 'shortBreak' ? 'active' : ''}`}
+              onClick={() => switchMode('shortBreak')}
+            >
+              SHORT BREAK
+            </button>
+            <button
+              className={`mode-btn ${mode === 'longBreak' ? 'active' : ''}`}
+              onClick={() => switchMode('longBreak')}
+            >
+              LONG BREAK
+            </button>
+          </div>
+          
+          <div className="progress-container">
+            <div 
+              className="progress-bar" 
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+
+          <div className="timer">
+            {renderDigits(formatTime(timeLeft))}
+          </div>
+
+          <div className="button-container">
+            <button className="control-btn" onClick={toggleTimer}>
+              {isRunning ? 'PAUSE' : 'START'}
+            </button>
+            <button className="control-btn" onClick={resetTimer}>RESET</button>
+            <button className="control-btn" onClick={() => setSoundEnabled(!soundEnabled)}>
+              SOUND {soundEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          
+          <button className="test-alarm-btn" onClick={playAlarm}>
+            TEST ALARM
+          </button>
+        </div>
+      );
+    }
+
+    // Render the component
+    ReactDOM.render(<CyberpunkPomodoro />, document.getElementById('root'));
+  </script>
+</body>
+</html>
