@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audplayer - Cyan Pulse</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&display=swap');
+
+        :root {
+            --cyan: #00FFFF;
+            --cyan-dark: #00A0A0;
+            --cyan-transparent: rgba(0, 255, 255, 0.1);
+            --cyan-glow: rgba(0, 255, 255, 0.6);
+            --cyan-faint-glow: rgba(0, 255, 255, 0.3);
+            --cyan-highlight: #A0FFFF;
+            --dark-bg: #030305;
+            --medium-bg: #0d1014;
+            --light-bg-highlight: #181d23;
+            --text-color: var(--cyan);
+            --border-glow: 0 0 10px var(--cyan-glow), 0 0 15px var(--cyan);
+            --error-red: #FF4136;
+            --magenta: #FF00FF;
+
+            --flame-color-base: var(--cyan);
+            --flame-color-dark: var(--cyan-dark);
+            --flame-color-highlight: var(--cyan-highlight);
+            --flame-shadow-color: var(--cyan-glow);
+        }
+
+        html, body {
+            height: 100%; margin: 0; padding: 0; overflow: hidden;
+            background: var(--dark-bg); color: var(--text-color);
+            font-family: 'Exo 2', sans-serif; font-size: 16px;
+        }
+
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: var(--dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #splash-logo {
+            font-size: 5em;
+            font-weight: 700;
+            color: var(--cyan);
+            opacity: 0;
+            animation: logoAppear 1.5s ease-out forwards, logoPulse 2s infinite alternate 1.5s;
+        }
+        @keyframes logoAppear {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes logoPulse {
+            from { text-shadow: 0 0 8px var(--cyan-glow), 0 0 12px var(--cyan); }
+            to   { text-shadow: 0 0 15px var(--cyan), 0 0 25px var(--cyan-glow), 0 0 35px var(--cyan); }
+        }
+
+        .fullscreen-container {
+            display: flex;
+            width: 100vw; height: 100vh;
+            align-items: center; justify-content: center; position: relative;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+        .fullscreen-container.visible {
+            opacity: 1;
+        }
+
+        .main-interface {
+            display: flex; gap: 20px; padding: 20px;
+            max-width: 95vw; max-height: 95vh; z-index: 10;
+            align-items: flex-start;
+        }
+        .sci-fi-player, .playlist-sidebar {
+            transition: height 0.3s ease-out, min-height 0.3s ease-out, padding-bottom 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .sci-fi-player {
+            background: linear-gradient(145deg, rgba(13, 16, 20, 0.2), rgba(10, 12, 15, 0.2));
+            border: 1px solid var(--cyan-dark);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2),
+                        0 0 40px rgba(0, 255, 255, 0.15);
+            width: 525px; /* MODIFIED: Increased size */
+            padding: 20px; display: flex; flex-direction: column;
+            gap: 15px; max-height: calc(95vh - 40px); overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .playlist-sidebar {
+            background: rgba(10, 15, 20, 0.85); border: 1px solid var(--cyan-transparent);
+            border-radius: 10px; padding: 15px;
+            width: 438px; /* MODIFIED: Increased size */
+            max-height: calc(95vh - 40px); display: flex; flex-direction: column;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .panel-minimize-btn {
+            background: none; border: 1px solid var(--cyan-transparent); color: var(--cyan); cursor: pointer; font-size: 0.75em; padding: 1px 6px; border-radius: 4px; margin-left: auto; line-height: 1; transition: background-color 0.2s, color 0.2s; align-self: center;
+        }
+        .panel-minimize-btn:hover { background-color: var(--cyan-transparent); color: var(--cyan-highlight); }
+
+        .title-bar, .playlist-sidebar h3 { display: flex; align-items: center; width: 100%; }
+        .title-bar > span:first-child, .playlist-sidebar h3 > span:first-child { flex-grow: 1; text-align: center; }
+        .playlist-sidebar h3 > span:first-child { margin-left: auto; margin-right: auto; }
+
+        .sci-fi-player.minimized, .playlist-sidebar.minimized { height: auto !important; min-height: 0 !important; overflow: hidden !important; padding-bottom: 0 !important; gap: 0; }
+        .sci-fi-player.minimized .player-content-wrapper, .playlist-sidebar.minimized .playlist-content-wrapper { display: none !important; }
+        .sci-fi-player.minimized { padding-bottom: 20px; }
+        .playlist-sidebar.minimized { padding-bottom: 15px; }
+
+        .sci-fi-player::-webkit-scrollbar, .playlist-queue-list::-webkit-scrollbar { width: 8px; }
+        .sci-fi-player::-webkit-scrollbar-track, .playlist-queue-list::-webkit-scrollbar-track { background: var(--medium-bg); border-radius: 4px; }
+        .playlist-queue-list::-webkit-scrollbar-track { background: rgba(10, 15, 20, 0.5); }
+        .sci-fi-player::-webkit-scrollbar-thumb, .playlist-queue-list::-webkit-scrollbar-thumb { background: var(--cyan-dark); border-radius: 4px; }
+        .sci-fi-player::-webkit-scrollbar-thumb:hover, .playlist-queue-list::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+        .title-bar { font-size: 1.4em; font-weight: 700; padding-bottom: 10px; border-bottom: 1px solid var(--cyan-transparent); text-shadow: 0 0 6px var(--cyan); flex-shrink: 0; }
+        .display-area { background-color: rgba(0,0,0, 0.4); padding: 15px; border-radius: 8px; border: 1px solid var(--cyan-transparent); box-shadow: inset 0 0 8px rgba(0,0,0,0.5); flex-shrink: 0; }
+        .track-info { font-size: 1.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; color: var(--cyan); text-shadow: 0 0 5px var(--cyan-glow); margin-bottom: 5px; }
+        .playlist-info { font-size: 0.9em; color: var(--cyan-dark); min-height: 1.1em; text-align: center; }
+        .time-info { font-size: 1em; text-align: right; color: var(--cyan-dark); font-weight: 300; }
+        .controls, .input-area, .volume-seek-area, .playlist-management, .predefined-playlists-area, .player-settings-area { display: flex; gap: 10px; align-items: center; flex-shrink: 0; } /* MODIFIED: Added .player-settings-area */
+        .playlist-management { justify-content: space-between; }
+
+        .btn { font-family: 'Exo 2', sans-serif; cursor: pointer; border-radius: 6px; transition: all 0.2s ease-in-out; background: linear-gradient(to bottom, var(--light-bg-highlight), var(--medium-bg)); color: var(--text-color); border: 1px solid var(--cyan-dark); text-shadow: 0 0 3px var(--cyan-glow); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn:hover, .predefined-playlists-area .btn.playing-playlist-btn { background: linear-gradient(to bottom, var(--cyan), var(--cyan-dark)); color: var(--dark-bg); box-shadow: var(--border-glow); text-shadow: none; }
+        .btn:active { transform: scale(0.95); background: var(--cyan-dark); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; background: var(--medium-bg); color: var(--cyan-dark); box-shadow: none; text-shadow: none; }
+
+        .controls .btn { padding: 10px 0; font-size: 1.3em; flex-grow: 1; border-radius: 8px; }
+        .playlist-management .btn { font-size: 0.85em; padding: 8px 12px; flex-grow: 0; }
+        .input-area .btn { padding: 10px 12px; font-size: 0.8em; font-weight: 700; margin-left: 5px; }
+        .predefined-playlists-area, .player-settings-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } /* MODIFIED: Added .player-settings-area */
+        .predefined-playlists-area .btn, .player-settings-area .btn { font-size: 0.80em; padding: 8px 8px; text-align: center; min-width: 0; } /* MODIFIED: Added .player-settings-area */
+
+
+        .volume-seek-area { flex-direction: column; gap: 12px; }
+        .volume-control, .seek-control { display: flex; align-items: center; width: 100%; }
+        .volume-control .label, .seek-control .label { margin-right: 10px; min-width: 35px; font-size: 0.9em; color: var(--cyan-dark); }
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: rgba(0,0,0,0.4); outline: none; border-radius: 4px; border: 1px solid var(--cyan-transparent); cursor: pointer; transition: box-shadow 0.2s ease, background 0.1s linear; }
+        input[type="range"]:hover { box-shadow: 0 0 5px var(--cyan-glow); }
+        input[type="range"]::-webkit-slider-thumb, input[type="range"]::-moz-range-thumb { appearance: none; width: 16px; height: 16px; background: var(--cyan); border-radius: 50%; border: 2px solid var(--dark-bg); box-shadow: 0 0 8px var(--cyan-glow); transition: transform 0.1s ease; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { border: 0; }
+        input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); }
+        .input-area { margin-top: 5px; }
+        .input-area input[type="text"] { flex-grow: 1; padding: 10px 12px; background-color: rgba(0,0,0,0.3); border: 1px solid var(--cyan-dark); color: var(--cyan); font-family: 'Exo 2', sans-serif; font-size: 0.9em; border-radius: 6px; transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+        .input-area input[type="text"]::placeholder { color: var(--cyan-dark); opacity: 0.7; }
+        .input-area input[type="text"]:focus { outline: none; border-color: var(--cyan); box-shadow: var(--border-glow); }
+
+        .playlist-sidebar h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: var(--cyan); border-bottom: 1px solid var(--cyan-transparent); padding-bottom: 8px; flex-shrink: 0; position: relative; z-index: 2; }
+        .playlist-queue-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; position: relative; z-index: 2; }
+        .playlist-queue-list li { padding: 10px 8px; border-bottom: 1px solid var(--cyan-transparent); font-size: 0.95em; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s ease, color 0.2s ease; }
+        .playlist-queue-list li:last-child { border-bottom: none; }
+        .playlist-queue-list li:hover { background-color: var(--cyan-transparent); }
+        .playlist-queue-list li.playing { color: var(--dark-bg); font-weight: bold; background-color: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
+        .playlist-queue-list li.playing .remove-track { color: var(--dark-bg); opacity: 0.8; }
+        .playlist-queue-list li.playing .remove-track:hover { opacity: 1; }
+        .playlist-queue-list li .track-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 30px); } /* Adjusted for wider sidebar */
+        .playlist-queue-list li .remove-track { color: var(--error-red); font-size: 1.2em; padding: 0 5px; opacity: 0.7; transition: opacity 0.2s ease; }
+        .playlist-queue-list li .remove-track:hover { opacity: 1; font-weight: bold; }
+
+        .visualization-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 1; pointer-events: none; filter: blur(0.5px); box-shadow: 0 0 30px 10px var(--cyan-faint-glow); transition: opacity 0.3s ease-out; }
+        /* MODIFIED: Style for disabled flames */
+        .visualization-background.flames-disabled {
+            opacity: 0 !important;
+        }
+        .viz-bar { position: absolute; bottom: 0; background: linear-gradient(to top, var(--flame-color-dark) 0%, var(--flame-color-base) 70%, var(--flame-color-highlight) 100% ); box-shadow: 0 0 3px var(--flame-shadow-color), 0 0 8px var(--flame-color-base); animation-name: vizFireFlicker; animation-timing-function: linear; animation-iteration-count: infinite; opacity: 0; clip-path: polygon(25% 100%, 50% 0%, 75% 100%); }
+        @keyframes vizFireFlicker { 0% { height: 1%; opacity: 0.2; transform: scaleY(0.3) skewX(-1deg); } 10% { height: 15%; opacity: 0.7; transform: scaleY(0.8) skewX(1deg); } 20% { height: 7%; opacity: 0.5; transform: scaleY(0.5) skewX(-2deg); } 30% { height: 22%; opacity: 0.9; transform: scaleY(1.0) skewX(1.5deg); } 40% { height: 10%; opacity: 0.6; transform: scaleY(0.6) skewX(-1deg); } 50% { height: 19%; opacity: 0.8; transform: scaleY(0.9) skewX(2deg); } 60% { height: 5%; opacity: 0.4; transform: scaleY(0.4) skewX(-1.5deg); } 70% { height: 21%; opacity: 0.9; transform: scaleY(0.95) skewX(0.5deg); } 80% { height: 11%; opacity: 0.6; transform: scaleY(0.7) skewX(-1deg); } 90% { height: 17%; opacity: 0.7; transform: scaleY(0.8) skewX(1.5deg); } 100% { height: 1%; opacity: 0.2; transform: scaleY(0.3) skewX(-1deg); } }
+        .visualization-background.playing .viz-bar { animation-play-state: running; }
+        .visualization-background:not(.playing) .viz-bar { animation-play-state: paused; height: 0.5%; opacity: 0.03; }
+
+        .gif-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; overflow: hidden; opacity: 0.25; z-index: 1; pointer-events: none; background-color: transparent; transition: opacity 0.3s ease-out; }
+        .gif-container img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) sepia(1) hue-rotate(135deg) saturate(700%) brightness(70%) contrast(200%); }
+        #youtube-player-container { width: 1px; height: 1px; position: absolute; left: -9999px; }
+    </style>
+</head>
+<body>
+    <div id="splash-screen">
+        <div id="splash-logo">Audplayer</div>
+    </div>
+
+    <div class="fullscreen-container" style="display: none;">
+        <div class="visualization-background" id="visualization-background"></div>
+        <div class="main-interface">
+            <div class="sci-fi-player" id="sci-fi-player">
+                <div class="title-bar">
+                    <span>Audplayer</span>
+                    <span id="minimize-player-btn" class="panel-minimize-btn">[-]</span>
+                </div>
+                <div class="player-content-wrapper">
+                    <div class="display-area">
+                        <div class="track-info" id="track-info">Standby...</div>
+                        <div class="playlist-info" id="playlist-info"></div>
+                        <div class="time-info" id="time-info">0:00 / 0:00</div>
+                    </div>
+                    <div class="volume-seek-area">
+                        <div class="seek-control">
+                            <span class="label">POS</span>
+                            <input type="range" id="seek-bar" min="0" max="100" value="0" disabled>
+                        </div>
+                        <div class="volume-control">
+                            <span class="label">VOL</span>
+                            <input type="range" id="volume-bar" min="0" max="100" value="50">
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button id="prev-btn" class="btn" title="Previous Track" aria-label="Previous Track">◄◄</button>
+                        <button id="play-pause-btn" class="btn" title="Play/Pause" aria-label="Play or Pause">►</button>
+                        <button id="stop-btn" class="btn" title="Stop" aria-label="Stop">■</button>
+                        <button id="next-btn" class="btn" title="Next Track" aria-label="Next Track">►►</button>
+                    </div>
+                    <div class="input-area">
+                        <input type="text" id="youtube-url" placeholder="YouTube URL / ID / Playlist">
+                        <button id="load-btn" class="btn" title="Load and Play">LOAD</button>
+                        <button id="add-to-queue-btn" class="btn" title="Add to Queue">QUEUE</button>
+                    </div>
+                     <div class="playlist-management">
+                        <button id="clear-queue-btn" class="btn" title="Clear Queue">Clear Queue</button>
+                    </div>
+                    <div class="predefined-playlists-area">
+                        <button id="deep-house-btn" class="btn" title="Load Deep House 2025">Deep House</button>
+                        <button id="downtempo-btn" class="btn" title="Load Downtempo">Downtempo</button>
+                        <button id="mind-focus-btn" class="btn" title="Load Electronic Mind Focus">Mind Focus</button>
+                        <button id="tribal-house-btn" class="btn" title="Load Tribal House">Tribal House</button>
+                    </div>
+                    <!-- MODIFIED: Player Settings Area -->
+                    <div class="player-settings-area">
+                        <button id="toggle-gif-btn" class="btn" title="Toggle GIFs">GIFs: ON</button>
+                        <button id="toggle-flames-btn" class="btn" title="Toggle Flames Visualization">Flames: ON</button>
+                    </div>
+                </div>
+            </div>
+            <div class="playlist-sidebar" id="playlist-sidebar">
+                <h3>
+                    <span>Upcoming Tracks</span>
+                    <span id="minimize-playlist-btn" class="panel-minimize-btn">[-]</span>
+                </h3>
+                <div class="playlist-content-wrapper">
+                    <ul class="playlist-queue-list" id="playlist-queue-list"></ul>
+                    <div class="gif-container" id="gif-container">
+                        <img id="track-gif" src="" alt="Track visualization">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="youtube-player-container"></div>
+
+    <script>
+        let player;
+        let progressInterval;
+        const defaultTrackInfo = "Standby...";
+        let playAfterCue = false;
+        let errorSkipTimeout = null;
+        let gifCycleInterval = null;
+        let currentPlayingPlaylistBtnId = null;
+        let playMonitorTimeout = null;
+        let gifsEnabled = true; // MODIFIED: State for GIFs
+        let flamesEnabled = true; // MODIFIED: State for Flames
+
+
+        const trackGifs = [
+            "https://media.giphy.com/media/5xtDarIHieSzSJdmn0A/giphy.gif", "https://media.giphy.com/media/7x5t7Xpmm6nJpqETG6/giphy.gif", "https://media.giphy.com/media/gbmWwWm4sGMQvAYm1G/giphy.gif", "https://media.giphy.com/media/1k8AAdHsWW1ig/giphy.gif", "https://media.giphy.com/media/l41Ym8O8dbIG0XvFK/giphy.gif", "https://media.giphy.com/media/NkkKrHU2wAin6/giphy.gif", "https://media.giphy.com/media/WVDydsqYteU5aLlliQ/giphy.gif", "https://media.giphy.com/media/8DnBfZ9rwoUPC/giphy.gif", "https://media.giphy.com/media/3o85xG4nH91UGshOEg/giphy.gif", "https://media.giphy.com/media/cYPOqzMRgypjO/giphy.gif", "https://media.giphy.com/media/1TwiOe0hFQkog/giphy.gif", "https://media.giphy.com/media/l3vReQRdjQEfSxkKk/giphy.gif", "https://media.giphy.com/media/GgnBHd3mHS6BIrUkTV/giphy.gif", "https://media.giphy.com/media/HIhZGLfW5oqYGYNJIn/giphy.gif", "https://media.giphy.com/media/MHjWmx8lNEkVV4m1BX/giphy.gif", "https://media.giphy.com/media/Z9WQLSrsQKH3uBbiXq/giphy.gif", "https://media.giphy.com/media/s15VdDCJxpOg1BKwSG/giphy.gif", "https://media.giphy.com/media/xT0GqgdfhyeUzH7GKs/giphy.gif", "https://media.giphy.com/media/3kHBUxaBZSSk4x3j3x/giphy.gif", "https://media.giphy.com/media/26xBOZKoaeEn9mKSQ/giphy.gif", "https://media.giphy.com/media/l2QZSjo0lwEMC0GVG/giphy.gif", "https://media.giphy.com/media/ThFo4QEPeaDVIqLX1g/giphy.gif", "https://media.giphy.com/media/oPOdtPRfP6lxuSX5DQ/giphy.gif", "https://media.giphy.com/media/SGkufeMafyuBhIw796/giphy.gif", "https://media.giphy.com/media/XtRvzREebFfmIBCNMh/giphy.gif", "https://media.giphy.com/media/Ac0fCix8D3oN7DwCEB/giphy.gif", "https://media.giphy.com/media/Imr8IX63c9yJy2Ejcr/giphy.gif", "https://media.giphy.com/media/pHYaWbspekVsTKRFQT/giphy.gif"
+        ];
+
+        let activePlaylist = {
+            type: 'none', items: [], currentIndex: -1, youtubeApiPlaylistTitle: '',
+        };
+        let youtubePlaylistCachedTitles = {};
+
+        const ui = {
+            playPauseBtn: document.getElementById('play-pause-btn'), stopBtn: document.getElementById('stop-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), volumeBar: document.getElementById('volume-bar'), seekBar: document.getElementById('seek-bar'), timeInfo: document.getElementById('time-info'), trackInfo: document.getElementById('track-info'), playlistInfo: document.getElementById('playlist-info'), loadBtn: document.getElementById('load-btn'), addToQueueBtn: document.getElementById('add-to-queue-btn'), clearQueueBtn: document.getElementById('clear-queue-btn'), youtubeUrlInput: document.getElementById('youtube-url'), playlistQueueList: document.getElementById('playlist-queue-list'), visualizationBackground: document.getElementById('visualization-background'), trackGif: document.getElementById('track-gif'), gifContainer: document.getElementById('gif-container'), deepHouseBtn: document.getElementById('deep-house-btn'), downtempoBtn: document.getElementById('downtempo-btn'), mindFocusBtn: document.getElementById('mind-focus-btn'), tribalHouseBtn: document.getElementById('tribal-house-btn'), minimizePlayerBtn: document.getElementById('minimize-player-btn'), minimizePlaylistBtn: document.getElementById('minimize-playlist-btn'), sciFiPlayerPanel: document.getElementById('sci-fi-player'), playlistSidebarPanel: document.getElementById('playlist-sidebar'), splashScreen: document.getElementById('splash-screen'), mainFullscreenContainer: document.querySelector('.fullscreen-container'),
+            toggleGifBtn: document.getElementById('toggle-gif-btn'), // MODIFIED
+            toggleFlamesBtn: document.getElementById('toggle-flames-btn'), // MODIFIED
+        };
+
+        const predefinedPlaylistButtonIds = ['deepHouseBtn', 'downtempoBtn', 'mindFocusBtn', 'tribalHouseBtn'];
+
+
+        const NUM_VIZ_BARS = 60;
+        for (let i = 0; i < NUM_VIZ_BARS; i++) {
+            const bar = document.createElement('div'); bar.classList.add('viz-bar'); bar.style.left = `${i * (100 / NUM_VIZ_BARS)}%`; bar.style.width = `${(100 / NUM_VIZ_BARS) + 0.5}%`; const duration = 0.6 + Math.random() * 0.8; const delay = Math.random() * duration; bar.style.animationDuration = `${duration}s`; bar.style.animationDelay = `${delay}s`; ui.visualizationBackground.appendChild(bar);
+        }
+
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const SPLASH_ANIMATION_DURATION = 1500; const SPLASH_HOLD_DURATION = 1000; const SPLASH_FADEOUT_DURATION = 500;
+            setTimeout(() => {
+                ui.splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    ui.splashScreen.style.display = 'none'; ui.mainFullscreenContainer.style.display = 'flex'; requestAnimationFrame(() => { ui.mainFullscreenContainer.classList.add('visible'); });
+                }, SPLASH_FADEOUT_DURATION);
+            }, SPLASH_ANIMATION_DURATION + SPLASH_HOLD_DURATION);
+        });
+
+
+        window.onYouTubeIframeAPIReady = function() {
+            player = new YT.Player('youtube-player-container', {
+                height: '1', width: '1', playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'iv_load_policy': 3, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 }, events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
+            });
+        }
+
+        function onPlayerReady(event) {
+            console.log("Audplayer Online - Cyan Pulse Active"); setVolume(parseInt(ui.volumeBar.value)); resetPlayerUIState();
+        }
+
+        function startGifCycle() {
+            if (!gifsEnabled || trackGifs.length === 0) return; stopGifCycle(); updateTrackGif(); gifCycleInterval = setInterval(updateTrackGif, 30000);
+        }
+        function stopGifCycle() {
+            if (gifCycleInterval) clearInterval(gifCycleInterval); gifCycleInterval = null;
+        }
+        function updatePredefinedPlaylistButtonHighlight(activeButtonId = null) {
+            predefinedPlaylistButtonIds.forEach(btnId => { if (ui[btnId]) { ui[btnId].classList.remove('playing-playlist-btn'); } }); if (activeButtonId && ui[activeButtonId]) { ui[activeButtonId].classList.add('playing-playlist-btn'); } currentPlayingPlaylistBtnId = activeButtonId;
+        }
+        function startPlayMonitor() {
+            clearPlayMonitor(); if (player && typeof player.getPlayerState === 'function') { const state = player.getPlayerState(); if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.PAUSED) return; playMonitorTimeout = setTimeout(() => { if (player && typeof player.getPlayerState === 'function' && player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.PAUSED) { console.warn("Play monitor: Track not playing after 2s. Skipping."); handleNext(); } playMonitorTimeout = null; }, 2000); }
+        }
+        function clearPlayMonitor() {
+            if (playMonitorTimeout) { clearTimeout(playMonitorTimeout); playMonitorTimeout = null; }
+        }
+        function updateSeekBarGradient(currentTime, duration) {
+            if (ui.seekBar.disabled) { ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; return; } if (duration > 0 && currentTime >= 0) { const percentage = Math.min((currentTime / duration) * 100, 100); ui.seekBar.style.background = `linear-gradient(to right, var(--cyan) 0%, var(--magenta) ${percentage}%, rgba(0,0,0,0.4) ${percentage}%, rgba(0,0,0,0.4) 100%)`; } else { ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; }
+        }
+
+        function onPlayerStateChange(event) {
+            clearPlayMonitor(); clearTimeout(errorSkipTimeout); updatePlayPauseButtonVisual(event.data);
+            switch (event.data) {
+                case YT.PlayerState.PLAYING: startProgressInterval(); ui.seekBar.disabled = false; toggleVisualization(true); playAfterCue = false; if (gifsEnabled) { ui.gifContainer.style.display = 'block'; startGifCycle(); } else { ui.gifContainer.style.display = 'none'; stopGifCycle();} break;
+                case YT.PlayerState.PAUSED: stopProgressInterval(); toggleVisualization(false); stopGifCycle(); break;
+                case YT.PlayerState.BUFFERING: stopProgressInterval(); toggleVisualization(false); startPlayMonitor(); break;
+                case YT.PlayerState.ENDED: stopProgressInterval(); toggleVisualization(false); handleTrackEnded(); ui.gifContainer.style.display = 'none'; stopGifCycle(); ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; ui.seekBar.value = 0; break;
+                case YT.PlayerState.CUED: stopProgressInterval(); updateSeekBarDuration(); ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; ui.seekBar.disabled = false; toggleVisualization(false); ui.gifContainer.style.display = 'none'; stopGifCycle(); if (playAfterCue) { player.playVideo(); startPlayMonitor(); } break;
+                case YT.PlayerState.UNSTARTED: stopProgressInterval(); ui.gifContainer.style.display = 'none'; toggleVisualization(false); stopGifCycle(); ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; ui.seekBar.value = 0; ui.seekBar.disabled = true; break;
+            }
+            if (event.data !== YT.PlayerState.BUFFERING) { updatePlayerDisplay(); }
+        }
+        function onPlayerError(event) {
+            clearPlayMonitor(); const failedVideoId = (activePlaylist.items[activePlaylist.currentIndex] ? activePlaylist.items[activePlaylist.currentIndex].id : "Video ID not available"); console.error(`YouTube Player Error: Code ${event.data} on Video ID: ${failedVideoId}.`); ui.trackInfo.textContent = `Error on Track ${activePlaylist.currentIndex + 1}. Skipping...`; ui.gifContainer.style.display = 'none'; toggleVisualization(false); stopGifCycle(); ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; clearTimeout(errorSkipTimeout); errorSkipTimeout = setTimeout(() => { handleNext(); }, 2000);
+        }
+        function updateTrackGif() {
+            if (!gifsEnabled || trackGifs.length === 0) { ui.trackGif.src = ""; return; } const randomIndex = Math.floor(Math.random() * trackGifs.length); ui.trackGif.src = trackGifs[randomIndex];
+        }
+        function toggleVisualization(isPlaying) { // MODIFIED
+            if (!flamesEnabled) {
+                ui.visualizationBackground.classList.remove('playing');
+                ui.visualizationBackground.classList.add('flames-disabled');
+                return;
+            }
+            ui.visualizationBackground.classList.remove('flames-disabled');
+            if (isPlaying) ui.visualizationBackground.classList.add('playing');
+            else ui.visualizationBackground.classList.remove('playing');
+        }
+        function updatePlayPauseButtonVisual(playerState) {
+            ui.playPauseBtn.innerHTML = (playerState === YT.PlayerState.PLAYING) ? '❚❚' : '►';
+        }
+        function updatePlayerDisplay() {
+            if (!player || typeof player.getVideoData !== 'function') { ui.trackInfo.textContent = defaultTrackInfo; ui.playlistInfo.textContent = ""; updatePlaylistUI(); updateNavButtons(); return; }
+            const videoData = player.getVideoData(); let currentVideoId = videoData.videoId; let currentActualTitle = (videoData.title && videoData.title.trim() !== "" && videoData.title !== "Unknown Transmission") ? videoData.title : (currentVideoId ? "Loading title..." : defaultTrackInfo); ui.trackInfo.textContent = currentActualTitle;
+            if (currentVideoId && currentActualTitle !== "Loading title..." && currentActualTitle !== defaultTrackInfo) { youtubePlaylistCachedTitles[currentVideoId] = currentActualTitle; if (activePlaylist.currentIndex !== -1 && activePlaylist.currentIndex < activePlaylist.items.length && activePlaylist.items[activePlaylist.currentIndex] && activePlaylist.items[activePlaylist.currentIndex].id === currentVideoId) { activePlaylist.items[activePlaylist.currentIndex].title = currentActualTitle; } }
+            if (activePlaylist.type === 'youtube') { const ytPlaylistIdsFromPlayer = player.getPlaylist(); const ytCurrentIndex = player.getPlaylistIndex(); let playlistTitle = activePlaylist.youtubeApiPlaylistTitle || "YouTube Playlist"; if (videoData.playlistTitle && (playlistTitle === "YouTube Playlist" || playlistTitle === '' || playlistTitle === 'Loading YT Playlist...')) { activePlaylist.youtubeApiPlaylistTitle = videoData.playlistTitle; playlistTitle = videoData.playlistTitle; } if (ytPlaylistIdsFromPlayer && ytPlaylistIdsFromPlayer.length > 0 && ytCurrentIndex !== undefined) { ui.playlistInfo.textContent = `${playlistTitle} (${ytCurrentIndex + 1} of ${ytPlaylistIdsFromPlayer.length})`; if (activePlaylist.items.length !== ytPlaylistIdsFromPlayer.length || !activePlaylist.items.every((item, i) => item.id === ytPlaylistIdsFromPlayer[i])) { activePlaylist.items = ytPlaylistIdsFromPlayer.map((id, index) => ({ id: id, title: (index === ytCurrentIndex && currentActualTitle !== "Loading title...") ? currentActualTitle : (youtubePlaylistCachedTitles[id] || `Track ${index + 1}`) })); } activePlaylist.currentIndex = ytCurrentIndex; } else if (activePlaylist.youtubeApiPlaylistTitle) { ui.playlistInfo.textContent = `${activePlaylist.youtubeApiPlaylistTitle} (Loading...)`; } else { ui.playlistInfo.textContent = "Loading YT Playlist..."; } } else if (activePlaylist.type === 'manual' && activePlaylist.items.length > 0 && activePlaylist.currentIndex !== -1) { if(activePlaylist.currentIndex < activePlaylist.items.length){ ui.playlistInfo.textContent = `Queue (${activePlaylist.currentIndex + 1} of ${activePlaylist.items.length})`; } } else { ui.playlistInfo.textContent = ""; }
+            updatePlaylistUI(); updateNavButtons();
+        }
+        function formatTime(timeSeconds) {
+            const minutes = Math.floor(timeSeconds / 60); const seconds = Math.floor(timeSeconds % 60).toString().padStart(2, '0'); return `${minutes}:${seconds}`;
+        }
+        function startProgressInterval() {
+            stopProgressInterval(); progressInterval = setInterval(() => { if (player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') { const currentTime = player.getCurrentTime(); const duration = player.getDuration(); if (duration > 0) { ui.seekBar.max = duration; ui.seekBar.value = currentTime; ui.timeInfo.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`; updateSeekBarGradient(currentTime, duration); } else { ui.timeInfo.textContent = `${formatTime(currentTime)} / --:--`; ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; } } }, 500);
+        }
+        function stopProgressInterval() { clearInterval(progressInterval); }
+        function updateSeekBarDuration() {
+            if (player && typeof player.getDuration === 'function') { const duration = player.getDuration(); ui.timeInfo.textContent = `0:00 / ${formatTime(duration > 0 ? duration : 0)}`; ui.seekBar.max = duration > 0 ? duration : 100; ui.seekBar.value = 0; ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; }
+        }
+        function resetPlayerUIState() {
+            stopProgressInterval(); stopGifCycle(); updatePredefinedPlaylistButtonHighlight(null); clearPlayMonitor(); clearTimeout(errorSkipTimeout); ui.trackInfo.textContent = defaultTrackInfo; ui.playlistInfo.textContent = ""; ui.timeInfo.textContent = "0:00 / 0:00"; ui.seekBar.value = 0; ui.seekBar.max = 100; ui.seekBar.disabled = true; ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; updatePlayPauseButtonVisual(YT.PlayerState.UNSTARTED);
+            gifsEnabled = true; ui.toggleGifBtn.textContent = "GIFs: ON"; // MODIFIED
+            flamesEnabled = true; ui.toggleFlamesBtn.textContent = "Flames: ON"; ui.visualizationBackground.classList.remove('flames-disabled'); // MODIFIED
+            toggleVisualization(false); // Apply current flame state
+            ui.gifContainer.style.display = 'none'; playAfterCue = false; activePlaylist.type = 'none'; activePlaylist.items = []; activePlaylist.currentIndex = -1; activePlaylist.youtubeApiPlaylistTitle = ''; youtubePlaylistCachedTitles = {}; updatePlayerDisplay();
+        }
+        function togglePlayPause() {
+            clearTimeout(errorSkipTimeout); if (!player || typeof player.getPlayerState !== 'function') return; const playerState = player.getPlayerState(); if (playerState === YT.PlayerState.PLAYING) { player.pauseVideo(); clearPlayMonitor(); } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.CUED) { player.playVideo(); startPlayMonitor(); } else { if (activePlaylist.items.length > 0) { let targetIndex = activePlaylist.currentIndex; if (playerState === YT.PlayerState.ENDED || targetIndex === -1 ) { targetIndex = (activePlaylist.items.length > 0) ? 0 : -1; } if (targetIndex >= 0 && targetIndex < activePlaylist.items.length) { playFromQueue(targetIndex); } else { ui.trackInfo.textContent = "No tracks loaded."; } } else { ui.trackInfo.textContent = "Queue is empty."; } }
+        }
+        function stopVideo() {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (!player || typeof player.stopVideo !== 'function') return; player.stopVideo(); resetPlayerUIState();
+        }
+        function setVolume(value) { if (!player || typeof player.setVolume !== 'function') return; player.setVolume(value); }
+        function seekVideo(timeValue) {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (!player || typeof player.seekTo !== 'function' || typeof player.getDuration !== 'function') return; const currentState = player.getPlayerState(); player.seekTo(timeValue, true); if (currentState === YT.PlayerState.CUED || (currentState === YT.PlayerState.PAUSED && playAfterCue)) { player.playVideo(); startPlayMonitor(); } else if (currentState === YT.PlayerState.PLAYING) { startPlayMonitor(); } if (player.getPlayerState() === YT.PlayerState.PLAYING || currentState === YT.PlayerState.PAUSED) { updateSeekBarGradient(timeValue, player.getDuration()); }
+        }
+        function extractIDs(url) {
+            let videoId = null; let playlistId = null; const videoRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i; const videoMatch = url.match(videoRegex); if (videoMatch) videoId = videoMatch[1]; const playlistRegex = /[?&]list=([^"&?\/\s]+)/i; const playlistMatch = url.match(playlistRegex); if (playlistMatch) playlistId = playlistMatch[1]; if (!videoId && !playlistId && /^[a-zA-Z0-9_-]{11}$/.test(url)) videoId = url; if (!playlistId && /^(PL|UU|FL|RD|WL)[a-zA-Z0-9_-]+$/.test(url)) playlistId = url; return { videoId, playlistId };
+        }
+        function handleLoad(playNow = true) {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); const urlOrId = ui.youtubeUrlInput.value.trim(); if (!urlOrId) { showInputError("INPUT REQUIRED"); return; } const ids = extractIDs(urlOrId); resetPlayerUIState(); if (ids.playlistId) { activePlaylist.type = 'youtube'; activePlaylist.youtubeApiPlaylistTitle = ''; ui.trackInfo.textContent = "Loading YouTube Playlist..."; const loadOptions = { list: ids.playlistId, listType: 'playlist', index: 0 }; if (playNow) { playAfterCue = true; player.loadPlaylist(loadOptions); startPlayMonitor(); } else { playAfterCue = false; player.cuePlaylist(loadOptions); } } else if (ids.videoId) { activePlaylist.type = 'manual'; activePlaylist.items = [{ id: ids.videoId, title: "Loading title..." }]; activePlaylist.currentIndex = 0; ui.trackInfo.textContent = "Loading Stream..."; if (playNow) { playAfterCue = true; player.loadVideoById(ids.videoId); startPlayMonitor(); } else { playAfterCue = false; player.cueVideoById(ids.videoId); } } else { showInputError("Invalid URL/ID"); resetPlayerUIState(); return; } ui.youtubeUrlInput.value = ""; updatePlayerDisplay();
+        }
+        function loadPredefinedPlaylist(playlistUrl, playlistName, buttonId) {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); const ids = extractIDs(playlistUrl); if (!ids.playlistId) { console.error(`Could not extract playlist ID for ${playlistName} from URL: ${playlistUrl}`); showInputError(`NO ID FOR ${playlistName.toUpperCase()}`); return; } resetPlayerUIState(); activePlaylist.type = 'youtube'; activePlaylist.youtubeApiPlaylistTitle = playlistName; ui.trackInfo.textContent = `Loading ${playlistName}...`; const loadOptions = { list: ids.playlistId, listType: 'playlist', index: 0 }; if (player && typeof player.loadPlaylist === 'function') { playAfterCue = true; player.loadPlaylist(loadOptions); updatePredefinedPlaylistButtonHighlight(buttonId); startPlayMonitor(); } else { console.error("YouTube player not ready or loadPlaylist not available."); showInputError("PLAYER NOT READY"); } updatePlayerDisplay();
+        }
+        function addToManualQueue(videoIdFromInput = null) {
+            clearTimeout(errorSkipTimeout); let videoId = videoIdFromInput; if (!videoId) { const urlOrId = ui.youtubeUrlInput.value.trim(); if (!urlOrId) { showInputError("INPUT REQUIRED FOR QUEUE"); return; } const ids = extractIDs(urlOrId); videoId = ids.videoId; if (!videoId) { showInputError("INVALID VIDEO ID FOR QUEUE"); return; } ui.youtubeUrlInput.value = ""; } if (activePlaylist.type === 'youtube' || activePlaylist.type === 'none') { activePlaylist.type = 'manual'; if (activePlaylist.type === 'youtube') { activePlaylist.items = []; activePlaylist.currentIndex = -1; updatePredefinedPlaylistButtonHighlight(null); } activePlaylist.youtubeApiPlaylistTitle = ''; } activePlaylist.items.push({ id: videoId, title: `Track ${activePlaylist.items.length + 1}` }); if (activePlaylist.currentIndex === -1 && activePlaylist.items.length > 0) { activePlaylist.currentIndex = 0; } updatePlayerDisplay(); const playerState = player.getPlayerState(); if (playerState !== YT.PlayerState.PLAYING && playerState !== YT.PlayerState.PAUSED && playerState !== YT.PlayerState.BUFFERING ) { if (activePlaylist.items.length === 1 && activePlaylist.currentIndex === 0 && (playerState === YT.PlayerState.UNSTARTED || playerState === YT.PlayerState.ENDED)) { player.cueVideoById(activePlaylist.items[0].id); playAfterCue = false; ui.playlistInfo.textContent = `Queued: ${activePlaylist.items[0].title || 'Track 1'}`; } else { ui.playlistInfo.textContent = activePlaylist.items.length > 0 ? `Queue: ${activePlaylist.items.length} track(s)` : "Queue is empty"; } } else { ui.playlistInfo.textContent = `Queue (${activePlaylist.currentIndex + 1} of ${activePlaylist.items.length})`; }
+        }
+        function playFromQueue(index) {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (index < 0 || index >= activePlaylist.items.length) { console.warn("playFromQueue: Index out of bounds.", "Index:", index, "Length:", activePlaylist.items.length); if (activePlaylist.items.length > 0) { index = 0; } else { resetPlayerUIState(); ui.playlistInfo.textContent = "Queue is empty."; return; } } activePlaylist.currentIndex = index; const track = activePlaylist.items[index]; playAfterCue = true; if (activePlaylist.type === 'youtube') { player.playVideoAt(index); } else { player.loadVideoById(track.id); updatePredefinedPlaylistButtonHighlight(null); } startPlayMonitor();
+        }
+        function handleNext() {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (activePlaylist.items.length === 0) { resetPlayerUIState(); ui.playlistInfo.textContent = "Playlist ended."; return; } let nextIndex = activePlaylist.currentIndex + 1; if (nextIndex < activePlaylist.items.length) { playFromQueue(nextIndex); } else { ui.playlistInfo.textContent = (activePlaylist.type === 'youtube') ? "YT Playlist Ended" : "Queue Ended"; updatePlayPauseButtonVisual(YT.PlayerState.ENDED); ui.gifContainer.style.display = 'none'; toggleVisualization(false); ui.seekBar.style.background = 'rgba(0,0,0,0.4)'; }
+        }
+        function handlePrevious() {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (activePlaylist.items.length === 0) { resetPlayerUIState(); return; } let prevIndex = activePlaylist.currentIndex - 1; if (prevIndex >= 0) { playFromQueue(prevIndex); }
+        }
+        function handleTrackEnded() { playAfterCue = false; handleNext(); }
+        function updateNavButtons() {
+            let canPrev = false; let canNext = false; if (player && player.getPlaylist && activePlaylist.type === 'youtube') { const playlist = player.getPlaylist(); const currentIndex = player.getPlaylistIndex(); if (playlist && playlist.length > 0 && currentIndex !== undefined) { canPrev = currentIndex > 0; canNext = currentIndex < playlist.length - 1; } else if (activePlaylist.items.length > 0) { canPrev = activePlaylist.currentIndex > 0; canNext = activePlaylist.currentIndex < activePlaylist.items.length - 1; } } else if (activePlaylist.type === 'manual' && activePlaylist.items.length > 0) { canPrev = activePlaylist.currentIndex > 0; canNext = activePlaylist.currentIndex < activePlaylist.items.length - 1; } ui.prevBtn.disabled = !canPrev; ui.nextBtn.disabled = !canNext;
+        }
+        function updatePlaylistUI() {
+            ui.playlistQueueList.innerHTML = ""; if (activePlaylist.items.length === 0) { const li = document.createElement('li'); li.textContent = (activePlaylist.type === 'youtube' && activePlaylist.youtubeApiPlaylistTitle) ? `${activePlaylist.youtubeApiPlaylistTitle} (Loading tracks...)` : (activePlaylist.type === 'youtube') ? "Playlist empty/loading." : "Queue is empty."; li.style.textAlign = "center"; li.style.color = "var(--cyan-dark)"; ui.playlistQueueList.appendChild(li); } else { activePlaylist.items.forEach((track, index) => { const li = document.createElement('li'); li.dataset.index = index; if (index === activePlaylist.currentIndex) li.classList.add('playing'); const titleSpan = document.createElement('span'); titleSpan.classList.add('track-title'); let displayTitle = track.title || youtubePlaylistCachedTitles[track.id] || `Track ${index + 1}`; if ((displayTitle === "Loading title..." || displayTitle === defaultTrackInfo) && youtubePlaylistCachedTitles[track.id]) { displayTitle = youtubePlaylistCachedTitles[track.id]; } titleSpan.textContent = displayTitle; titleSpan.title = track.id + (track.title && track.title !== displayTitle ? ` (${track.title})` : ''); li.appendChild(titleSpan); if (activePlaylist.type === 'manual') { const removeBtn = document.createElement('span'); removeBtn.classList.add('remove-track'); removeBtn.innerHTML = '×'; removeBtn.setAttribute('aria-label', "Remove track from queue"); removeBtn.title = "Remove from queue"; removeBtn.onclick = (e) => { e.stopPropagation(); removeTrackFromManualQueue(index); }; li.appendChild(removeBtn); } li.onclick = () => playFromQueue(index); ui.playlistQueueList.appendChild(li); }); } ui.clearQueueBtn.disabled = activePlaylist.type !== 'manual' || activePlaylist.items.length === 0;
+        }
+        function removeTrackFromManualQueue(indexToRemove) {
+            clearTimeout(errorSkipTimeout); if (activePlaylist.type !== 'manual' || indexToRemove < 0 || indexToRemove >= activePlaylist.items.length) return; const isCurrentlyPlayingRemoved = indexToRemove === activePlaylist.currentIndex; activePlaylist.items.splice(indexToRemove, 1); activePlaylist.items.forEach((item, idx) => { item.title = youtubePlaylistCachedTitles[item.id] || `Track ${idx + 1}`; }); if (activePlaylist.items.length === 0) { stopVideo(); } else { let nextIndexToPlay = -1; if (isCurrentlyPlayingRemoved) { clearPlayMonitor(); if (indexToRemove < activePlaylist.items.length) { nextIndexToPlay = indexToRemove; } else if (activePlaylist.items.length > 0) { nextIndexToPlay = activePlaylist.items.length - 1; } activePlaylist.currentIndex = -1; if (nextIndexToPlay !== -1) playFromQueue(nextIndexToPlay); else stopVideo(); } else if (indexToRemove < activePlaylist.currentIndex) { activePlaylist.currentIndex--; } updatePlayerDisplay(); }
+        }
+        function clearActiveManualQueue() {
+            clearTimeout(errorSkipTimeout); clearPlayMonitor(); if (activePlaylist.type === 'manual') { stopVideo(); ui.playlistInfo.textContent = "Queue Cleared"; }
+        }
+        function showInputError(message) {
+            const oldPlaceholder = ui.youtubeUrlInput.placeholder; ui.youtubeUrlInput.placeholder = message; ui.youtubeUrlInput.style.borderColor = "var(--error-red)"; setTimeout(() => { ui.youtubeUrlInput.placeholder = oldPlaceholder; ui.youtubeUrlInput.style.borderColor = ""; }, 2000);
+        }
+
+        ui.playPauseBtn.addEventListener('click', togglePlayPause);
+        ui.stopBtn.addEventListener('click', stopVideo);
+        ui.prevBtn.addEventListener('click', handlePrevious);
+        ui.nextBtn.addEventListener('click', handleNext);
+        ui.volumeBar.addEventListener('input', (e) => setVolume(parseInt(e.target.value)));
+        let isSeeking = false;
+        ui.seekBar.addEventListener('mousedown', () => { clearTimeout(errorSkipTimeout); isSeeking = true; if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) { stopProgressInterval(); } });
+        ui.seekBar.addEventListener('input', (e) => { if (player && typeof player.getDuration === 'function') { const duration = player.getDuration(); if(duration > 0) { ui.timeInfo.textContent = `${formatTime(parseFloat(e.target.value))} / ${formatTime(duration)}`; if (player.getPlayerState() === YT.PlayerState.PLAYING || player.getPlayerState() === YT.PlayerState.PAUSED) { updateSeekBarGradient(parseFloat(e.target.value), duration); } } } });
+        ui.seekBar.addEventListener('mouseup', (e) => { if (isSeeking) { seekVideo(parseFloat(e.target.value)); if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) { startProgressInterval(); } } isSeeking = false; });
+        ui.seekBar.addEventListener('change', (e) => { if (!isSeeking) { seekVideo(parseFloat(e.target.value)); } });
+        ui.loadBtn.addEventListener('click', () => handleLoad(true));
+        ui.addToQueueBtn.addEventListener('click', () => addToManualQueue(null));
+        ui.clearQueueBtn.addEventListener('click', clearActiveManualQueue);
+        ui.youtubeUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLoad(true); });
+        ui.deepHouseBtn.addEventListener('click', () => loadPredefinedPlaylist("https://music.youtube.com/playlist?list=RDCLAK5uy_kIDM3Qg7EpNNnPRSkGeLp4vuK95Da8NHI", "Deep House 2025", "deepHouseBtn"));
+        ui.downtempoBtn.addEventListener('click', () => loadPredefinedPlaylist("https://music.youtube.com/playlist?list=RDCLAK5uy_mfg_6GSiCHx47UrIySSqhp4L-v1sxGPLo", "Downtempo", "downtempoBtn"));
+        ui.mindFocusBtn.addEventListener('click', () => loadPredefinedPlaylist("https://music.youtube.com/playlist?list=RDCLAK5uy_nIQ-vZjrOsAAHK2SNZZO7mJ0e1yak6baE", "Electronic Mind Focus", "mindFocusBtn"));
+        ui.tribalHouseBtn.addEventListener('click', () => loadPredefinedPlaylist("https://music.youtube.com/playlist?list=RDCLAK5uy_kF6_LyRS94Pd9oJXUzN5ABfCaxK8K_3UU", "Tribal House", "tribalHouseBtn"));
+        ui.minimizePlayerBtn.addEventListener('click', () => { ui.sciFiPlayerPanel.classList.toggle('minimized'); ui.minimizePlayerBtn.textContent = ui.sciFiPlayerPanel.classList.contains('minimized') ? '[+]' : '[-]'; });
+        ui.minimizePlaylistBtn.addEventListener('click', () => { ui.playlistSidebarPanel.classList.toggle('minimized'); ui.minimizePlaylistBtn.textContent = ui.playlistSidebarPanel.classList.contains('minimized') ? '[+]' : '[-]'; });
+
+        // MODIFIED: Event Listeners for Toggle Buttons
+        ui.toggleGifBtn.addEventListener('click', () => {
+            gifsEnabled = !gifsEnabled;
+            ui.toggleGifBtn.textContent = `GIFs: ${gifsEnabled ? "ON" : "OFF"}`;
+            if (gifsEnabled && player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                ui.gifContainer.style.display = 'block';
+                startGifCycle();
+            } else {
+                ui.gifContainer.style.display = 'none';
+                stopGifCycle();
+            }
+        });
+        ui.toggleFlamesBtn.addEventListener('click', () => {
+            flamesEnabled = !flamesEnabled;
+            ui.toggleFlamesBtn.textContent = `Flames: ${flamesEnabled ? "ON" : "OFF"}`;
+            if (player && player.getPlayerState) {
+                toggleVisualization(player.getPlayerState() === YT.PlayerState.PLAYING);
+            } else { // Player not ready
+                if (!flamesEnabled) ui.visualizationBackground.classList.add('flames-disabled');
+                else ui.visualizationBackground.classList.remove('flames-disabled');
+            }
+        });
+
+    </script>
+</body>
+</html>
