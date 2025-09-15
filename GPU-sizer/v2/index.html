@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAI LLM Performance Calculator - GPU Memory Requirements</title>
+    <style>
+        :root {
+            /* Primitive Color Tokens */
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-gray-400: rgba(119, 124, 124, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-400: rgba(45, 166, 178, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-teal-800: rgba(41, 150, 161, 1);
+
+            /* RGB versions for opacity control */
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-slate-500-rgb: 98, 108, 113;
+            --color-gray-200-rgb: 245, 245, 245;
+
+            /* Background color tokens */
+            --color-bg-1: rgba(59, 130, 246, 0.08);
+            --color-bg-2: rgba(245, 158, 11, 0.08);
+            --color-bg-3: rgba(34, 197, 94, 0.08);
+            --color-bg-4: rgba(239, 68, 68, 0.08);
+
+            /* Semantic Color Tokens */
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+
+            /* Typography */
+            --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-size-xs: 11px;
+            --font-size-sm: 12px;
+            --font-size-base: 14px;
+            --font-size-lg: 16px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 20px;
+            --font-size-3xl: 24px;
+            --font-size-4xl: 30px;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 550;
+            --font-weight-bold: 600;
+            --line-height-tight: 1.2;
+            --line-height-normal: 1.5;
+            --letter-spacing-tight: -0.01em;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-6: 6px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+
+            /* Border Radius */
+            --radius-base: 8px;
+            --radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+
+            /* Animation */
+            --duration-fast: 150ms;
+            --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Common patterns */
+            --focus-ring: 0 0 0 3px var(--color-focus-ring);
+            --focus-outline: 2px solid var(--color-primary);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-primary-hover: var(--color-teal-400);
+                --color-primary-active: var(--color-teal-800);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+                --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
+                --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: var(--font-weight-bold);
+            background: linear-gradient(135deg, #9333ea, #ec4899, #a855f7);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: var(--space-16);
+            letter-spacing: -0.02em;
+            line-height: var(--line-height-tight);
+        }
+
+        .subtitle {
+            font-size: var(--font-size-lg);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: var(--font-weight-normal);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--space-32);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(147, 51, 234, 0.5), rgba(236, 72, 153, 0.5), transparent);
+        }
+
+        .form-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            padding: var(--space-16);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: var(--font-size-base);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(147, 51, 234, 0.6);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-input option {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 8px 12px;
+        }
+
+        .form-input option:checked {
+            background-color: rgba(147, 51, 234, 0.8);
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            padding: var(--space-16) var(--space-32);
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .model-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .provider-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .model-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+        }
+
+        .model-checkbox input {
+            margin-right: 0.5rem;
+            accent-color: #9333ea;
+        }
+
+        .model-checkbox label {
+            font-size: var(--font-size-sm);
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .gpu-section {
+            margin-top: 1rem;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .results-table th {
+            background: rgba(147, 51, 234, 0.2);
+            backdrop-filter: blur(10px);
+            padding: var(--space-16);
+            text-align: left;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .results-table td {
+            padding: var(--space-16);
+            font-size: var(--font-size-sm);
+            color: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .results-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .provider-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .provider-header {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .provider-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .provider-btn {
+            padding: 4px 8px;
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.4);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .provider-btn:hover {
+            background: rgba(147, 51, 234, 0.3);
+            border-color: rgba(147, 51, 234, 0.6);
+        }
+
+        .calculate-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .results-animated {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth transitions for all interactive elements */
+        * {
+            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .model-section {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .export-section {
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">NAI LLM Performance Calculator</h1>
+            <p class="subtitle">Calculate GPU memory requirements and performance for large language models</p>
+        </header>
+
+        <div class="calculate-section">
+            <button type="button" class="btn-primary" onclick="calculatePerformance()">Calculate Performance</button>
+        </div>
+
+        <section class="glass-card">
+            <h2 class="form-title">Configuration</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="num_gpu">Number of GPUs</label>
+                    <input type="number" id="num_gpu" class="form-input" min="1" value="1" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="prompt_tokens">Prompt Tokens</label>
+                    <input type="number" id="prompt_tokens" class="form-input" min="1" value="4096" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="response_tokens">Response Tokens</label>
+                    <input type="number" id="response_tokens" class="form-input" min="1" value="256" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="concurrency">Concurrent Requests</label>
+                    <input type="number" id="concurrency" class="form-input" min="1" value="10" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="weight_precision">Weight Precision (bits)</label>
+                    <select id="weight_precision" class="form-input">
+                        <option value="32">FP32 - 32 bit</option>
+                        <option value="16" selected>FP16 - 16 bit</option>
+                        <option value="8">INT8 - 8 bit</option>
+                        <option value="4">INT4 - 4 bit</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="kv_bytes">KV Cache Precision (bytes)</label>
+                    <input type="number" id="kv_bytes" class="form-input" min="0" step="0.1" value="2.0" />
+                </div>
+            </div>
+
+            <div class="model-section">
+                <div class="glass-card">
+                    <h3 class="form-title">Select Models</h3>
+                    <div class="models-container" id="models-container">
+                        <!-- Models will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="glass-card gpu-section">
+                    <h3 class="form-title">Select GPUs</h3>
+                    <div class="gpu-container" id="gpu-container">
+                        <!-- GPUs will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="results-container">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+
+        <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: rgba(255, 255, 255, 0.5); font-size: var(--font-size-sm);">
+            <p>Powered by Nutanix Enterprise AI LLM Performance Calculator</p>
+        </footer>
+    </div>
+
+    <script src="js/specs.js"></script>
+    <script src="js/calculator.js"></script>
+    <script>
+        // Global state
+        let selectedModels = ["gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
+        let selectedGPUs = ["L40s", "RTX Pro 6000 (Blackwell)"];
+
+        // Initialize the page
+        function init() {
+            populateModels();
+            populateGPUs();
+        }
+
+        // Populate model checkboxes
+        function populateModels() {
+            const container = document.getElementById('models-container');
+            const modelsByProvider = {};
+
+            // Group models by provider
+            DEFAULT_MODELS.forEach(model => {
+                const provider = model.provider || "OpenAI";
+                if (!modelsByProvider[provider]) {
+                    modelsByProvider[provider] = [];
+                }
+                modelsByProvider[provider].push(model);
+            });
+
+            // Sort providers alphabetically
+            const sortedProviders = Object.keys(modelsByProvider).sort();
+
+            let html = '';
+            sortedProviders.forEach(provider => {
+                const providerId = provider.replace(/\s+/g, '_').replace(/-/g, '_');
+                html += `<div class="provider-group">`;
+                html += `<div class="provider-header-row">`;
+                html += `<h4 class="provider-header">${escapeHtml(provider)}</h4>`;
+                html += `<div class="provider-controls">`;
+                html += `<button type="button" class="provider-btn" onclick="toggleProvider('${providerId}', true)">All</button>`;
+                html += `<button type="button" class="provider-btn" onclick="toggleProvider('${providerId}', false)">None</button>`;
+                html += `</div>`;
+                html += `</div>`;
+
+                modelsByProvider[provider].sort((a, b) => a.name.localeCompare(b.name)).forEach(model => {
+                    const checked = selectedModels.includes(model.name);
+                    const modelId = model.name.replace(/[^a-zA-Z0-9]/g, '_');
+                    html += `<div class="model-checkbox">`;
+                    html += `<input type="checkbox" name="model" value="${escapeHtml(model.name)}" ${checked ? 'checked' : ''} id="model_${modelId}" class="provider-${providerId}" onchange="updateSelectedModels()" />`;
+                    html += `<label for="model_${modelId}">${escapeHtml(model.name)}</label>`;
+                    html += `</div>`;
+                });
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Populate GPU checkboxes
+        function populateGPUs() {
+            const container = document.getElementById('gpu-container');
+            const sortedGPUs = [...DEFAULT_GPUS].sort((a, b) => a.memory_gb - b.memory_gb);
+
+            let html = '';
+            sortedGPUs.forEach(gpu => {
+                const checked = selectedGPUs.includes(gpu.name);
+                const gpuId = gpu.name.replace(/\s+/g, '_');
+                html += `<div class="model-checkbox">`;
+                html += `<input type="checkbox" name="gpu" value="${escapeHtml(gpu.name)}" ${checked ? 'checked' : ''} id="gpu_${gpuId}" onchange="updateSelectedGPUs()" />`;
+                html += `<label for="gpu_${gpuId}">${escapeHtml(gpu.name)} (${gpu.memory_gb}GB)</label>`;
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Toggle provider models
+        function toggleProvider(providerId, checkState) {
+            const checkboxes = document.querySelectorAll(`.provider-${providerId}`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checkState;
+            });
+            updateSelectedModels();
+        }
+
+        // Update selected models
+        function updateSelectedModels() {
+            const checkboxes = document.querySelectorAll('input[name="model"]:checked');
+            selectedModels = Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Update selected GPUs
+        function updateSelectedGPUs() {
+            const checkboxes = document.querySelectorAll('input[name="gpu"]:checked');
+            selectedGPUs = Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Calculate performance
+        function calculatePerformance() {
+            const numGPU = parseInt(document.getElementById('num_gpu').value);
+            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
+            const responseTokens = parseInt(document.getElementById('response_tokens').value);
+            const concurrency = parseInt(document.getElementById('concurrency').value);
+            const weightBits = parseInt(document.getElementById('weight_precision').value);
+            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
+
+            const weightBytes = weightBits / 8.0;
+            const precision = new PrecisionSpec(weightBytes, kvBytes);
+            const calculator = new PerformanceCalculator(numGPU, precision);
+
+            // Filter models and GPUs
+            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
+            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
+
+            if (models.length === 0 || gpus.length === 0) {
+                alert('Please select at least one model and one GPU.');
+                return;
+            }
+
+            const contextWindow = promptTokens + responseTokens;
+
+            // Calculate memory footprint
+            const memRows = [];
+            models.forEach(model => {
+                const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
+                const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
+                memRows.push({
+                    "Model": model.name,
+                    "Input Size (tokens)": promptTokens,
+                    "Output Size (tokens)": responseTokens,
+                    "Concurrent Requests": concurrency,
+                    "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
+                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
+                });
+            });
+
+            // Calculate performance metrics
+            const perfRows = [];
+            models.forEach(model => {
+                gpus.forEach(gpu => {
+                    const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
+                    if (!fits) {
+                        perfRows.push({
+                            "Model": model.name,
+                            "GPU": gpu.name,
+                            "Input Size (tokens)": promptTokens,
+                            "Output Size (tokens)": responseTokens,
+                            "Concurrent Requests": concurrency,
+                            "Max # KV Cache Tokens": "OOM",
+                            "Prefill Time": "OOM",
+                            "TPOT (ms)": "OOM",
+                            "TTFT": "OOM",
+                            "E2E Latency": "OOM",
+                            "Output Tokens Throughput": "OOM"
+                        });
+                        return;
+                    }
+
+                    const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
+                    if (typeof metrics.prefill_time_per_token_ms === 'string') {
+                        perfRows.push({
+                            "Model": model.name,
+                            "GPU": gpu.name,
+                            "Input Size (tokens)": promptTokens,
+                            "Output Size (tokens)": responseTokens,
+                            "Concurrent Requests": concurrency,
+                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                            "Prefill Time": "OOM",
+                            "TPOT (ms)": "OOM",
+                            "TTFT": "OOM",
+                            "E2E Latency": "OOM",
+                            "Output Tokens Throughput": "OOM"
+                        });
+                        return;
+                    }
+
+                    perfRows.push({
+                        "Model": model.name,
+                        "GPU": gpu.name,
+                        "Input Size (tokens)": promptTokens,
+                        "Output Size (tokens)": responseTokens,
+                        "Concurrent Requests": concurrency,
+                        "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                        "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
+                        "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
+                        "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
+                        "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
+                        "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
+                            "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
+                    });
+                });
+            });
+
+            displayResults(memRows, perfRows);
+        }
+
+        // Display results
+        function displayResults(memRows, perfRows) {
+            const container = document.getElementById('results-container');
+
+            let html = '';
+
+            if (memRows.length > 0) {
+                html += '<div class="results-section results-animated">';
+                html += '<div class="glass-card">';
+                html += '<h2 class="results-title">LLM Memory Footprint</h2>';
+                html += createTable(memRows);
+                html += '<div class="export-section">';
+                html += '<button class="btn-secondary" onclick="exportCSV(\'memory\')">Download CSV</button>';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+
+            if (perfRows.length > 0) {
+                html += '<div class="results-section results-animated" id="performance-section">';
+                html += '<div class="glass-card">';
+                html += '<h2 class="results-title">LLM Performance & Capacity</h2>';
+                html += createTable(perfRows);
+                html += '<div class="export-section">';
+                html += '<button class="btn-secondary" onclick="exportCSV(\'performance\')">Download CSV</button>';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+
+            // Auto-scroll to performance section
+            setTimeout(() => {
+                const performanceSection = document.getElementById('performance-section');
+                if (performanceSection) {
+                    performanceSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }, 300);
+        }
+
+        // Create HTML table
+        function createTable(rows) {
+            if (!rows || rows.length === 0) {
+                return '<div style="text-align: center; color: var(--color-text-secondary); padding: 2rem;">No data to display</div>';
+            }
+
+            const headers = Object.keys(rows[0]);
+            let html = '<table class="results-table">';
+            html += '<thead><tr>';
+            headers.forEach(header => {
+                html += `<th>${escapeHtml(header)}</th>`;
+            });
+            html += '</tr></thead>';
+            html += '<tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                headers.forEach(header => {
+                    html += `<td>${escapeHtml(row[header] || '')}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Export to CSV
+        function exportCSV(type) {
+            // Re-calculate current results for export
+            calculateAndExport(type);
+        }
+
+        function calculateAndExport(type) {
+            const numGPU = parseInt(document.getElementById('num_gpu').value);
+            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
+            const responseTokens = parseInt(document.getElementById('response_tokens').value);
+            const concurrency = parseInt(document.getElementById('concurrency').value);
+            const weightBits = parseInt(document.getElementById('weight_precision').value);
+            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
+
+            const weightBytes = weightBits / 8.0;
+            const precision = new PrecisionSpec(weightBytes, kvBytes);
+            const calculator = new PerformanceCalculator(numGPU, precision);
+
+            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
+            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
+            const contextWindow = promptTokens + responseTokens;
+
+            let rows = [];
+
+            if (type === 'memory') {
+                models.forEach(model => {
+                    const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
+                    const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
+                    rows.push({
+                        "Model": model.name,
+                        "Input Size (tokens)": promptTokens,
+                        "Output Size (tokens)": responseTokens,
+                        "Concurrent Requests": concurrency,
+                        "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
+                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
+                    });
+                });
+            } else {
+                models.forEach(model => {
+                    gpus.forEach(gpu => {
+                        const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
+                        if (!fits) {
+                            rows.push({
+                                "Model": model.name,
+                                "GPU": gpu.name,
+                                "Input Size (tokens)": promptTokens,
+                                "Output Size (tokens)": responseTokens,
+                                "Concurrent Requests": concurrency,
+                                "Max # KV Cache Tokens": "OOM",
+                                "Prefill Time": "OOM",
+                                "TPOT (ms)": "OOM",
+                                "TTFT": "OOM",
+                                "E2E Latency": "OOM",
+                                "Output Tokens Throughput": "OOM"
+                            });
+                            return;
+                        }
+
+                        const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
+                        if (typeof metrics.prefill_time_per_token_ms === 'string') {
+                            rows.push({
+                                "Model": model.name,
+                                "GPU": gpu.name,
+                                "Input Size (tokens)": promptTokens,
+                                "Output Size (tokens)": responseTokens,
+                                "Concurrent Requests": concurrency,
+                                "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                                "Prefill Time": "OOM",
+                                "TPOT (ms)": "OOM",
+                                "TTFT": "OOM",
+                                "E2E Latency": "OOM",
+                                "Output Tokens Throughput": "OOM"
+                            });
+                            return;
+                        }
+
+                        rows.push({
+                            "Model": model.name,
+                            "GPU": gpu.name,
+                            "Input Size (tokens)": promptTokens,
+                            "Output Size (tokens)": responseTokens,
+                            "Concurrent Requests": concurrency,
+                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                            "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
+                            "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
+                            "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
+                            "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
+                            "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
+                                "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
+                        });
+                    });
+                });
+            }
+
+            downloadCSV(rows, `llm_${type}_${new Date().toISOString().slice(0, 10)}.csv`);
+        }
+
+        // Download CSV function
+        function downloadCSV(data, filename) {
+            if (!data || data.length === 0) return;
+
+            const headers = Object.keys(data[0]);
+            let csv = headers.join(',') + '\n';
+
+            data.forEach(row => {
+                const values = headers.map(header => {
+                    const value = row[header] || '';
+                    // Escape quotes and wrap in quotes if contains comma
+                    if (value.toString().includes(',') || value.toString().includes('"')) {
+                        return '"' + value.toString().replace(/"/g, '""') + '"';
+                    }
+                    return value;
+                });
+                csv += values.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
