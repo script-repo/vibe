@@ -62,7 +62,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;height:12px;wi
 }
 
 
-#popupInfo{position:absolute;background:rgba(255,255,255,0.5);color:#000;padding:15px 20px;border-radius:8px;font-family:'Arial',sans-serif;font-size:16px;font-weight:bold;line-height:1.4;box-shadow:0 4px 15px rgba(0,0,0,0.7),inset 0 0 0 3px #333;max-width:400px;z-index:15;opacity:0;transition:opacity 0.5s,transform 0.5s;pointer-events:none;display:none}
+#popupInfo{position:absolute;background:rgba(255,255,255,0.75);color:#000;padding:15px 20px;border-radius:8px;font-family:'Arial',sans-serif;font-size:16px;font-weight:bold;line-height:1.4;box-shadow:0 4px 15px rgba(0,0,0,0.7),inset 0 0 0 3px #333;max-width:400px;z-index:15;opacity:0;transition:opacity 0.75s,transform 0.5s;pointer-events:none;display:none}
 #popupInfo.show{opacity:0.5}
 #popupInfo::before{content:'💡';font-size:24px;margin-right:10px}
 #popupInfo.pos-bottom-left{bottom:20px;left:20px;transform:translate(-20px,20px) scale(0)}
@@ -481,13 +481,9 @@ function startPopups(){
 
 
 function animate(){if(!catInitialized&&!catOverlayPermanentlyHidden)startSteadyCycle();randomizeAttack();time=(Date.now()-startTime)/1000;if(time>=170){
-    if(!catOverlayPermanentlyHidden){
-        catOverlay.style.display='none';
-        catOverlayPermanentlyHidden=true;
-    }
     startTime=Date.now();
     time=0;
-}const sceneTime=time%10;const absoluteTime=time;if(!catOverlayPermanentlyHidden&&sceneTime<0.3&&absoluteTime-lastBlinkTime>2&&!isBlinking){isBlinking=true;blinkFrame=0;lastBlinkTime=absoluteTime;updateCatBlink()}const popup=document.getElementById('popupInfo');const startOverlay=document.getElementById('startOverlay');if(time>=160){if(popup&&popup.classList.contains('show')){popup.classList.remove('show');setTimeout(()=>{popup.style.display='none';},500);}if(startOverlay){startOverlay.style.display='none';}}if(time<10)drawPlasma(time*3);else if(time<20)drawXORPattern(time-10);else if(time<30)drawFractalVortex(time-20);else if(time<40)drawStarfieldWithStreaks(time);else if(time<50)drawRotoMetaballs(time-40);else if(time<60)drawPlasmaBalls(time-50);else if(time<70)drawTunnel(time-60);else if(time<80)drawMatrixRain(time-70);else if(time<90)drawFire(time-80);else if(time<100)drawKaleidoscope(time-90);else if(time<110)drawLiquidMorph(time-100);else if(time<120)drawParticleExplosion(time-110);else if(time<130)drawDNAHelix(time-120);else if(time<140)drawWormhole(time-130);else if(time<150)drawCrystalLattice(time-140);else if(time<160)drawPlasma((time-150)*5);else{drawCredits(time-160)}requestAnimationFrame(animate)}
+}const sceneTime=time%10;const absoluteTime=time;if(!catOverlayPermanentlyHidden&&sceneTime<0.3&&absoluteTime-lastBlinkTime>2&&!isBlinking){isBlinking=true;blinkFrame=0;lastBlinkTime=absoluteTime;updateCatBlink()}const popup=document.getElementById('popupInfo');const startOverlay=document.getElementById('startOverlay');if(time>=160){if(!catOverlayPermanentlyHidden){catOverlay.style.display='none';catOverlayPermanentlyHidden=true;}if(popup&&popup.classList.contains('show')){popup.classList.remove('show');setTimeout(()=>{popup.style.display='none';},500);}if(startOverlay){startOverlay.style.display='none';}}if(time<10)drawPlasma(time*3);else if(time<20)drawXORPattern(time-10);else if(time<30)drawFractalVortex(time-20);else if(time<40)drawStarfieldWithStreaks(time);else if(time<50)drawRotoMetaballs(time-40);else if(time<60)drawPlasmaBalls(time-50);else if(time<70)drawTunnel(time-60);else if(time<80)drawMatrixRain(time-70);else if(time<90)drawFire(time-80);else if(time<100)drawKaleidoscope(time-90);else if(time<110)drawLiquidMorph(time-100);else if(time<120)drawParticleExplosion(time-110);else if(time<130)drawDNAHelix(time-120);else if(time<140)drawWormhole(time-130);else if(time<150)drawCrystalLattice(time-140);else if(time<160)drawPlasma((time-150)*5);else{drawCredits(time-160)}requestAnimationFrame(animate)}
 ctx.fillStyle='#000';ctx.fillRect(0,0,800,600);
 
 </script></body></html>
