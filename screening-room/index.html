@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Box Shelf</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #a855f7, #00d4ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        .container {
+            perspective: 1200px;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        .shelf {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            transform-style: preserve-3d;
+            transform: rotateX(15deg);
+        }
+
+        .shelf-base {
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+            width: 90%;
+            height: 20px;
+            background: linear-gradient(90deg, rgba(0, 212, 255, 0.3), rgba(168, 85, 247, 0.3));
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            border-radius: 4px;
+            box-shadow:
+                0 0 20px rgba(0, 212, 255, 0.4),
+                0 0 40px rgba(168, 85, 247, 0.2),
+                inset 0 2px 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .shelf-base::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -50px;
+            width: 3px;
+            height: 50px;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.6), transparent);
+        }
+
+        .shelf-base::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: -50px;
+            width: 3px;
+            height: 50px;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.6), transparent);
+        }
+
+        .shelf-slots {
+            position: absolute;
+            bottom: 20px;
+            left: 5%;
+            width: 90%;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .slot {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            border: 2px dashed rgba(0, 212, 255, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .slot:hover {
+            border-color: rgba(0, 212, 255, 0.4);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .box {
+            position: absolute;
+            width: 80px;
+            height: 120px;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .box.dragging {
+            cursor: grabbing;
+            z-index: 1000;
+            animation: pulseGlow 0.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
+            }
+            50% {
+                filter: drop-shadow(0 0 30px currentColor) drop-shadow(0 0 60px currentColor);
+            }
+        }
+
+        .box:hover:not(.dragging) {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .box-face {
+            position: absolute;
+            border: 2px solid currentColor;
+            background: currentColor;
+            opacity: 0.3;
+        }
+
+        .box-front {
+            width: 80px;
+            height: 120px;
+            transform: translateZ(40px);
+        }
+
+        .box-back {
+            width: 80px;
+            height: 120px;
+            transform: translateZ(-40px) rotateY(180deg);
+        }
+
+        .box-left {
+            width: 80px;
+            height: 120px;
+            transform: rotateY(-90deg) translateZ(40px);
+        }
+
+        .box-right {
+            width: 80px;
+            height: 120px;
+            transform: rotateY(90deg) translateZ(40px);
+        }
+
+        .box-top {
+            width: 80px;
+            height: 80px;
+            transform: rotateX(90deg) translateZ(40px);
+        }
+
+        .box-bottom {
+            width: 80px;
+            height: 80px;
+            transform: rotateX(-90deg) translateZ(80px);
+        }
+
+        .controls {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(168, 85, 247, 0.3));
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(168, 85, 247, 0.5));
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            max-width: 600px;
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <h1>3D Box Shelf</h1>
+
+    <div class="container">
+        <div class="shelf">
+            <div class="shelf-base"></div>
+            <div class="shelf-slots" id="shelfSlots">
+                <div class="slot" data-slot="0"></div>
+                <div class="slot" data-slot="1"></div>
+                <div class="slot" data-slot="2"></div>
+                <div class="slot" data-slot="3"></div>
+                <div class="slot" data-slot="4"></div>
+                <div class="slot" data-slot="5"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="addRandomBox()">Add Box</button>
+        <button class="btn" onclick="clearBoxes()">Clear All</button>
+
+        <div class="info">
+            <p><strong>Instructions:</strong></p>
+            <p>• Click "Add Box" to place a new translucent 3D box on the shelf</p>
+            <p>• Drag boxes to move them between slots</p>
+            <p>• Other boxes will automatically shift to make room</p>
+            <p>• Watch the pulse glow effect while dragging!</p>
+        </div>
+    </div>
+
+    <script>
+        const colors = [
+            '#00d4ff', // cyan
+            '#a855f7', // purple
+            '#ff006e', // pink
+            '#00ff88', // green
+            '#ffbe0b', // yellow
+            '#fb5607', // orange
+            '#8338ec', // violet
+            '#3a86ff', // blue
+        ];
+
+        let boxes = [];
+        let draggedBox = null;
+        let dragOffset = { x: 0, y: 0 };
+        let originalSlot = null;
+
+        const shelfSlots = document.getElementById('shelfSlots');
+        const slots = Array.from(document.querySelectorAll('.slot'));
+
+        function createBox(color, slotIndex) {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.style.color = color;
+
+            // Create 6 faces for the 3D box
+            const faces = ['front', 'back', 'left', 'right', 'top', 'bottom'];
+            faces.forEach(face => {
+                const faceDiv = document.createElement('div');
+                faceDiv.className = `box-face box-${face}`;
+                box.appendChild(faceDiv);
+            });
+
+            const boxData = {
+                element: box,
+                color: color,
+                slot: slotIndex
+            };
+
+            boxes.push(boxData);
+
+            box.addEventListener('mousedown', startDrag);
+            box.addEventListener('touchstart', startDrag);
+
+            return box;
+        }
+
+        function addRandomBox() {
+            // Find first empty slot
+            const emptySlot = findEmptySlot();
+            if (emptySlot === -1) {
+                alert('Shelf is full! Clear some boxes first.');
+                return;
+            }
+
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const box = createBox(color, emptySlot);
+            slots[emptySlot].appendChild(box);
+        }
+
+        function findEmptySlot() {
+            for (let i = 0; i < slots.length; i++) {
+                if (!boxes.find(b => b.slot === i)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function clearBoxes() {
+            boxes.forEach(boxData => {
+                boxData.element.remove();
+            });
+            boxes = [];
+        }
+
+        function startDrag(e) {
+            e.preventDefault();
+
+            const box = e.currentTarget;
+            draggedBox = boxes.find(b => b.element === box);
+
+            if (!draggedBox) return;
+
+            originalSlot = draggedBox.slot;
+            box.classList.add('dragging');
+
+            const rect = box.getBoundingClientRect();
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            dragOffset.x = clientX - rect.left;
+            dragOffset.y = clientY - rect.top;
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function drag(e) {
+            if (!draggedBox) return;
+            e.preventDefault();
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            const box = draggedBox.element;
+            box.style.position = 'fixed';
+            box.style.left = (clientX - dragOffset.x) + 'px';
+            box.style.top = (clientY - dragOffset.y) + 'px';
+            box.style.zIndex = '1000';
+        }
+
+        function stopDrag(e) {
+            if (!draggedBox) return;
+
+            const clientX = e.clientX || e.changedTouches[0].clientX;
+            const clientY = e.clientY || e.changedTouches[0].clientY;
+
+            // Find which slot we're over
+            let targetSlot = -1;
+            slots.forEach((slot, index) => {
+                const rect = slot.getBoundingClientRect();
+                if (clientX >= rect.left && clientX <= rect.right &&
+                    clientY >= rect.top && clientY <= rect.bottom) {
+                    targetSlot = index;
+                }
+            });
+
+            if (targetSlot === -1) {
+                // Return to original slot
+                targetSlot = originalSlot;
+            }
+
+            // Move boxes out of the way
+            if (targetSlot !== originalSlot) {
+                rearrangeBoxes(originalSlot, targetSlot);
+            }
+
+            // Place the box in the target slot
+            draggedBox.slot = targetSlot;
+            draggedBox.element.classList.remove('dragging');
+            draggedBox.element.style.position = 'absolute';
+            draggedBox.element.style.left = '';
+            draggedBox.element.style.top = '';
+            draggedBox.element.style.zIndex = '';
+
+            slots[targetSlot].appendChild(draggedBox.element);
+
+            draggedBox = null;
+            originalSlot = null;
+
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        function rearrangeBoxes(fromSlot, toSlot) {
+            // Find box currently in target slot
+            const boxInTargetSlot = boxes.find(b => b.slot === toSlot && b !== draggedBox);
+
+            if (boxInTargetSlot) {
+                // Shift boxes to make room
+                if (fromSlot < toSlot) {
+                    // Moving right - shift boxes left
+                    boxes.forEach(box => {
+                        if (box !== draggedBox && box.slot > fromSlot && box.slot <= toSlot) {
+                            box.slot--;
+                            slots[box.slot].appendChild(box.element);
+                        }
+                    });
+                } else {
+                    // Moving left - shift boxes right
+                    boxes.forEach(box => {
+                        if (box !== draggedBox && box.slot >= toSlot && box.slot < fromSlot) {
+                            box.slot++;
+                            slots[box.slot].appendChild(box.element);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Initialize with a few boxes
+        window.addEventListener('load', () => {
+            addRandomBox();
+            addRandomBox();
+            addRandomBox();
+        });
+    </script>
+</body>
+</html>
