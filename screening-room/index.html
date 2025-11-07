@@ -25,13 +25,18 @@
 
         h1 {
             margin-bottom: 40px;
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, #00d4ff, #a855f7, #00d4ff);
-            background-size: 200% auto;
+            margin-left: 5%;
+            font-size: 4rem;
+            text-align: left;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #00d4ff, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6));
         }
 
         @keyframes gradientShift {
@@ -50,11 +55,11 @@
         }
 
         .tv-vcr {
-            position: absolute;
-            top: 0px;
-            right: 0;
-            width: 550px;
-            height: 400px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 450px;
+            height: 350px;
             z-index: 10;
         }
 
@@ -182,6 +187,7 @@
             background: currentColor;
             opacity: 0.15;
             box-shadow: inset 0 0 20px currentColor;
+            pointer-events: none;
         }
 
         .box-front {
@@ -466,13 +472,13 @@
             // Get the box position before adding dragging class
             const rect = box.getBoundingClientRect();
 
-            // Calculate offset from mouse to box center
-            dragOffset.x = rect.left + rect.width / 2 - clientX;
-            dragOffset.y = rect.top + rect.height / 2 - clientY;
+            // Calculate offset from click position to box top-left
+            dragOffset.x = rect.left - clientX;
+            dragOffset.y = rect.top - clientY;
 
             box.classList.add('dragging');
 
-            // Immediately position the box centered on the cursor
+            // Immediately position the box at the exact click location
             box.style.position = 'fixed';
             box.style.left = (clientX + dragOffset.x) + 'px';
             box.style.top = (clientY + dragOffset.y) + 'px';
