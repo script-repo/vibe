@@ -363,6 +363,94 @@
             display: none;
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            #header h1 {
+                font-size: 1.5em;
+                letter-spacing: 1px;
+            }
+
+            #search-panel {
+                top: 80px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+            }
+
+            #search-input {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            #info-panel {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                max-height: 40vh;
+                overflow-y: auto;
+            }
+
+            .glass-panel {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            #controls {
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                width: auto;
+            }
+
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            #weather-details {
+                font-size: 13px;
+            }
+
+            .weather-stat {
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #header {
+                top: 10px;
+            }
+
+            #header h1 {
+                font-size: 1.2em;
+            }
+
+            #search-panel {
+                top: 60px;
+            }
+
+            #search-input {
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .glass-panel {
+                padding: 12px;
+            }
+
+            #info-panel {
+                max-height: 35vh;
+                font-size: 12px;
+            }
+
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>

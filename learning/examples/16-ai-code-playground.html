@@ -589,6 +589,104 @@
             color: var(--text-primary);
             cursor: pointer;
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .header-controls {
+                gap: 0.5rem;
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .editor-panel {
+                min-height: 300px;
+                max-height: 50vh;
+            }
+
+            .output-panel {
+                min-height: 200px;
+            }
+
+            .side-panel {
+                position: fixed;
+                right: -100%;
+                top: 0;
+                bottom: 0;
+                width: 85%;
+                z-index: 1000;
+                transition: right 0.3s ease;
+                box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .side-panel.active {
+                right: 0;
+            }
+
+            .panel-header {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .example-card {
+                padding: 0.75rem;
+            }
+
+            .statusbar {
+                font-size: 0.75rem;
+                padding: 0.4rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .editor-panel {
+                min-height: 250px;
+            }
+
+            .output-panel {
+                min-height: 150px;
+            }
+
+            .side-panel {
+                width: 100%;
+            }
+
+            .language-select {
+                padding: 0.4rem;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>

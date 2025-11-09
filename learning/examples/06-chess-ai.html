@@ -503,6 +503,43 @@
                 this.blackTime = 600;
                 this.timerInterval = null;
 
+                // Text-to-speech smack talk
+                this.smackTalk = [
+                    "You call that a move?",
+                    "I've seen better moves from a beginner",
+                    "Are you even trying?",
+                    "My grandma plays better chess",
+                    "That was... cute",
+                    "Is that really your best move?",
+                    "I'm not even breaking a sweat",
+                    "You're making this too easy",
+                    "Did you mean to do that?",
+                    "Checkmate is coming for you",
+                    "I'm playing with my eyes closed",
+                    "This is almost too easy",
+                    "You sure about that move?",
+                    "Interesting choice... not a good one though",
+                    "I've calculated 20 moves ahead already"
+                ];
+
+                this.profanity = [
+                    "Oh crap, that wasn't good",
+                    "Damn it, you got me there",
+                    "Well, shit",
+                    "Son of a... nice move",
+                    "Damn, that hurt",
+                    "Oh hell no",
+                    "What the hell was I thinking?",
+                    "Screw this, you got lucky",
+                    "Damn you and that move",
+                    "Well fuck, I didn't see that coming",
+                    "Shit, that was my piece",
+                    "Goddammit, not my piece!",
+                    "Are you kidding me? Damn!",
+                    "Oh for fuck's sake",
+                    "That's some bullshit right there"
+                ];
+
                 this.pieceValues = {
                     'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000
                 };
@@ -1020,8 +1057,17 @@
                 if (move.enPassant) {
                     const captureRow = this.currentPlayer === 'white' ? toRow + 1 : toRow - 1;
                     moveData.captured = this.board[captureRow][toCol];
+                    const enPassantCapturedPiece = this.board[captureRow][toCol];
                     this.board[captureRow][toCol] = '.';
                     moveData.enPassant = true;
+
+                    // AI curses when losing pawn via en passant
+                    if (enPassantCapturedPiece !== '.' && enPassantCapturedPiece === enPassantCapturedPiece.toLowerCase() && this.currentPlayer === 'white') {
+                        setTimeout(() => {
+                            const randomCurse = this.profanity[Math.floor(Math.random() * this.profanity.length)];
+                            this.speak(randomCurse);
+                        }, 800);
+                    }
                 }
 
                 // Handle castling
@@ -1066,6 +1112,14 @@
                 if (capturedPiece !== '.') {
                     const capturedColor = capturedPiece === capturedPiece.toUpperCase() ? 'white' : 'black';
                     this.capturedPieces[capturedColor].push(capturedPiece);
+
+                    // AI curses when it loses a piece
+                    if (capturedColor === 'black' && this.currentPlayer === 'white') {
+                        setTimeout(() => {
+                            const randomCurse = this.profanity[Math.floor(Math.random() * this.profanity.length)];
+                            this.speak(randomCurse);
+                        }, 800);
+                    }
                 }
 
                 // Update half move clock
@@ -1312,6 +1366,32 @@
             }
 
             // AI Methods
+            speak(text) {
+                if ('speechSynthesis' in window) {
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 0.9;
+                    utterance.volume = 1.0;
+
+                    // Use a male voice if available
+                    const voices = window.speechSynthesis.getVoices();
+                    const maleVoice = voices.find(voice =>
+                        voice.name.includes('Male') ||
+                        voice.name.includes('male') ||
+                        voice.name.includes('David') ||
+                        voice.name.includes('Daniel')
+                    );
+                    if (maleVoice) {
+                        utterance.voice = maleVoice;
+                    }
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+
             makeAIMove() {
                 if (this.gameOver || this.currentPlayer !== 'black') return;
 
@@ -1322,6 +1402,12 @@
 
                     if (bestMove) {
                         this.makeMove(bestMove);
+
+                        // Smack talk after AI makes a move
+                        setTimeout(() => {
+                            const randomTalk = this.smackTalk[Math.floor(Math.random() * this.smackTalk.length)];
+                            this.speak(randomTalk);
+                        }, 500);
                     }
 
                     document.getElementById('aiThinking').classList.remove('active');
