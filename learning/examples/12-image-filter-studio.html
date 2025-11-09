@@ -560,6 +560,108 @@
         .color-btn:hover {
             background: var(--accent-1);
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr 60px;
+            }
+
+            .header {
+                padding: 0 10px;
+            }
+
+            .logo {
+                font-size: 18px;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 60px;
+                bottom: 60px;
+                width: 280px;
+                z-index: 200;
+                transition: left 0.3s ease;
+                box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .controls-panel {
+                position: fixed;
+                right: -100%;
+                top: 60px;
+                bottom: 60px;
+                width: 300px;
+                z-index: 200;
+                transition: right 0.3s ease;
+                box-shadow: -4px 0 10px rgba(0,0,0,0.3);
+            }
+
+            .controls-panel.active {
+                right: 0;
+            }
+
+            .canvas-area {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            .statusbar {
+                grid-column: 1;
+                font-size: 11px;
+                padding: 0 10px;
+            }
+
+            .filters-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+
+            .control-group {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 16px;
+            }
+
+            .header-actions {
+                gap: 5px;
+            }
+
+            .btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+
+            .sidebar,
+            .controls-panel {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .filters-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 8px;
+            }
+
+            .filter-btn {
+                padding: 6px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
