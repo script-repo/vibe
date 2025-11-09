@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Music Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --bg: #0f0f23;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.18);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #visualizer, #threeCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #threeCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        .controls {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 20px;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label.btn {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 12px;
+            min-width: 200px;
+        }
+
+        .slider-group label {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            border: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 15px 0 10px 0;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .theme-btn.active {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .theme-neon { background: linear-gradient(135deg, #ff006e, #8338ec, #3a86ff); }
+        .theme-ocean { background: linear-gradient(135deg, #06ffa5, #0099ff, #4d4dff); }
+        .theme-fire { background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00); }
+        .theme-purple { background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); }
+        .theme-matrix { background: linear-gradient(135deg, #00ff00, #00cc00, #009900); }
+        .theme-sunset { background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f); }
+
+        .upload-area {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 2px dashed var(--glass-border);
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-area.hidden {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .recording {
+            animation: pulse 1s infinite;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 20px; }
+            .control-group { gap: 8px; }
+            .btn { padding: 10px 16px; font-size: 12px; }
+            .slider-group { min-width: 150px; }
+        }
+
+        .particle-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .btn:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🎵 INTERACTIVE MUSIC VISUALIZER</h1>
+        </header>
+
+        <div class="canvas-container">
+            <canvas id="visualizer"></canvas>
+            <canvas id="threeCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+
+            <div class="progress-bar" onclick="seekAudio(event)">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="control-group">
+                <label for="audioFile" class="btn">
+                    📁 Load Audio
+                    <input type="file" id="audioFile" accept="audio/*">
+                </label>
+                <button class="btn" id="micBtn" onclick="toggleMicrophone()">🎤 Microphone</button>
+                <button class="btn" id="playBtn" onclick="togglePlayPause()">▶️ Play</button>
+                <button class="btn btn-small" onclick="takeScreenshot()">📸 Screenshot</button>
+            </div>
+
+            <div class="control-group mode-selector">
+                <button class="btn btn-small active" onclick="setVisualizerMode('bars')">Bars</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('circular')">Circular</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('waveform')">Waveform</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('particles')">Particles</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('spectrum3d')">3D Spectrum</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('radial')">Radial</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('dna')">DNA</button>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-group">
+                    <label>Volume</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="70" oninput="setVolume(this.value)">
+                </div>
+                <div class="slider-group">
+                    <label>Smoothing</label>
+                    <input type="range" id="smoothingSlider" min="0" max="100" value="80" oninput="setSmoothing(this.value)">
+                </div>
+                <div class="slider-group">
+                    <label>Sensitivity</label>
+                    <input type="range" id="sensitivitySlider" min="1" max="300" value="150" oninput="setSensitivity(this.value)">
+                </div>
+            </div>
+
+            <div class="theme-selector">
+                <div class="theme-btn theme-purple active" onclick="setTheme('purple')" title="Purple Dream"></div>
+                <div class="theme-btn theme-neon" onclick="setTheme('neon')" title="Neon Nights"></div>
+                <div class="theme-btn theme-ocean" onclick="setTheme('ocean')" title="Ocean Wave"></div>
+                <div class="theme-btn theme-fire" onclick="setTheme('fire')" title="Fire Storm"></div>
+                <div class="theme-btn theme-matrix" onclick="setTheme('matrix')" title="Matrix Code"></div>
+                <div class="theme-btn theme-sunset" onclick="setTheme('sunset')" title="Sunset Vibes"></div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-label">BPM:</span>
+                    <span class="stat-value" id="bpm">--</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Bass:</span>
+                    <span class="stat-value" id="bass">--</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Mid:</span>
+                    <span class="stat-value" id="mid">--</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Treble:</span>
+                    <span class="stat-value" id="treble">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎵</div>
+        <div class="upload-text">Drop your music here</div>
+        <div class="upload-subtext">or click to browse files</div>
+        <label for="audioFile" class="btn">Choose File</label>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Audio Context and Nodes
+        let audioContext, analyser, dataArray, bufferLength;
+        let audioSource, audio, microphone;
+        let gainNode;
+
+        // Canvas and rendering
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        // Three.js for 3D visualization
+        let threeScene, threeCamera, threeRenderer, spectrum3DMesh;
+        let threeInitialized = false;
+
+        // State
+        let visualizerMode = 'bars';
+        let isPlaying = false;
+        let isMicActive = false;
+        let animationId;
+        let sensitivity = 150;
+        let smoothingValue = 0.8;
+
+        // Theme colors
+        const themes = {
+            purple: ['#6366f1', '#8b5cf6', '#ec4899'],
+            neon: ['#ff006e', '#8338ec', '#3a86ff'],
+            ocean: ['#06ffa5', '#0099ff', '#4d4dff'],
+            fire: ['#ff0000', '#ff7f00', '#ffff00'],
+            matrix: ['#00ff00', '#00cc00', '#009900'],
+            sunset: ['#ff6b6b', '#ffd93d', '#6bcf7f']
+        };
+        let currentTheme = 'purple';
+
+        // Particles for particle mode
+        let particles = [];
+
+        // BPM Detection
+        let peaks = [];
+        let lastPeakTime = 0;
+        let bpmHistory = [];
+
+        // Background animation
+        let bgParticles = [];
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // File input listener
+            document.getElementById('audioFile').addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            const uploadArea = document.getElementById('uploadArea');
+            uploadArea.addEventListener('click', () => {
+                if (event.target === uploadArea || event.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
+                    document.getElementById('audioFile').click();
+                }
+            });
+
+            document.body.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('hidden');
+            });
+
+            document.body.addEventListener('dragleave', (e) => {
+                if (e.target === document.body) {
+                    uploadArea.classList.add('hidden');
+                }
+            });
+
+            document.body.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('hidden');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('audio/')) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // Initialize background particles
+            for (let i = 0; i < 50; i++) {
+                bgParticles.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2 + 1
+                });
+            }
+
+            animateBackground();
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+
+            if (threeRenderer) {
+                threeRenderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+                threeCamera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+                threeCamera.updateProjectionMatrix();
+            }
+        }
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = smoothingValue;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.7;
+
+                analyser.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (isMicActive) {
+                toggleMicrophone();
+            }
+
+            const url = URL.createObjectURL(file);
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+
+            audio = new Audio(url);
+            audio.volume = 0.7;
+
+            audio.addEventListener('loadedmetadata', () => {
+                document.getElementById('duration').textContent = formatTime(audio.duration);
+            });
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', () => {
+                isPlaying = false;
+                document.getElementById('playBtn').textContent = '▶️ Play';
+            });
+
+            initAudioContext();
+
+            if (audioSource) {
+                audioSource.disconnect();
+            }
+
+            audioSource = audioContext.createMediaElementSource(audio);
+            audioSource.connect(analyser);
+
+            document.getElementById('uploadArea').classList.add('hidden');
+
+            audio.play();
+            isPlaying = true;
+            document.getElementById('playBtn').textContent = '⏸️ Pause';
+
+            if (!animationId) {
+                animate();
+            }
+        }
+
+        async function toggleMicrophone() {
+            if (!isMicActive) {
+                try {
+                    initAudioContext();
+
+                    if (audio) {
+                        audio.pause();
+                        isPlaying = false;
+                        document.getElementById('playBtn').textContent = '▶️ Play';
+                    }
+
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    microphone = audioContext.createMediaStreamSource(stream);
+
+                    if (audioSource) {
+                        audioSource.disconnect();
+                    }
+
+                    microphone.connect(analyser);
+                    isMicActive = true;
+                    document.getElementById('micBtn').classList.add('active');
+                    document.getElementById('uploadArea').classList.add('hidden');
+
+                    if (!animationId) {
+                        animate();
+                    }
+                } catch (err) {
+                    alert('Microphone access denied: ' + err.message);
+                }
+            } else {
+                if (microphone) {
+                    microphone.disconnect();
+                    microphone.mediaStream.getTracks().forEach(track => track.stop());
+                    microphone = null;
+                }
+                isMicActive = false;
+                document.getElementById('micBtn').classList.remove('active');
+            }
+        }
+
+        function togglePlayPause() {
+            if (!audio) return;
+
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('playBtn').textContent = '▶️ Play';
+            } else {
+                audio.play();
+                document.getElementById('playBtn').textContent = '⏸️ Pause';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function setVolume(value) {
+            if (gainNode) {
+                gainNode.gain.value = value / 100;
+            }
+            if (audio) {
+                audio.volume = value / 100;
+            }
+        }
+
+        function setSmoothing(value) {
+            smoothingValue = value / 100;
+            if (analyser) {
+                analyser.smoothingTimeConstant = smoothingValue;
+            }
+        }
+
+        function setSensitivity(value) {
+            sensitivity = value;
+        }
+
+        function seekAudio(event) {
+            if (!audio) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percentage = x / rect.width;
+            audio.currentTime = percentage * audio.duration;
+        }
+
+        function updateProgress() {
+            if (!audio) return;
+            const percentage = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function setVisualizerMode(mode) {
+            visualizerMode = mode;
+
+            // Update active button
+            document.querySelectorAll('.mode-selector .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Show/hide canvases
+            if (mode === 'spectrum3d') {
+                if (!threeInitialized) {
+                    initThreeJS();
+                }
+                canvas.style.display = 'none';
+                document.getElementById('threeCanvas').style.display = 'block';
+            } else {
+                canvas.style.display = 'block';
+                document.getElementById('threeCanvas').style.display = 'none';
+            }
+
+            // Initialize particles if needed
+            if (mode === 'particles' && particles.length === 0) {
+                for (let i = 0; i < 200; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: 0,
+                        vy: 0,
+                        size: Math.random() * 3 + 1,
+                        life: 1
+                    });
+                }
+            }
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('threeCanvas');
+
+            threeScene = new THREE.Scene();
+            threeCamera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            threeCamera.position.z = 50;
+
+            threeRenderer = new THREE.WebGLRenderer({ canvas: container, alpha: true, antialias: true });
+            threeRenderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+
+            // Create spectrum mesh
+            const geometry = new THREE.PlaneGeometry(100, 50, 128, 1);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x6366f1,
+                wireframe: true,
+                side: THREE.DoubleSide
+            });
+
+            spectrum3DMesh = new THREE.Mesh(geometry, material);
+            spectrum3DMesh.rotation.x = -Math.PI / 4;
+            threeScene.add(spectrum3DMesh);
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            threeScene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0x6366f1, 1, 100);
+            pointLight.position.set(0, 20, 20);
+            threeScene.add(pointLight);
+
+            threeInitialized = true;
+        }
+
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+
+            if (!analyser) return;
+
+            analyser.getByteFrequencyData(dataArray);
+
+            // Calculate frequency bands
+            const bass = getAverageFrequency(0, 50);
+            const mid = getAverageFrequency(50, 200);
+            const treble = getAverageFrequency(200, bufferLength);
+
+            // Update stats
+            document.getElementById('bass').textContent = bass;
+            document.getElementById('mid').textContent = mid;
+            document.getElementById('treble').textContent = treble;
+
+            // BPM detection
+            detectBPM(bass);
+
+            // Render visualization
+            switch (visualizerMode) {
+                case 'bars':
+                    drawBars();
+                    break;
+                case 'circular':
+                    drawCircular();
+                    break;
+                case 'waveform':
+                    drawWaveform();
+                    break;
+                case 'particles':
+                    drawParticles();
+                    break;
+                case 'spectrum3d':
+                    draw3DSpectrum();
+                    break;
+                case 'radial':
+                    drawRadial();
+                    break;
+                case 'dna':
+                    drawDNA();
+                    break;
+            }
+        }
+
+        function getAverageFrequency(start, end) {
+            let sum = 0;
+            for (let i = start; i < end && i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            return Math.round(sum / (end - start));
+        }
+
+        function detectBPM(bass) {
+            const threshold = 200;
+            const now = Date.now();
+
+            if (bass > threshold && now - lastPeakTime > 200) {
+                peaks.push(now);
+                lastPeakTime = now;
+
+                // Keep only last 20 peaks
+                if (peaks.length > 20) {
+                    peaks.shift();
+                }
+
+                if (peaks.length >= 4) {
+                    const intervals = [];
+                    for (let i = 1; i < peaks.length; i++) {
+                        intervals.push(peaks[i] - peaks[i - 1]);
+                    }
+                    const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                    const bpm = Math.round(60000 / avgInterval);
+
+                    if (bpm > 60 && bpm < 200) {
+                        bpmHistory.push(bpm);
+                        if (bpmHistory.length > 10) bpmHistory.shift();
+
+                        const avgBPM = Math.round(bpmHistory.reduce((a, b) => a + b) / bpmHistory.length);
+                        document.getElementById('bpm').textContent = avgBPM;
+                    }
+                }
+            }
+        }
+
+        function drawBars() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const barCount = 128;
+            const barWidth = width / barCount;
+            const colors = themes[currentTheme];
+
+            for (let i = 0; i < barCount; i++) {
+                const index = Math.floor(i * dataArray.length / barCount);
+                const barHeight = (dataArray[index] / 255) * height * (sensitivity / 100);
+
+                const colorIndex = Math.floor((i / barCount) * colors.length);
+                const nextColorIndex = (colorIndex + 1) % colors.length;
+                const t = (i / barCount) * colors.length - colorIndex;
+
+                const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+                gradient.addColorStop(0, colors[colorIndex]);
+                gradient.addColorStop(1, colors[nextColorIndex]);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
+
+                // Add glow effect
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = colors[colorIndex];
+                ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawCircular() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 3;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const barCount = 180;
+            const colors = themes[currentTheme];
+
+            for (let i = 0; i < barCount; i++) {
+                const index = Math.floor(i * dataArray.length / barCount);
+                const barHeight = (dataArray[index] / 255) * radius * (sensitivity / 150);
+
+                const angle = (i / barCount) * Math.PI * 2;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+                const colorIndex = Math.floor((i / barCount) * colors.length);
+
+                ctx.strokeStyle = colors[colorIndex];
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colors[colorIndex];
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+
+            ctx.shadowBlur = 0;
+
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.3, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 0.3);
+            gradient.addColorStop(0, colors[0] + '80');
+            gradient.addColorStop(1, colors[1] + '20');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function drawWaveform() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const timeData = new Uint8Array(analyser.fftSize);
+            analyser.getByteTimeDomainData(timeData);
+
+            const colors = themes[currentTheme];
+
+            // Draw multiple waveforms with different offsets for depth
+            for (let layer = 0; layer < 3; layer++) {
+                const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                colors.forEach((color, i) => {
+                    gradient.addColorStop(i / (colors.length - 1), color);
+                });
+
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 3 - layer;
+                ctx.shadowBlur = 20 - layer * 5;
+                ctx.shadowColor = colors[layer % colors.length];
+
+                ctx.beginPath();
+                const sliceWidth = width / timeData.length;
+                let x = 0;
+
+                for (let i = 0; i < timeData.length; i++) {
+                    const v = timeData[i] / 128.0;
+                    const y = (v * height / 2) * (sensitivity / 100) + height / 2 + (layer * 20);
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                ctx.stroke();
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawParticles() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            const mid = getAverageFrequency(50, 200);
+
+            // Update and draw particles
+            particles.forEach((particle, index) => {
+                // Apply forces based on frequency
+                const angle = Math.random() * Math.PI * 2;
+                const force = (bass / 255) * (sensitivity / 50);
+
+                particle.vx += Math.cos(angle) * force;
+                particle.vy += Math.sin(angle) * force;
+
+                // Apply friction
+                particle.vx *= 0.95;
+                particle.vy *= 0.95;
+
+                // Update position
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                // Bounce off walls
+                if (particle.x < 0 || particle.x > width) {
+                    particle.vx *= -1;
+                    particle.x = Math.max(0, Math.min(width, particle.x));
+                }
+                if (particle.y < 0 || particle.y > height) {
+                    particle.vy *= -1;
+                    particle.y = Math.max(0, Math.min(height, particle.y));
+                }
+
+                // Draw particle
+                const colorIndex = Math.floor((index / particles.length) * colors.length);
+                ctx.fillStyle = colors[colorIndex];
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colors[colorIndex];
+
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size * (1 + mid / 255), 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+
+            // Draw connections between nearby particles
+            ctx.strokeStyle = colors[0] + '40';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function draw3DSpectrum() {
+            if (!threeInitialized || !spectrum3DMesh) return;
+
+            const positions = spectrum3DMesh.geometry.attributes.position.array;
+            const colors = themes[currentTheme];
+
+            // Update vertex positions based on frequency data
+            for (let i = 0; i < 129; i++) {
+                const index = Math.floor(i * dataArray.length / 129);
+                const height = (dataArray[index] / 255) * 20 * (sensitivity / 150);
+
+                // Update Y position for each vertex
+                positions[i * 3 + 1] = height;
+                positions[(i + 129) * 3 + 1] = height * 0.5;
+            }
+
+            spectrum3DMesh.geometry.attributes.position.needsUpdate = true;
+
+            // Rotate mesh
+            spectrum3DMesh.rotation.z += 0.005;
+
+            // Update color based on frequency
+            const bass = getAverageFrequency(0, 50);
+            const hue = (bass / 255) * 360;
+            spectrum3DMesh.material.color.setHSL(hue / 360, 1, 0.5);
+
+            threeRenderer.render(threeScene, threeCamera);
+        }
+
+        function drawRadial() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const rings = 8;
+            const barsPerRing = 60;
+
+            for (let ring = 0; ring < rings; ring++) {
+                const radius = (ring + 1) * (Math.min(width, height) / (rings * 2.5));
+
+                for (let i = 0; i < barsPerRing; i++) {
+                    const index = Math.floor((ring * barsPerRing + i) * dataArray.length / (rings * barsPerRing));
+                    const value = dataArray[index] / 255;
+
+                    const angle = (i / barsPerRing) * Math.PI * 2;
+                    const barLength = value * radius * 0.5 * (sensitivity / 150);
+
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + barLength);
+                    const y2 = centerY + Math.sin(angle) * (radius + barLength);
+
+                    const colorIndex = ring % colors.length;
+
+                    const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                    gradient.addColorStop(0, colors[colorIndex] + '80');
+                    gradient.addColorStop(1, colors[(colorIndex + 1) % colors.length]);
+
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 2;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = colors[colorIndex];
+
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawDNA() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const time = Date.now() / 1000;
+            const helixCount = 2;
+            const pointsPerHelix = 100;
+
+            for (let helix = 0; helix < helixCount; helix++) {
+                const points = [];
+
+                for (let i = 0; i < pointsPerHelix; i++) {
+                    const t = i / pointsPerHelix;
+                    const index = Math.floor(t * dataArray.length);
+                    const amplitude = (dataArray[index] / 255) * (width / 4) * (sensitivity / 150);
+
+                    const angle = t * Math.PI * 4 + time + (helix * Math.PI);
+                    const x = width / 2 + Math.cos(angle) * amplitude;
+                    const y = t * height;
+
+                    points.push({ x, y });
+                }
+
+                // Draw helix
+                const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                colors.forEach((color, i) => {
+                    gradient.addColorStop(i / (colors.length - 1), color);
+                });
+
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colors[helix % colors.length];
+
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+
+                ctx.stroke();
+
+                // Draw points
+                points.forEach((point, i) => {
+                    ctx.fillStyle = colors[Math.floor((i / points.length) * colors.length)];
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function animateBackground() {
+            bgCtx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            bgParticles.forEach(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                if (particle.x < 0 || particle.x > bgCanvas.width) particle.vx *= -1;
+                if (particle.y < 0 || particle.y > bgCanvas.height) particle.vy *= -1;
+
+                bgCtx.fillStyle = 'rgba(99, 102, 241, 0.5)';
+                bgCtx.beginPath();
+                bgCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                bgCtx.fill();
+            });
+
+            requestAnimationFrame(animateBackground);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function takeScreenshot() {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `visualizer-${Date.now()}.png`;
+            link.href = dataURL;
+            link.click();
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

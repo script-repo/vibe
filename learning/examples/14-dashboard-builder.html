@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Dashboard Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(148, 163, 184, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+            --grid-size: 20px;
+        }
+
+        body.light-mode {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(15, 23, 42, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .toolbar h1 {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            width: 2rem;
+            height: 2rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .widget-template {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--glass-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            cursor: grab;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .widget-template:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .widget-template:active {
+            cursor: grabbing;
+        }
+
+        .widget-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .widget-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Dashboard Tabs */
+        .dashboard-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+        }
+
+        .dashboard-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .dashboard-tab:hover:not(.active) {
+            background: var(--bg-tertiary);
+        }
+
+        .tab-close {
+            margin-left: 0.5rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: auto;
+        }
+
+        .canvas {
+            position: relative;
+            min-height: 100%;
+            min-width: 100%;
+            background-image:
+                linear-gradient(var(--glass-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+            background-size: var(--grid-size) var(--grid-size);
+        }
+
+        /* Widget */
+        .widget {
+            position: absolute;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        .widget:hover {
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .widget.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .widget-header {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .widget-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .widget-action {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .widget-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .widget-content {
+            padding: 1rem;
+            height: calc(100% - 50px);
+            overflow: auto;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, var(--primary) 50%);
+            border-bottom-right-radius: 1rem;
+        }
+
+        /* Chart Canvas */
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        /* KPI Card */
+        .kpi-card {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .kpi-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--danger);
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .data-table th {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Gauge */
+        .gauge-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .progress-bar-bg {
+            height: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            height: 100%;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Config Panel */
+        .config-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+            z-index: 200;
+            transition: right 0.3s;
+            overflow-y: auto;
+        }
+
+        .config-panel.open {
+            right: 0;
+        }
+
+        .config-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .config-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .config-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .config-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .config-input {
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .config-select {
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        /* Color Theme Grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .theme-option {
+            aspect-ratio: 1;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-option.active {
+            border-color: white;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 150;
+                transition: left 0.3s;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .widget-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .config-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Sparkline */
+        .sparkline-container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text-muted);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* File input styling */
+        .file-input-label {
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-input-label:hover {
+            background: var(--primary-dark);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <h1>📊 Smart Dashboard Builder</h1>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn" onclick="app.addDashboard()">
+                    ➕ New Dashboard
+                </button>
+                <button class="btn" onclick="app.importCSV()">
+                    📄 Import CSV
+                </button>
+                <button class="btn" onclick="app.exportImage()">
+                    📷 Export Image
+                </button>
+                <button class="btn" onclick="app.saveDashboard()">
+                    💾 Save
+                </button>
+                <button class="btn" onclick="app.loadDashboard()">
+                    📂 Load
+                </button>
+                <button class="btn" onclick="app.exportJSON()">
+                    📤 Share
+                </button>
+                <button class="btn btn-icon" onclick="app.toggleTheme()" title="Toggle Theme">
+                    🌓
+                </button>
+                <button class="btn" onclick="app.toggleAutoRefresh()">
+                    <span id="autoRefreshBtn">⏸️ Pause</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3>📈 Chart Widgets</h3>
+                    <div class="widget-grid">
+                        <div class="widget-template" draggable="true" data-type="line">
+                            <div class="widget-icon">📈</div>
+                            <div class="widget-name">Line Chart</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="bar">
+                            <div class="widget-icon">📊</div>
+                            <div class="widget-name">Bar Chart</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="pie">
+                            <div class="widget-icon">🥧</div>
+                            <div class="widget-name">Pie Chart</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="area">
+                            <div class="widget-icon">⛰️</div>
+                            <div class="widget-name">Area Chart</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>📋 Data Widgets</h3>
+                    <div class="widget-grid">
+                        <div class="widget-template" draggable="true" data-type="kpi">
+                            <div class="widget-icon">💎</div>
+                            <div class="widget-name">KPI Card</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="table">
+                            <div class="widget-icon">📋</div>
+                            <div class="widget-name">Data Table</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="gauge">
+                            <div class="widget-icon">⏲️</div>
+                            <div class="widget-name">Gauge</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="progress">
+                            <div class="widget-icon">📶</div>
+                            <div class="widget-name">Progress Bar</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="stats">
+                            <div class="widget-icon">🔢</div>
+                            <div class="widget-name">Stats Grid</div>
+                        </div>
+                        <div class="widget-template" draggable="true" data-type="sparkline">
+                            <div class="widget-icon">📉</div>
+                            <div class="widget-name">Sparkline</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>🎨 Color Themes</h3>
+                    <div class="theme-grid">
+                        <div class="theme-option active" onclick="app.setTheme('default')"
+                             style="background: linear-gradient(135deg, #6366f1, #8b5cf6)"></div>
+                        <div class="theme-option" onclick="app.setTheme('ocean')"
+                             style="background: linear-gradient(135deg, #0ea5e9, #06b6d4)"></div>
+                        <div class="theme-option" onclick="app.setTheme('sunset')"
+                             style="background: linear-gradient(135deg, #f59e0b, #ef4444)"></div>
+                        <div class="theme-option" onclick="app.setTheme('forest')"
+                             style="background: linear-gradient(135deg, #10b981, #059669)"></div>
+                        <div class="theme-option" onclick="app.setTheme('rose')"
+                             style="background: linear-gradient(135deg, #ec4899, #db2777)"></div>
+                        <div class="theme-option" onclick="app.setTheme('violet')"
+                             style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"></div>
+                        <div class="theme-option" onclick="app.setTheme('amber')"
+                             style="background: linear-gradient(135deg, #f59e0b, #d97706)"></div>
+                        <div class="theme-option" onclick="app.setTheme('emerald')"
+                             style="background: linear-gradient(135deg, #10b981, #14b8a6)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Canvas -->
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div class="dashboard-tabs" id="dashboardTabs"></div>
+                <div class="canvas-area">
+                    <div class="canvas" id="canvas"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Panel -->
+    <div class="config-panel" id="configPanel">
+        <div class="config-header">
+            <h2>⚙️ Widget Configuration</h2>
+            <button class="btn btn-icon" onclick="app.closeConfig()">✕</button>
+        </div>
+        <div class="config-body" id="configBody">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📤 Export Dashboard</h2>
+                <button class="btn btn-icon" onclick="app.closeModal('exportModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Copy this JSON to share or save your dashboard:
+                </p>
+                <textarea id="exportJSON" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="app.copyToClipboard()">📋 Copy</button>
+                <button class="btn" onclick="app.closeModal('exportModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📥 Import Dashboard</h2>
+                <button class="btn btn-icon" onclick="app.closeModal('importModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Paste the dashboard JSON:
+                </p>
+                <textarea id="importJSON"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="app.importFromJSON()">📥 Import</button>
+                <button class="btn" onclick="app.closeModal('importModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="csvModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📄 Import CSV Data</h2>
+                <button class="btn btn-icon" onclick="app.closeModal('csvModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Select a CSV file to import data:
+                </p>
+                <label class="file-input-label">
+                    Choose CSV File
+                    <input type="file" accept=".csv" onchange="app.handleCSVFile(event)">
+                </label>
+                <div id="csvPreview" style="margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="app.closeModal('csvModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Main Application
+        const app = {
+            dashboards: [],
+            currentDashboardIndex: 0,
+            widgets: [],
+            selectedWidget: null,
+            draggedWidget: null,
+            dragOffset: { x: 0, y: 0 },
+            resizingWidget: null,
+            autoRefresh: true,
+            refreshInterval: null,
+            currentTheme: 'default',
+            csvData: null,
+            gridSize: 20,
+
+            themes: {
+                default: { primary: '#6366f1', secondary: '#8b5cf6' },
+                ocean: { primary: '#0ea5e9', secondary: '#06b6d4' },
+                sunset: { primary: '#f59e0b', secondary: '#ef4444' },
+                forest: { primary: '#10b981', secondary: '#059669' },
+                rose: { primary: '#ec4899', secondary: '#db2777' },
+                violet: { primary: '#8b5cf6', secondary: '#7c3aed' },
+                amber: { primary: '#f59e0b', secondary: '#d97706' },
+                emerald: { primary: '#10b981', secondary: '#14b8a6' }
+            },
+
+            init() {
+                this.addDashboard();
+                this.setupDragDrop();
+                this.startAutoRefresh();
+                this.loadFromLocalStorage();
+            },
+
+            addDashboard() {
+                const dashboard = {
+                    id: Date.now(),
+                    name: `Dashboard ${this.dashboards.length + 1}`,
+                    widgets: []
+                };
+                this.dashboards.push(dashboard);
+                this.currentDashboardIndex = this.dashboards.length - 1;
+                this.renderTabs();
+                this.renderCanvas();
+            },
+
+            switchDashboard(index) {
+                this.currentDashboardIndex = index;
+                this.renderCanvas();
+                this.renderTabs();
+            },
+
+            removeDashboard(index) {
+                if (this.dashboards.length === 1) {
+                    alert('Cannot remove the last dashboard');
+                    return;
+                }
+                this.dashboards.splice(index, 1);
+                if (this.currentDashboardIndex >= this.dashboards.length) {
+                    this.currentDashboardIndex = this.dashboards.length - 1;
+                }
+                this.renderTabs();
+                this.renderCanvas();
+            },
+
+            renderTabs() {
+                const container = document.getElementById('dashboardTabs');
+                container.innerHTML = this.dashboards.map((dashboard, index) => `
+                    <div class="dashboard-tab ${index === this.currentDashboardIndex ? 'active' : ''}"
+                         onclick="app.switchDashboard(${index})">
+                        ${dashboard.name}
+                        ${this.dashboards.length > 1 ? `
+                            <span class="tab-close" onclick="event.stopPropagation(); app.removeDashboard(${index})">✕</span>
+                        ` : ''}
+                    </div>
+                `).join('') + `
+                    <div class="dashboard-tab" onclick="app.addDashboard()">+ Add</div>
+                `;
+            },
+
+            setupDragDrop() {
+                const templates = document.querySelectorAll('.widget-template');
+                templates.forEach(template => {
+                    template.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('widgetType', template.dataset.type);
+                    });
+                });
+
+                const canvas = document.getElementById('canvas');
+                canvas.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                canvas.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const type = e.dataTransfer.getData('widgetType');
+                    if (type) {
+                        const rect = canvas.getBoundingClientRect();
+                        const x = Math.round((e.clientX - rect.left) / this.gridSize) * this.gridSize;
+                        const y = Math.round((e.clientY - rect.top + canvas.parentElement.scrollTop) / this.gridSize) * this.gridSize;
+                        this.addWidget(type, x, y);
+                    }
+                });
+            },
+
+            addWidget(type, x, y) {
+                const widget = {
+                    id: Date.now(),
+                    type: type,
+                    x: x,
+                    y: y,
+                    width: 400,
+                    height: 300,
+                    title: this.getWidgetTitle(type),
+                    config: this.getDefaultConfig(type)
+                };
+
+                this.getCurrentDashboard().widgets.push(widget);
+                this.renderCanvas();
+                this.saveToLocalStorage();
+            },
+
+            getWidgetTitle(type) {
+                const titles = {
+                    line: 'Line Chart',
+                    bar: 'Bar Chart',
+                    pie: 'Pie Chart',
+                    area: 'Area Chart',
+                    kpi: 'KPI Card',
+                    table: 'Data Table',
+                    gauge: 'Gauge',
+                    progress: 'Progress Bar',
+                    stats: 'Stats Grid',
+                    sparkline: 'Sparkline'
+                };
+                return titles[type] || 'Widget';
+            },
+
+            getDefaultConfig(type) {
+                return {
+                    dataSource: 'random',
+                    refreshRate: 2000,
+                    chartType: type,
+                    colors: [this.themes[this.currentTheme].primary, this.themes[this.currentTheme].secondary]
+                };
+            },
+
+            getCurrentDashboard() {
+                return this.dashboards[this.currentDashboardIndex];
+            },
+
+            renderCanvas() {
+                const canvas = document.getElementById('canvas');
+                const widgets = this.getCurrentDashboard().widgets;
+
+                canvas.innerHTML = '';
+
+                if (widgets.length === 0) {
+                    canvas.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <h2>Start Building Your Dashboard</h2>
+                            <p>Drag widgets from the sidebar to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                widgets.forEach(widget => {
+                    const widgetEl = this.createWidgetElement(widget);
+                    canvas.appendChild(widgetEl);
+                    this.renderWidgetContent(widget);
+                });
+            },
+
+            createWidgetElement(widget) {
+                const div = document.createElement('div');
+                div.className = 'widget fade-in';
+                div.id = `widget-${widget.id}`;
+                div.style.left = widget.x + 'px';
+                div.style.top = widget.y + 'px';
+                div.style.width = widget.width + 'px';
+                div.style.height = widget.height + 'px';
+
+                div.innerHTML = `
+                    <div class="widget-header" data-id="${widget.id}">
+                        <div class="widget-title">${widget.title}</div>
+                        <div class="widget-actions">
+                            <button class="widget-action" onclick="app.configureWidget(${widget.id})" title="Configure">⚙️</button>
+                            <button class="widget-action" onclick="app.refreshWidget(${widget.id})" title="Refresh">🔄</button>
+                            <button class="widget-action" onclick="app.removeWidget(${widget.id})" title="Remove">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="widget-content" id="content-${widget.id}"></div>
+                    <div class="resize-handle" data-id="${widget.id}"></div>
+                `;
+
+                // Make draggable
+                const header = div.querySelector('.widget-header');
+                header.addEventListener('mousedown', (e) => this.startDrag(e, widget));
+
+                // Make resizable
+                const resizeHandle = div.querySelector('.resize-handle');
+                resizeHandle.addEventListener('mousedown', (e) => this.startResize(e, widget));
+
+                // Select on click
+                div.addEventListener('click', (e) => {
+                    if (!e.target.closest('.widget-action')) {
+                        this.selectWidget(widget.id);
+                    }
+                });
+
+                return div;
+            },
+
+            startDrag(e, widget) {
+                if (e.target.closest('.widget-action')) return;
+
+                this.draggedWidget = widget;
+                const widgetEl = document.getElementById(`widget-${widget.id}`);
+                const rect = widgetEl.getBoundingClientRect();
+                const canvas = document.getElementById('canvas').getBoundingClientRect();
+
+                this.dragOffset = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top + document.querySelector('.canvas-area').scrollTop
+                };
+
+                document.addEventListener('mousemove', this.onDrag);
+                document.addEventListener('mouseup', this.stopDrag);
+            },
+
+            onDrag(e) {
+                if (!app.draggedWidget) return;
+
+                const canvas = document.getElementById('canvas');
+                const rect = canvas.getBoundingClientRect();
+                const scrollTop = canvas.parentElement.scrollTop;
+
+                let x = e.clientX - rect.left - app.dragOffset.x;
+                let y = e.clientY - rect.top + scrollTop - app.dragOffset.y;
+
+                // Snap to grid
+                x = Math.round(x / app.gridSize) * app.gridSize;
+                y = Math.round(y / app.gridSize) * app.gridSize;
+
+                // Bounds checking
+                x = Math.max(0, x);
+                y = Math.max(0, y);
+
+                app.draggedWidget.x = x;
+                app.draggedWidget.y = y;
+
+                const widgetEl = document.getElementById(`widget-${app.draggedWidget.id}`);
+                widgetEl.style.left = x + 'px';
+                widgetEl.style.top = y + 'px';
+            },
+
+            stopDrag() {
+                app.draggedWidget = null;
+                document.removeEventListener('mousemove', app.onDrag);
+                document.removeEventListener('mouseup', app.stopDrag);
+                app.saveToLocalStorage();
+            },
+
+            startResize(e, widget) {
+                e.stopPropagation();
+                this.resizingWidget = widget;
+                document.addEventListener('mousemove', this.onResize);
+                document.addEventListener('mouseup', this.stopResize);
+            },
+
+            onResize(e) {
+                if (!app.resizingWidget) return;
+
+                const widgetEl = document.getElementById(`widget-${app.resizingWidget.id}`);
+                const rect = widgetEl.getBoundingClientRect();
+
+                let width = e.clientX - rect.left;
+                let height = e.clientY - rect.top;
+
+                // Snap to grid
+                width = Math.round(width / app.gridSize) * app.gridSize;
+                height = Math.round(height / app.gridSize) * app.gridSize;
+
+                // Min size
+                width = Math.max(200, width);
+                height = Math.max(150, height);
+
+                app.resizingWidget.width = width;
+                app.resizingWidget.height = height;
+
+                widgetEl.style.width = width + 'px';
+                widgetEl.style.height = height + 'px';
+
+                app.renderWidgetContent(app.resizingWidget);
+            },
+
+            stopResize() {
+                if (app.resizingWidget) {
+                    app.renderWidgetContent(app.resizingWidget);
+                }
+                app.resizingWidget = null;
+                document.removeEventListener('mousemove', app.onResize);
+                document.removeEventListener('mouseup', app.stopResize);
+                app.saveToLocalStorage();
+            },
+
+            selectWidget(id) {
+                document.querySelectorAll('.widget').forEach(el => el.classList.remove('selected'));
+                const widget = document.getElementById(`widget-${id}`);
+                if (widget) {
+                    widget.classList.add('selected');
+                    this.selectedWidget = id;
+                }
+            },
+
+            removeWidget(id) {
+                const dashboard = this.getCurrentDashboard();
+                dashboard.widgets = dashboard.widgets.filter(w => w.id !== id);
+                this.renderCanvas();
+                this.saveToLocalStorage();
+            },
+
+            configureWidget(id) {
+                const widget = this.getCurrentDashboard().widgets.find(w => w.id === id);
+                if (!widget) return;
+
+                const panel = document.getElementById('configPanel');
+                const body = document.getElementById('configBody');
+
+                const chartTypes = ['line', 'bar', 'pie', 'area'];
+                const isChart = chartTypes.includes(widget.type);
+
+                body.innerHTML = `
+                    <div class="config-group">
+                        <label class="config-label">Widget Title</label>
+                        <input type="text" class="config-input" value="${widget.title}"
+                               onchange="app.updateWidgetConfig(${id}, 'title', this.value)">
+                    </div>
+
+                    ${isChart ? `
+                        <div class="config-group">
+                            <label class="config-label">Chart Type</label>
+                            <select class="config-select" onchange="app.updateWidgetConfig(${id}, 'chartType', this.value)">
+                                <option value="line" ${widget.config.chartType === 'line' ? 'selected' : ''}>Line Chart</option>
+                                <option value="bar" ${widget.config.chartType === 'bar' ? 'selected' : ''}>Bar Chart</option>
+                                <option value="pie" ${widget.config.chartType === 'pie' ? 'selected' : ''}>Pie Chart</option>
+                                <option value="area" ${widget.config.chartType === 'area' ? 'selected' : ''}>Area Chart</option>
+                            </select>
+                        </div>
+                    ` : ''}
+
+                    <div class="config-group">
+                        <label class="config-label">Data Source</label>
+                        <select class="config-select" onchange="app.updateWidgetConfig(${id}, 'dataSource', this.value)">
+                            <option value="random" ${widget.config.dataSource === 'random' ? 'selected' : ''}>Random Data</option>
+                            <option value="csv" ${widget.config.dataSource === 'csv' ? 'selected' : ''}>CSV Data</option>
+                        </select>
+                    </div>
+
+                    <div class="config-group">
+                        <label class="config-label">Refresh Rate (ms)</label>
+                        <input type="number" class="config-input" value="${widget.config.refreshRate}"
+                               onchange="app.updateWidgetConfig(${id}, 'refreshRate', parseInt(this.value))">
+                    </div>
+
+                    <button class="btn" style="width: 100%; background: var(--primary);"
+                            onclick="app.closeConfig()">Done</button>
+                `;
+
+                panel.classList.add('open');
+            },
+
+            updateWidgetConfig(id, key, value) {
+                const widget = this.getCurrentDashboard().widgets.find(w => w.id === id);
+                if (!widget) return;
+
+                if (key === 'title') {
+                    widget.title = value;
+                    const titleEl = document.querySelector(`#widget-${id} .widget-title`);
+                    if (titleEl) titleEl.textContent = value;
+                } else if (key === 'chartType') {
+                    widget.config.chartType = value;
+                    widget.type = value;
+                    this.renderWidgetContent(widget);
+                } else {
+                    widget.config[key] = value;
+                }
+
+                this.saveToLocalStorage();
+            },
+
+            closeConfig() {
+                document.getElementById('configPanel').classList.remove('open');
+            },
+
+            renderWidgetContent(widget) {
+                const container = document.getElementById(`content-${widget.id}`);
+                if (!container) return;
+
+                const type = widget.config.chartType || widget.type;
+
+                switch (type) {
+                    case 'line':
+                    case 'bar':
+                    case 'area':
+                        this.renderChart(widget, container, type);
+                        break;
+                    case 'pie':
+                        this.renderPieChart(widget, container);
+                        break;
+                    case 'kpi':
+                        this.renderKPI(widget, container);
+                        break;
+                    case 'table':
+                        this.renderTable(widget, container);
+                        break;
+                    case 'gauge':
+                        this.renderGauge(widget, container);
+                        break;
+                    case 'progress':
+                        this.renderProgress(widget, container);
+                        break;
+                    case 'stats':
+                        this.renderStats(widget, container);
+                        break;
+                    case 'sparkline':
+                        this.renderSparkline(widget, container);
+                        break;
+                }
+            },
+
+            generateData(widget, count = 12) {
+                if (widget.config.dataSource === 'csv' && this.csvData) {
+                    return this.csvData.slice(0, count);
+                }
+
+                return Array.from({ length: count }, (_, i) => ({
+                    label: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i] || `Item ${i + 1}`,
+                    value: Math.random() * 100 + 20
+                }));
+            },
+
+            renderChart(widget, container, type) {
+                container.innerHTML = '<canvas class="chart-canvas"></canvas>';
+                const canvas = container.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas size
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+
+                const data = this.generateData(widget);
+                const padding = 40;
+                const chartWidth = canvas.width - padding * 2;
+                const chartHeight = canvas.height - padding * 2;
+
+                const maxValue = Math.max(...data.map(d => d.value));
+                const barWidth = chartWidth / data.length;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Grid lines
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--glass-border');
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= 5; i++) {
+                    const y = padding + (chartHeight / 5) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(canvas.width - padding, y);
+                    ctx.stroke();
+                }
+
+                // Draw chart based on type
+                if (type === 'line' || type === 'area') {
+                    ctx.beginPath();
+                    data.forEach((d, i) => {
+                        const x = padding + (i * chartWidth) / (data.length - 1);
+                        const y = padding + chartHeight - (d.value / maxValue) * chartHeight;
+
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+
+                    if (type === 'area') {
+                        ctx.lineTo(padding + chartWidth, padding + chartHeight);
+                        ctx.lineTo(padding, padding + chartHeight);
+                        ctx.closePath();
+
+                        const gradient = ctx.createLinearGradient(0, padding, 0, padding + chartHeight);
+                        gradient.addColorStop(0, this.themes[this.currentTheme].primary + '80');
+                        gradient.addColorStop(1, this.themes[this.currentTheme].primary + '10');
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                    }
+
+                    ctx.strokeStyle = this.themes[this.currentTheme].primary;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Points
+                    data.forEach((d, i) => {
+                        const x = padding + (i * chartWidth) / (data.length - 1);
+                        const y = padding + chartHeight - (d.value / maxValue) * chartHeight;
+
+                        ctx.beginPath();
+                        ctx.arc(x, y, 4, 0, Math.PI * 2);
+                        ctx.fillStyle = this.themes[this.currentTheme].secondary;
+                        ctx.fill();
+                    });
+                } else if (type === 'bar') {
+                    data.forEach((d, i) => {
+                        const x = padding + i * barWidth + barWidth * 0.1;
+                        const height = (d.value / maxValue) * chartHeight;
+                        const y = padding + chartHeight - height;
+                        const width = barWidth * 0.8;
+
+                        const gradient = ctx.createLinearGradient(0, y, 0, y + height);
+                        gradient.addColorStop(0, this.themes[this.currentTheme].primary);
+                        gradient.addColorStop(1, this.themes[this.currentTheme].secondary);
+
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(x, y, width, height);
+                    });
+                }
+
+                // Labels
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                data.forEach((d, i) => {
+                    const x = padding + (i * chartWidth) / (data.length - 1);
+                    ctx.fillText(d.label, x, canvas.height - 20);
+                });
+
+                // Store for tooltip
+                canvas.chartData = data;
+                canvas.chartBounds = { padding, chartWidth, chartHeight, maxValue };
+
+                // Tooltip
+                canvas.onmousemove = (e) => this.showChartTooltip(e, canvas, type);
+                canvas.onmouseout = () => this.hideTooltip();
+            },
+
+            renderPieChart(widget, container) {
+                container.innerHTML = '<canvas class="chart-canvas"></canvas>';
+                const canvas = container.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+
+                const data = this.generateData(widget, 6);
+                const total = data.reduce((sum, d) => sum + d.value, 0);
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = Math.min(centerX, centerY) - 40;
+
+                let currentAngle = -Math.PI / 2;
+
+                const colors = [
+                    this.themes[this.currentTheme].primary,
+                    this.themes[this.currentTheme].secondary,
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#8b5cf6'
+                ];
+
+                data.forEach((d, i) => {
+                    const sliceAngle = (d.value / total) * Math.PI * 2;
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                    ctx.closePath();
+
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fill();
+
+                    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--bg-secondary');
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Label
+                    const labelAngle = currentAngle + sliceAngle / 2;
+                    const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
+                    const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
+
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(d.label, labelX, labelY);
+
+                    currentAngle += sliceAngle;
+                });
+            },
+
+            renderKPI(widget, container) {
+                const value = Math.floor(Math.random() * 10000);
+                const change = (Math.random() * 20 - 10).toFixed(1);
+                const isPositive = change > 0;
+
+                container.innerHTML = `
+                    <div class="kpi-card">
+                        <div class="kpi-value">${value.toLocaleString()}</div>
+                        <div class="kpi-label">Total Revenue</div>
+                        <div class="kpi-change ${isPositive ? 'positive' : 'negative'}">
+                            ${isPositive ? '↗' : '↘'} ${Math.abs(change)}% vs last month
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderTable(widget, container) {
+                const data = this.generateData(widget, 8);
+
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(d => `
+                                <tr>
+                                    <td>${d.label}</td>
+                                    <td>${d.value.toFixed(2)}</td>
+                                    <td>${d.value > 60 ? '✅' : '⚠️'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            },
+
+            renderGauge(widget, container) {
+                container.innerHTML = '<canvas class="chart-canvas"></canvas>';
+                const canvas = container.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+
+                const value = Math.random() * 100;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2 + 20;
+                const radius = Math.min(centerX, centerY) - 20;
+
+                // Background arc
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, Math.PI, Math.PI * 2);
+                ctx.lineWidth = 20;
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--bg-tertiary');
+                ctx.stroke();
+
+                // Value arc
+                const endAngle = Math.PI + (value / 100) * Math.PI;
+                const gradient = ctx.createLinearGradient(centerX - radius, 0, centerX + radius, 0);
+                gradient.addColorStop(0, this.themes[this.currentTheme].primary);
+                gradient.addColorStop(1, this.themes[this.currentTheme].secondary);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+                ctx.lineWidth = 20;
+                ctx.strokeStyle = gradient;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary');
+                ctx.font = 'bold 36px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(Math.floor(value) + '%', centerX, centerY);
+            },
+
+            renderProgress(widget, container) {
+                const items = [
+                    { label: 'Task Completion', value: Math.random() * 100 },
+                    { label: 'Project Progress', value: Math.random() * 100 },
+                    { label: 'Goal Achievement', value: Math.random() * 100 }
+                ];
+
+                container.innerHTML = items.map(item => `
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>${item.label}</span>
+                            <span>${Math.floor(item.value)}%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${item.value}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderStats(widget, container) {
+                const stats = [
+                    { label: 'Users', value: Math.floor(Math.random() * 10000) },
+                    { label: 'Revenue', value: '$' + Math.floor(Math.random() * 100000).toLocaleString() },
+                    { label: 'Orders', value: Math.floor(Math.random() * 1000) },
+                    { label: 'Growth', value: (Math.random() * 50).toFixed(1) + '%' }
+                ];
+
+                container.innerHTML = `
+                    <div class="stats-grid">
+                        ${stats.map(stat => `
+                            <div class="stat-item">
+                                <div class="stat-value">${stat.value}</div>
+                                <div class="stat-label">${stat.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            renderSparkline(widget, container) {
+                container.innerHTML = '<canvas class="chart-canvas"></canvas>';
+                const canvas = container.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+
+                const data = Array.from({ length: 30 }, () => Math.random() * 100);
+                const maxValue = Math.max(...data);
+                const minValue = Math.min(...data);
+                const range = maxValue - minValue;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Area
+                ctx.beginPath();
+                data.forEach((value, i) => {
+                    const x = (i / (data.length - 1)) * canvas.width;
+                    const y = canvas.height - ((value - minValue) / range) * canvas.height;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, this.themes[this.currentTheme].primary + '60');
+                gradient.addColorStop(1, this.themes[this.currentTheme].primary + '10');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Line
+                ctx.beginPath();
+                data.forEach((value, i) => {
+                    const x = (i / (data.length - 1)) * canvas.width;
+                    const y = canvas.height - ((value - minValue) / range) * canvas.height;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+
+                ctx.strokeStyle = this.themes[this.currentTheme].primary;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            },
+
+            showChartTooltip(e, canvas, type) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const { padding, chartWidth, chartHeight, maxValue } = canvas.chartBounds;
+                const data = canvas.chartData;
+
+                if (x < padding || x > canvas.width - padding || y < padding || y > canvas.height - padding) {
+                    this.hideTooltip();
+                    return;
+                }
+
+                let closestIndex = Math.round(((x - padding) / chartWidth) * (data.length - 1));
+                closestIndex = Math.max(0, Math.min(data.length - 1, closestIndex));
+
+                const point = data[closestIndex];
+                const tooltip = document.getElementById('tooltip');
+                tooltip.innerHTML = `${point.label}: ${point.value.toFixed(2)}`;
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY + 10 + 'px';
+                tooltip.classList.add('show');
+            },
+
+            hideTooltip() {
+                document.getElementById('tooltip').classList.remove('show');
+            },
+
+            refreshWidget(id) {
+                const widget = this.getCurrentDashboard().widgets.find(w => w.id === id);
+                if (widget) {
+                    this.renderWidgetContent(widget);
+                }
+            },
+
+            startAutoRefresh() {
+                this.refreshInterval = setInterval(() => {
+                    if (this.autoRefresh) {
+                        this.getCurrentDashboard().widgets.forEach(widget => {
+                            this.renderWidgetContent(widget);
+                        });
+                    }
+                }, 3000);
+            },
+
+            toggleAutoRefresh() {
+                this.autoRefresh = !this.autoRefresh;
+                const btn = document.getElementById('autoRefreshBtn');
+                btn.textContent = this.autoRefresh ? '⏸️ Pause' : '▶️ Resume';
+            },
+
+            setTheme(themeName) {
+                this.currentTheme = themeName;
+                const theme = this.themes[themeName];
+
+                document.documentElement.style.setProperty('--primary', theme.primary);
+                document.documentElement.style.setProperty('--secondary', theme.secondary);
+
+                // Update active theme indicator
+                document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+                event.target.classList.add('active');
+
+                // Re-render all widgets
+                this.getCurrentDashboard().widgets.forEach(widget => {
+                    widget.config.colors = [theme.primary, theme.secondary];
+                    this.renderWidgetContent(widget);
+                });
+            },
+
+            toggleTheme() {
+                document.body.classList.toggle('light-mode');
+                this.saveToLocalStorage();
+            },
+
+            saveDashboard() {
+                const data = JSON.stringify(this.dashboards, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dashboard.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            loadDashboard() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                this.dashboards = JSON.parse(e.target.result);
+                                this.currentDashboardIndex = 0;
+                                this.renderTabs();
+                                this.renderCanvas();
+                            } catch (err) {
+                                alert('Invalid dashboard file');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            },
+
+            exportJSON() {
+                const data = JSON.stringify(this.dashboards, null, 2);
+                document.getElementById('exportJSON').value = data;
+                document.getElementById('exportModal').classList.add('show');
+            },
+
+            exportImage() {
+                const canvas = document.getElementById('canvas');
+
+                // Create a larger canvas for export
+                const exportCanvas = document.createElement('canvas');
+                const ctx = exportCanvas.getContext('2d');
+
+                // Get canvas dimensions
+                const widgets = this.getCurrentDashboard().widgets;
+                const maxX = Math.max(...widgets.map(w => w.x + w.width), 1200);
+                const maxY = Math.max(...widgets.map(w => w.y + w.height), 800);
+
+                exportCanvas.width = maxX;
+                exportCanvas.height = maxY;
+
+                // Fill background
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-primary');
+                ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+                // Draw each widget's canvas
+                widgets.forEach(widget => {
+                    const widgetCanvas = document.querySelector(`#content-${widget.id} canvas`);
+                    if (widgetCanvas) {
+                        ctx.drawImage(widgetCanvas, widget.x, widget.y, widget.width, widget.height - 50);
+                    }
+                });
+
+                // Download
+                exportCanvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'dashboard.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            },
+
+            importFromJSON() {
+                try {
+                    const json = document.getElementById('importJSON').value;
+                    this.dashboards = JSON.parse(json);
+                    this.currentDashboardIndex = 0;
+                    this.renderTabs();
+                    this.renderCanvas();
+                    this.closeModal('importModal');
+                } catch (err) {
+                    alert('Invalid JSON data');
+                }
+            },
+
+            importCSV() {
+                document.getElementById('csvModal').classList.add('show');
+            },
+
+            handleCSVFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    const lines = text.split('\n');
+                    const headers = lines[0].split(',');
+
+                    this.csvData = lines.slice(1).filter(line => line.trim()).map(line => {
+                        const values = line.split(',');
+                        return {
+                            label: values[0]?.trim() || '',
+                            value: parseFloat(values[1]) || 0
+                        };
+                    });
+
+                    document.getElementById('csvPreview').innerHTML = `
+                        <p style="color: var(--success);">✅ Loaded ${this.csvData.length} rows</p>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            Data is now available for widgets. Select "CSV Data" in widget configuration.
+                        </p>
+                    `;
+                };
+                reader.readAsText(file);
+            },
+
+            copyToClipboard() {
+                const text = document.getElementById('exportJSON').value;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Copied to clipboard!');
+                });
+            },
+
+            closeModal(id) {
+                document.getElementById(id).classList.remove('show');
+            },
+
+            saveToLocalStorage() {
+                localStorage.setItem('dashboards', JSON.stringify(this.dashboards));
+                localStorage.setItem('currentTheme', this.currentTheme);
+                localStorage.setItem('lightMode', document.body.classList.contains('light-mode'));
+            },
+
+            loadFromLocalStorage() {
+                const saved = localStorage.getItem('dashboards');
+                if (saved) {
+                    try {
+                        this.dashboards = JSON.parse(saved);
+                        this.renderTabs();
+                        this.renderCanvas();
+                    } catch (err) {
+                        console.error('Failed to load saved dashboards');
+                    }
+                }
+
+                const theme = localStorage.getItem('currentTheme');
+                if (theme && this.themes[theme]) {
+                    this.setTheme(theme);
+                }
+
+                const lightMode = localStorage.getItem('lightMode');
+                if (lightMode === 'true') {
+                    document.body.classList.add('light-mode');
+                }
+            }
+        };
+
+        // Initialize app
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+
+        // Save on unload
+        window.addEventListener('beforeunload', () => {
+            app.saveToLocalStorage();
+        });
+    </script>
+</body>
+</html>
