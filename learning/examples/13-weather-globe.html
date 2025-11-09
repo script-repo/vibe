@@ -531,24 +531,97 @@
         }
 
         function generateWeatherData(city) {
-            const weatherTypes = ['clear', 'clouds', 'rain', 'snow', 'thunderstorm', 'drizzle'];
-            const temp = Math.round(-20 + Math.random() * 60);
-            const weatherType = temp < -5 ? 'snow' :
-                               temp > 35 ? 'clear' :
-                               weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+            // Current date for seasonal variations
+            const now = new Date();
+            const monthIndex = now.getMonth(); // 0-11
+            const isNorthernSummer = monthIndex >= 5 && monthIndex <= 8; // Jun-Sep
+            const isNorthernWinter = monthIndex >= 11 || monthIndex <= 2; // Dec-Mar
+
+            // Latitude-based climate zones
+            const lat = city.lat;
+            const absLat = Math.abs(lat);
+            const isNorthern = lat > 0;
+
+            // Determine climate zone and base temperature
+            let baseTemp, tempVariation, weatherProbs;
+
+            // Arctic/Antarctic (>66°)
+            if (absLat > 66) {
+                const isSummer = (isNorthern && isNorthernSummer) || (!isNorthern && isNorthernWinter);
+                baseTemp = isSummer ? 5 : -25;
+                tempVariation = 10;
+                weatherProbs = { clear: 0.3, clouds: 0.3, snow: 0.3, mist: 0.1 };
+            }
+            // Cold temperate (45-66°)
+            else if (absLat > 45) {
+                const isSummer = (isNorthern && isNorthernSummer) || (!isNorthern && isNorthernWinter);
+                baseTemp = isSummer ? 22 : 0;
+                tempVariation = 8;
+                weatherProbs = isSummer
+                    ? { clear: 0.35, clouds: 0.35, rain: 0.2, drizzle: 0.1 }
+                    : { clear: 0.25, clouds: 0.3, snow: 0.25, rain: 0.15, mist: 0.05 };
+            }
+            // Temperate (30-45°)
+            else if (absLat > 30) {
+                const isSummer = (isNorthern && isNorthernSummer) || (!isNorthern && isNorthernWinter);
+                baseTemp = isSummer ? 28 : 8;
+                tempVariation = 6;
+                weatherProbs = isSummer
+                    ? { clear: 0.4, clouds: 0.3, rain: 0.15, thunderstorm: 0.1, drizzle: 0.05 }
+                    : { clear: 0.3, clouds: 0.35, rain: 0.25, drizzle: 0.1 };
+            }
+            // Subtropical (15-30°)
+            else if (absLat > 15) {
+                baseTemp = 25;
+                tempVariation = 5;
+                weatherProbs = { clear: 0.5, clouds: 0.25, rain: 0.15, thunderstorm: 0.08, drizzle: 0.02 };
+            }
+            // Tropical (0-15°)
+            else {
+                baseTemp = 28;
+                tempVariation = 3;
+                weatherProbs = { clear: 0.35, clouds: 0.25, rain: 0.25, thunderstorm: 0.15 };
+            }
+
+            // Add random variation
+            const temp = Math.round(baseTemp + (Math.random() - 0.5) * tempVariation);
+
+            // Select weather based on probabilities
+            const rand = Math.random();
+            let cumulative = 0;
+            let weatherType = 'clear';
+            for (const [type, prob] of Object.entries(weatherProbs)) {
+                cumulative += prob;
+                if (rand <= cumulative) {
+                    weatherType = type;
+                    break;
+                }
+            }
+
+            // Adjust humidity based on climate
+            const baseHumidity = absLat < 15 ? 75 : absLat < 30 ? 60 : absLat < 45 ? 55 : 50;
+            const humidity = Math.round(baseHumidity + (Math.random() - 0.5) * 20);
+
+            // Wind speed varies by latitude (higher at temperate zones)
+            const baseWind = absLat > 40 && absLat < 60 ? 20 : 10;
+            const windSpeed = Math.round(baseWind + Math.random() * 15);
 
             return {
                 temp: temp,
-                feelsLike: temp + Math.round((Math.random() - 0.5) * 5),
-                humidity: Math.round(30 + Math.random() * 60),
-                pressure: Math.round(980 + Math.random() * 50),
-                windSpeed: Math.round(Math.random() * 30),
+                feelsLike: temp + Math.round((Math.random() - 0.5) * 4),
+                humidity: Math.max(20, Math.min(100, humidity)),
+                pressure: Math.round(1000 + (Math.random() - 0.5) * 30),
+                windSpeed: windSpeed,
                 windDirection: Math.round(Math.random() * 360),
-                cloudiness: Math.round(Math.random() * 100),
-                visibility: Math.round(5 + Math.random() * 10),
+                cloudiness: weatherType.includes('cloud') || weatherType.includes('rain')
+                    ? Math.round(60 + Math.random() * 40)
+                    : Math.round(Math.random() * 30),
+                visibility: weatherType === 'mist' || weatherType === 'fog'
+                    ? Math.round(2 + Math.random() * 3)
+                    : Math.round(8 + Math.random() * 7),
                 weather: weatherType,
                 description: getWeatherDescription(weatherType),
-                forecast: generateForecast()
+                forecast: generateForecast(city.lat)
             };
         }
 
@@ -566,14 +639,45 @@
             return descriptions[type] || 'Clear';
         }
 
-        function generateForecast() {
+        function generateForecast(lat) {
             const days = ['Tomorrow', 'Day 3', 'Day 4', 'Day 5'];
-            return days.map(day => ({
-                day: day,
-                high: Math.round(-10 + Math.random() * 50),
-                low: Math.round(-20 + Math.random() * 40),
-                weather: ['clear', 'clouds', 'rain'][Math.floor(Math.random() * 3)]
-            }));
+            const absLat = Math.abs(lat);
+
+            // Base temperature range by latitude
+            let baseHigh, baseLow, weatherOptions;
+
+            if (absLat > 66) {
+                // Arctic/Antarctic
+                baseHigh = 0; baseLow = -15;
+                weatherOptions = ['clear', 'clouds', 'snow'];
+            } else if (absLat > 45) {
+                // Cold temperate
+                baseHigh = 18; baseLow = 5;
+                weatherOptions = ['clear', 'clouds', 'rain', 'snow'];
+            } else if (absLat > 30) {
+                // Temperate
+                baseHigh = 25; baseLow = 12;
+                weatherOptions = ['clear', 'clouds', 'rain'];
+            } else if (absLat > 15) {
+                // Subtropical
+                baseHigh = 28; baseLow = 18;
+                weatherOptions = ['clear', 'clouds', 'rain'];
+            } else {
+                // Tropical
+                baseHigh = 31; baseLow = 23;
+                weatherOptions = ['clear', 'clouds', 'rain', 'thunderstorm'];
+            }
+
+            return days.map(day => {
+                const high = Math.round(baseHigh + (Math.random() - 0.5) * 6);
+                const low = Math.round(baseLow + (Math.random() - 0.5) * 6);
+                return {
+                    day: day,
+                    high: high,
+                    low: Math.min(low, high - 3), // Ensure low is less than high
+                    weather: weatherOptions[Math.floor(Math.random() * weatherOptions.length)]
+                };
+            });
         }
 
         // ====================================
@@ -585,17 +689,28 @@
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
-            // Ocean background
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#1a4d7a');
-            gradient.addColorStop(0.5, '#2563eb');
-            gradient.addColorStop(1, '#1a4d7a');
-            ctx.fillStyle = gradient;
+            // Helper function to convert lat/lon to canvas coordinates
+            function latLonToCanvas(lat, lon) {
+                // Longitude: -180 to 180 maps to 0 to 1024
+                const x = ((lon + 180) / 360) * canvas.width;
+                // Latitude: 90 to -90 maps to 0 to 512
+                const y = ((90 - lat) / 180) * canvas.height;
+                return { x, y };
+            }
+
+            // Ocean background with depth gradient
+            const oceanGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            oceanGradient.addColorStop(0, '#1a5f8a');
+            oceanGradient.addColorStop(0.3, '#1e6ba8');
+            oceanGradient.addColorStop(0.5, '#2777c4');
+            oceanGradient.addColorStop(0.7, '#1e6ba8');
+            oceanGradient.addColorStop(1, '#1a5f8a');
+            ctx.fillStyle = oceanGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Add noise to ocean
-            for (let i = 0; i < 5000; i++) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.1})`;
+            // Add ocean texture
+            for (let i = 0; i < 8000; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.08})`;
                 ctx.fillRect(
                     Math.random() * canvas.width,
                     Math.random() * canvas.height,
@@ -603,48 +718,195 @@
                 );
             }
 
-            // Simple landmasses (procedural)
-            ctx.fillStyle = '#2d5016';
+            // Land color
+            ctx.fillStyle = '#2d5a1e';
+            ctx.strokeStyle = '#2d5a1e';
 
-            // North America
+            // NORTH AMERICA
             ctx.beginPath();
-            ctx.ellipse(150, 150, 80, 60, 0, 0, Math.PI * 2);
+            ctx.ellipse(200, 130, 90, 70, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Canada extension
+            ctx.beginPath();
+            ctx.ellipse(140, 90, 70, 50, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            // Alaska
+            ctx.beginPath();
+            ctx.ellipse(50, 100, 35, 30, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Eastern seaboard
+            ctx.beginPath();
+            ctx.ellipse(260, 150, 30, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Mexico/Central America
+            ctx.beginPath();
+            ctx.moveTo(180, 200);
+            ctx.quadraticCurveTo(200, 220, 210, 240);
+            ctx.quadraticCurveTo(200, 245, 195, 250);
+            ctx.quadraticCurveTo(185, 240, 175, 230);
+            ctx.quadraticCurveTo(170, 210, 180, 200);
             ctx.fill();
 
-            // South America
+            // SOUTH AMERICA
             ctx.beginPath();
-            ctx.ellipse(200, 350, 50, 80, 0.3, 0, Math.PI * 2);
+            ctx.ellipse(250, 310, 55, 95, 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            // Northern extension (Venezuela/Colombia)
+            ctx.beginPath();
+            ctx.ellipse(260, 250, 30, 25, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Europe
+            // EUROPE
             ctx.beginPath();
-            ctx.ellipse(500, 130, 60, 40, 0, 0, Math.PI * 2);
+            ctx.ellipse(512, 120, 70, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Scandinavia
+            ctx.beginPath();
+            ctx.ellipse(530, 85, 35, 50, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Iberian Peninsula
+            ctx.beginPath();
+            ctx.ellipse(485, 150, 20, 25, -0.3, 0, Math.PI * 2);
             ctx.fill();
 
-            // Africa
+            // AFRICA
             ctx.beginPath();
-            ctx.ellipse(530, 280, 70, 90, 0, 0, Math.PI * 2);
+            ctx.ellipse(535, 240, 75, 70, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Northern Africa extension
+            ctx.beginPath();
+            ctx.ellipse(520, 190, 65, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Southern Africa
+            ctx.beginPath();
+            ctx.ellipse(545, 340, 45, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Madagascar
+            ctx.beginPath();
+            ctx.ellipse(600, 330, 12, 25, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Asia
+            // ASIA
+            // Western Asia / Middle East
             ctx.beginPath();
-            ctx.ellipse(750, 150, 120, 80, 0, 0, Math.PI * 2);
+            ctx.ellipse(590, 160, 50, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Central Asia
+            ctx.beginPath();
+            ctx.ellipse(670, 145, 70, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Siberia
+            ctx.beginPath();
+            ctx.ellipse(730, 100, 110, 55, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Eastern Siberia
+            ctx.beginPath();
+            ctx.ellipse(850, 95, 80, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // India
+            ctx.beginPath();
+            ctx.ellipse(680, 210, 35, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Southeast Asia
+            ctx.beginPath();
+            ctx.ellipse(750, 220, 45, 35, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // China
+            ctx.beginPath();
+            ctx.ellipse(780, 165, 70, 55, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Japan
+            ctx.beginPath();
+            ctx.ellipse(870, 160, 15, 40, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            // Korean Peninsula
+            ctx.beginPath();
+            ctx.ellipse(835, 155, 10, 20, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Australia
+            // SOUTHEAST ASIAN ISLANDS
+            // Indonesia/Malaysia
             ctx.beginPath();
-            ctx.ellipse(850, 380, 50, 35, 0, 0, Math.PI * 2);
+            ctx.ellipse(770, 260, 55, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(820, 270, 40, 15, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            // Philippines
+            ctx.beginPath();
+            ctx.ellipse(815, 225, 15, 30, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Add texture to land
-            ctx.fillStyle = '#3d6b1f';
-            for (let i = 0; i < 3000; i++) {
+            // AUSTRALIA
+            ctx.beginPath();
+            ctx.ellipse(850, 345, 60, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Tasmania
+            ctx.beginPath();
+            ctx.ellipse(870, 390, 12, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // NEW ZEALAND
+            ctx.beginPath();
+            ctx.ellipse(950, 380, 10, 30, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // ANTARCTICA (bottom edge)
+            ctx.fillRect(0, 450, canvas.width, 62);
+
+            // GREENLAND
+            ctx.beginPath();
+            ctx.ellipse(420, 80, 40, 55, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // UK/Ireland
+            ctx.beginPath();
+            ctx.ellipse(490, 105, 15, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // POLAR ICE CAPS
+            // Arctic ice cap
+            const arcticGradient = ctx.createRadialGradient(canvas.width / 2, 0, 0, canvas.width / 2, 0, 100);
+            arcticGradient.addColorStop(0, '#f0f8ff');
+            arcticGradient.addColorStop(0.4, '#e6f2ff');
+            arcticGradient.addColorStop(0.7, '#d0e8ff');
+            arcticGradient.addColorStop(1, 'rgba(208, 232, 255, 0)');
+            ctx.fillStyle = arcticGradient;
+            ctx.fillRect(0, 0, canvas.width, 80);
+
+            // Antarctic ice cap (larger and more prominent)
+            const antarcticGradient = ctx.createRadialGradient(canvas.width / 2, canvas.height, 0, canvas.width / 2, canvas.height, 120);
+            antarcticGradient.addColorStop(0, '#ffffff');
+            antarcticGradient.addColorStop(0.3, '#f5f9ff');
+            antarcticGradient.addColorStop(0.6, '#e8f0ff');
+            antarcticGradient.addColorStop(1, 'rgba(232, 240, 255, 0)');
+            ctx.fillStyle = antarcticGradient;
+            ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+
+            // Greenland ice (white overlay)
+            ctx.fillStyle = '#f5f9ff';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.ellipse(420, 80, 35, 50, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // Add varied terrain texture
+            const landColors = ['#2d5a1e', '#3a6b24', '#2a5018', '#356320'];
+            for (let i = 0; i < 5000; i++) {
+                ctx.fillStyle = landColors[Math.floor(Math.random() * landColors.length)];
+                const size = Math.random() * 3 + 1;
                 ctx.fillRect(
                     Math.random() * canvas.width,
                     Math.random() * canvas.height,
-                    1, 1
+                    size, size
                 );
             }
+
+            // Add subtle coastline highlight
+            ctx.strokeStyle = 'rgba(100, 150, 80, 0.3)';
+            ctx.lineWidth = 2;
+            // This would outline major landmasses - simplified for performance
 
             return new THREE.CanvasTexture(canvas);
         }
@@ -658,19 +920,79 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Generate clouds
-            for (let i = 0; i < 100; i++) {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                const radius = 20 + Math.random() * 40;
+            // Helper to draw cloud cluster
+            function drawCloudCluster(x, y, size, density, opacity) {
+                for (let i = 0; i < density; i++) {
+                    const offsetX = (Math.random() - 0.5) * size;
+                    const offsetY = (Math.random() - 0.5) * size * 0.6;
+                    const cloudX = (x + offsetX + canvas.width) % canvas.width;
+                    const cloudY = Math.max(0, Math.min(canvas.height, y + offsetY));
+                    const radius = 15 + Math.random() * 30;
 
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    const gradient = ctx.createRadialGradient(cloudX, cloudY, 0, cloudX, cloudY, radius);
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.9})`);
+                    gradient.addColorStop(0.5, `rgba(255, 255, 255, ${opacity * 0.5})`);
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
-                ctx.fillStyle = gradient;
-                ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(cloudX - radius, cloudY - radius, radius * 2, radius * 2);
+                }
+            }
+
+            // Intertropical Convergence Zone (ITCZ) - heavy clouds near equator
+            const itczY = canvas.height * 0.55; // Slightly south of equator
+            for (let x = 0; x < canvas.width; x += 60) {
+                drawCloudCluster(x + Math.random() * 60, itczY, 80, 15, 0.7);
+            }
+
+            // Mid-latitude storm tracks (30-60° latitude)
+            // Northern hemisphere
+            const northStormY = canvas.height * 0.25;
+            for (let x = 0; x < canvas.width; x += 80) {
+                if (Math.random() > 0.3) {
+                    drawCloudCluster(x + Math.random() * 80, northStormY + (Math.random() - 0.5) * 40, 100, 12, 0.6);
+                }
+            }
+
+            // Southern hemisphere
+            const southStormY = canvas.height * 0.75;
+            for (let x = 0; x < canvas.width; x += 80) {
+                if (Math.random() > 0.3) {
+                    drawCloudCluster(x + Math.random() * 80, southStormY + (Math.random() - 0.5) * 40, 100, 12, 0.6);
+                }
+            }
+
+            // Subtropical regions (20-35° latitude) - less cloudy
+            const subtropNorthY = canvas.height * 0.35;
+            const subtropSouthY = canvas.height * 0.65;
+            for (let x = 0; x < canvas.width; x += 120) {
+                if (Math.random() > 0.6) {
+                    drawCloudCluster(x + Math.random() * 120, subtropNorthY, 60, 8, 0.5);
+                }
+                if (Math.random() > 0.6) {
+                    drawCloudCluster(x + Math.random() * 120, subtropSouthY, 60, 8, 0.5);
+                }
+            }
+
+            // Polar regions - sparse clouds
+            const arcticY = canvas.height * 0.1;
+            const antarcticY = canvas.height * 0.9;
+            for (let x = 0; x < canvas.width; x += 100) {
+                if (Math.random() > 0.5) {
+                    drawCloudCluster(x + Math.random() * 100, arcticY, 70, 6, 0.6);
+                    drawCloudCluster(x + Math.random() * 100, antarcticY, 70, 6, 0.6);
+                }
+            }
+
+            // Random scattered clouds
+            for (let i = 0; i < 30; i++) {
+                drawCloudCluster(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    50,
+                    5,
+                    0.4
+                );
             }
 
             return new THREE.CanvasTexture(canvas);
@@ -685,23 +1007,85 @@
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // City lights (simple dots on landmasses)
-            ctx.fillStyle = '#ffcc00';
-            const cityLights = [
-                [150, 150], [200, 350], [500, 130], [530, 280],
-                [750, 150], [850, 380], [400, 170], [600, 200]
+            // City lights positioned on actual population centers
+            const cityLightRegions = [
+                // North America - East Coast
+                { x: 260, y: 150, spread: 40, density: 80, color: '#ffdd66' },
+                // North America - West Coast
+                { x: 180, y: 155, spread: 35, density: 60, color: '#ffdd66' },
+                // North America - Great Lakes
+                { x: 220, y: 145, spread: 30, density: 50, color: '#ffdd66' },
+                // Mexico City area
+                { x: 200, y: 210, spread: 20, density: 40, color: '#ffdd66' },
+                // South America - São Paulo/Rio
+                { x: 270, y: 320, spread: 25, density: 50, color: '#ffcc55' },
+                // Europe - Western
+                { x: 500, y: 125, spread: 60, density: 100, color: '#ffe680' },
+                // Europe - UK
+                { x: 490, y: 105, spread: 15, density: 30, color: '#ffe680' },
+                // Europe - Mediterranean
+                { x: 520, y: 145, spread: 40, density: 60, color: '#ffe680' },
+                // Middle East
+                { x: 590, y: 165, spread: 35, density: 40, color: '#ffcc55' },
+                // Africa - North (Cairo, etc.)
+                { x: 535, y: 195, spread: 25, density: 30, color: '#ffbb44' },
+                // Africa - Nigeria
+                { x: 505, y: 235, spread: 15, density: 25, color: '#ffbb44' },
+                // Africa - South
+                { x: 545, y: 340, spread: 20, density: 25, color: '#ffbb44' },
+                // India
+                { x: 680, y: 210, spread: 40, density: 70, color: '#ffcc55' },
+                // Southeast Asia - Bangkok
+                { x: 750, y: 220, spread: 25, density: 40, color: '#ffcc55' },
+                // China - Eastern
+                { x: 810, y: 165, spread: 50, density: 90, color: '#ffe680' },
+                // China - Beijing area
+                { x: 800, y: 155, spread: 30, density: 60, color: '#ffe680' },
+                // Japan
+                { x: 870, y: 160, spread: 20, density: 50, color: '#ffe680' },
+                // Korea
+                { x: 835, y: 155, spread: 12, density: 35, color: '#ffe680' },
+                // Indonesia
+                { x: 780, y: 260, spread: 30, density: 40, color: '#ffcc55' },
+                // Australia - East Coast
+                { x: 880, y: 345, spread: 30, density: 40, color: '#ffdd66' },
+                // Australia - Perth
+                { x: 800, y: 350, spread: 12, density: 20, color: '#ffdd66' },
+                // Russia - Moscow
+                { x: 575, y: 110, spread: 20, density: 35, color: '#ffcc55' },
+                // Russia - Siberia cities
+                { x: 700, y: 110, spread: 40, density: 25, color: '#ffbb44' }
             ];
 
-            cityLights.forEach(([x, y]) => {
-                for (let i = 0; i < 20; i++) {
-                    const offsetX = (Math.random() - 0.5) * 100;
-                    const offsetY = (Math.random() - 0.5) * 80;
+            cityLightRegions.forEach(region => {
+                ctx.fillStyle = region.color;
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = region.color;
+
+                for (let i = 0; i < region.density; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * region.spread;
+                    const x = region.x + Math.cos(angle) * distance;
+                    const y = region.y + Math.sin(angle) * distance;
+                    const size = 0.5 + Math.random() * 2;
+
                     ctx.beginPath();
-                    ctx.arc(x + offsetX, y + offsetY, 1 + Math.random() * 2, 0, Math.PI * 2);
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
                     ctx.fill();
                 }
             });
 
+            // Add some scattered lights in less dense areas
+            ctx.fillStyle = '#ffaa33';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.shadowBlur = 0;
             return new THREE.CanvasTexture(canvas);
         }
 
@@ -732,12 +1116,23 @@
             mouse = new THREE.Vector2();
 
             // Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
             scene.add(ambientLight);
 
-            const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-            sunLight.position.set(5, 3, 5);
+            // Main sun light
+            const sunLight = new THREE.DirectionalLight(0xffffee, 1.2);
+            sunLight.position.set(5, 2, 3);
             scene.add(sunLight);
+
+            // Subtle fill light from opposite side
+            const fillLight = new THREE.DirectionalLight(0x4466ff, 0.3);
+            fillLight.position.set(-3, -1, -2);
+            scene.add(fillLight);
+
+            // Rim light for atmosphere
+            const rimLight = new THREE.DirectionalLight(0x88ccff, 0.4);
+            rimLight.position.set(-5, 0, -5);
+            scene.add(rimLight);
 
             // Create starfield
             createStarfield();
@@ -788,7 +1183,7 @@
         }
 
         function createGlobe() {
-            const geometry = new THREE.SphereGeometry(1, 64, 64);
+            const geometry = new THREE.SphereGeometry(1, 128, 128);
 
             // Create material with textures
             const dayTexture = createEarthTexture();
@@ -797,10 +1192,12 @@
             const material = new THREE.MeshPhongMaterial({
                 map: dayTexture,
                 emissiveMap: nightTexture,
-                emissive: new THREE.Color(0xffff88),
-                emissiveIntensity: 0.2,
-                shininess: 5,
-                transparent: false
+                emissive: new THREE.Color(0xffee88),
+                emissiveIntensity: 0.25,
+                shininess: 10,
+                specular: new THREE.Color(0x333333),
+                transparent: false,
+                bumpScale: 0.005
             });
 
             globe = new THREE.Mesh(geometry, material);
@@ -825,20 +1222,31 @@
         }
 
         function createAtmosphere() {
-            const geometry = new THREE.SphereGeometry(1.15, 64, 64);
+            const geometry = new THREE.SphereGeometry(1.12, 64, 64);
             const material = new THREE.ShaderMaterial({
                 vertexShader: `
                     varying vec3 vNormal;
+                    varying vec3 vPosition;
                     void main() {
                         vNormal = normalize(normalMatrix * normal);
+                        vPosition = position;
                         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                     }
                 `,
                 fragmentShader: `
                     varying vec3 vNormal;
+                    varying vec3 vPosition;
                     void main() {
-                        float intensity = pow(0.7 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
-                        gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+                        float intensity = pow(0.65 - dot(vNormal, vec3(0, 0, 1.0)), 2.5);
+
+                        // Create atmospheric color gradient (blue at edges, lighter at top)
+                        vec3 atmosphereColor = mix(
+                            vec3(0.3, 0.6, 1.0),  // Blue
+                            vec3(0.5, 0.7, 1.0),  // Lighter blue
+                            smoothstep(-0.5, 0.5, vPosition.y)
+                        );
+
+                        gl_FragColor = vec4(atmosphereColor, 1.0) * intensity;
                     }
                 `,
                 side: THREE.BackSide,

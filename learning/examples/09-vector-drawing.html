@@ -244,9 +244,9 @@
 
         #mainCanvas {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-origin: center;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
         }
 
         .grid-overlay {
@@ -909,6 +909,7 @@
                 this.startPoint = null;
                 this.currentElement = null;
                 this.penPoints = [];
+                this.lastPenClickTime = null;
                 this.isDragging = false;
                 this.dragStart = null;
                 this.controlPointDrag = null;
@@ -932,11 +933,12 @@
                     });
                 });
 
-                // Canvas events
-                this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-                this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-                this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
-                this.canvas.addEventListener('contextmenu', this.handleContextMenu.bind(this));
+                // Canvas events - use wrapper to catch events outside canvas bounds
+                const wrapper = document.getElementById('canvasWrapper');
+                wrapper.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                wrapper.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                wrapper.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                wrapper.addEventListener('contextmenu', this.handleContextMenu.bind(this));
 
                 // Property inputs
                 document.getElementById('propX').addEventListener('input', (e) => this.updateSelectedProperty('x', parseFloat(e.target.value)));
@@ -992,11 +994,9 @@
                 });
 
                 // Track cursor position
-                this.canvas.addEventListener('mousemove', (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = Math.round((e.clientX - rect.left) / this.zoom);
-                    const y = Math.round((e.clientY - rect.top) / this.zoom);
-                    document.getElementById('cursorPos').textContent = `X: ${x}, Y: ${y}`;
+                wrapper.addEventListener('mousemove', (e) => {
+                    const point = this.getCanvasPoint(e);
+                    document.getElementById('cursorPos').textContent = `X: ${Math.round(point.x)}, Y: ${Math.round(point.y)}`;
                 });
 
                 // Window resize
@@ -1008,6 +1008,18 @@
             }
 
             setTool(tool) {
+                // Clean up pen tool if switching away
+                if (this.currentTool === 'pen' && tool !== 'pen') {
+                    if (this.currentElement) {
+                        this.currentElement.remove();
+                        this.currentElement = null;
+                    }
+                    const oldMarkers = this.selectionLayer.querySelectorAll('.pen-point-marker');
+                    oldMarkers.forEach(m => m.remove());
+                    this.penPoints = [];
+                    this.lastPenClickTime = null;
+                }
+
                 this.currentTool = tool;
                 document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.tool === tool);
@@ -1042,7 +1054,16 @@
                         }
                     }
                 } else if (this.currentTool === 'pen') {
-                    this.addPenPoint(point);
+                    // Check for double-click to finish path
+                    if (this.penPoints.length > 0 && this.lastPenClickTime && (Date.now() - this.lastPenClickTime) < 300) {
+                        this.finishPenPath();
+                        this.lastPenClickTime = null;
+                    } else {
+                        this.addPenPoint(point);
+                        this.lastPenClickTime = Date.now();
+                    }
+                } else if (this.currentTool === 'text') {
+                    this.createTextElement(point);
                 } else {
                     this.isDrawing = true;
                     this.startPoint = point;
@@ -1129,10 +1150,28 @@
                             this.deleteSelected();
                             e.preventDefault();
                             break;
+                        case 'enter':
+                            if (this.currentTool === 'pen' && this.penPoints.length >= 2) {
+                                this.finishPenPath();
+                                e.preventDefault();
+                            }
+                            break;
                         case 'escape':
                             this.clearSelection();
-                            if (this.currentTool === 'pen') {
-                                this.finishPenPath();
+                            if (this.currentTool === 'pen' && this.penPoints.length > 0) {
+                                if (this.penPoints.length >= 2) {
+                                    this.finishPenPath();
+                                } else {
+                                    // Cancel pen path if only one point
+                                    if (this.currentElement) {
+                                        this.currentElement.remove();
+                                        this.currentElement = null;
+                                    }
+                                    const oldMarkers = this.selectionLayer.querySelectorAll('.pen-point-marker');
+                                    oldMarkers.forEach(m => m.remove());
+                                    this.penPoints = [];
+                                    this.lastPenClickTime = null;
+                                }
                             }
                             break;
                     }
@@ -1226,6 +1265,14 @@
                 if (!this.startPoint) return;
 
                 const data = this.calculateShapeData(this.startPoint, endPoint);
+
+                // Don't create shapes that are too small (except lines)
+                if (this.currentTool !== 'line') {
+                    if (data.width < 5 || data.height < 5) {
+                        return;
+                    }
+                }
+
                 const element = {
                     id: this.generateId(),
                     type: this.currentTool,
@@ -1246,8 +1293,8 @@
                 const height = Math.abs(end.y - start.y);
 
                 const data = {
-                    x: start.x,
-                    y: start.y,
+                    x: x,
+                    y: y,
                     width: width,
                     height: height,
                     fill: document.getElementById('fillEnabled').checked ? document.getElementById('fillColor').value : 'none',
@@ -1265,10 +1312,10 @@
                 }
 
                 if (this.currentTool === 'circle') {
-                    data.cx = start.x;
-                    data.cy = start.y;
-                    data.rx = Math.abs(end.x - start.x);
-                    data.ry = Math.abs(end.y - start.y);
+                    data.cx = start.x + (end.x - start.x) / 2;
+                    data.cy = start.y + (end.y - start.y) / 2;
+                    data.rx = Math.abs(end.x - start.x) / 2;
+                    data.ry = Math.abs(end.y - start.y) / 2;
                 }
 
                 return data;
@@ -1281,6 +1328,7 @@
                     this.currentElement.style.pointerEvents = 'none';
                     this.updatePenPath();
                     this.drawingLayer.appendChild(this.currentElement);
+                    document.getElementById('statusText').textContent = 'Click to add points, double-click or press Enter to finish';
                 } else {
                     this.updatePenPath();
                 }
@@ -1298,15 +1346,43 @@
                 this.currentElement.setAttribute('fill', 'none');
                 this.currentElement.setAttribute('stroke', document.getElementById('strokeColor').value);
                 this.currentElement.setAttribute('stroke-width', document.getElementById('strokeWidth').value);
+
+                // Add visual markers for pen points
+                this.updatePenPointMarkers();
+            }
+
+            updatePenPointMarkers() {
+                // Remove old markers
+                const oldMarkers = this.selectionLayer.querySelectorAll('.pen-point-marker');
+                oldMarkers.forEach(m => m.remove());
+
+                // Add new markers
+                this.penPoints.forEach(point => {
+                    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    marker.setAttribute('class', 'pen-point-marker');
+                    marker.setAttribute('cx', point.x);
+                    marker.setAttribute('cy', point.y);
+                    marker.setAttribute('r', 3);
+                    marker.setAttribute('fill', '#00d2ff');
+                    marker.setAttribute('stroke', 'white');
+                    marker.setAttribute('stroke-width', '1');
+                    marker.style.pointerEvents = 'none';
+                    this.selectionLayer.appendChild(marker);
+                });
             }
 
             finishPenPath() {
+                // Clean up pen point markers
+                const oldMarkers = this.selectionLayer.querySelectorAll('.pen-point-marker');
+                oldMarkers.forEach(m => m.remove());
+
                 if (this.penPoints.length < 2) {
                     if (this.currentElement) {
                         this.currentElement.remove();
                     }
                     this.penPoints = [];
                     this.currentElement = null;
+                    document.getElementById('statusText').textContent = 'Ready';
                     return;
                 }
 
@@ -1336,6 +1412,36 @@
 
                 this.penPoints = [];
                 this.currentElement = null;
+                document.getElementById('statusText').textContent = 'Ready';
+            }
+
+            createTextElement(point) {
+                const text = prompt('Enter text:', 'Text');
+                if (!text) return;
+
+                const data = {
+                    x: point.x,
+                    y: point.y,
+                    text: text,
+                    fontSize: 16,
+                    fill: document.getElementById('fillEnabled').checked ? document.getElementById('fillColor').value : '#000000',
+                    stroke: 'none',
+                    strokeWidth: 0,
+                    opacity: parseFloat(document.getElementById('opacity').value) / 100,
+                    rotation: 0
+                };
+
+                const element = {
+                    id: this.generateId(),
+                    type: 'text',
+                    data: data,
+                    layer: this.currentLayer
+                };
+
+                this.elements.push(element);
+                this.addElementToDOM(element);
+                this.selectElement(element);
+                this.saveState();
             }
 
             createSVGElement(type, data) {
@@ -1456,6 +1562,14 @@
                     const maxX = Math.max(...xs);
                     const maxY = Math.max(...ys);
                     return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+                }
+                if (data.text !== undefined) {
+                    // Estimate text bounds based on font size
+                    const fontSize = data.fontSize || 16;
+                    const textLength = data.text.length;
+                    const width = textLength * fontSize * 0.6;
+                    const height = fontSize * 1.2;
+                    return { x: data.x, y: data.y - height, width: width, height: height };
                 }
                 return { x: 0, y: 0, width: 0, height: 0 };
             }
@@ -1589,7 +1703,12 @@
                         const dy = value - bounds.y;
                         this.moveElement(el, 0, dy);
                     } else if (prop === 'width' || prop === 'height') {
-                        if (el.data[prop] !== undefined) {
+                        if (el.type === 'text') {
+                            // For text, width/height changes font size
+                            if (prop === 'height') {
+                                el.data.fontSize = Math.max(8, value / 1.2);
+                            }
+                        } else if (el.data[prop] !== undefined) {
                             el.data[prop] = value;
                         } else if (el.type === 'circle' && prop === 'width') {
                             el.data.rx = value / 2;
@@ -1844,12 +1963,13 @@
                     return;
                 }
 
+                const layerToDelete = this.currentLayer;
                 const index = this.layers.indexOf(this.currentLayer);
                 this.layers.splice(index, 1);
                 this.currentLayer = this.layers[0];
 
                 // Remove elements in deleted layer
-                this.elements = this.elements.filter(el => el.layer !== this.currentLayer);
+                this.elements = this.elements.filter(el => el.layer !== layerToDelete);
                 this.redrawCanvas();
                 this.updateLayers();
                 this.saveState();
@@ -1995,7 +2115,18 @@
 
             // Export
             exportSVG() {
-                const svgContent = this.canvas.outerHTML;
+                // Create a clean SVG without selection layer and grid
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const exportSvg = document.createElementNS(svgNS, 'svg');
+                exportSvg.setAttribute('width', this.canvas.getAttribute('width'));
+                exportSvg.setAttribute('height', this.canvas.getAttribute('height'));
+                exportSvg.setAttribute('xmlns', svgNS);
+
+                // Clone only the drawing layer
+                const drawingClone = this.drawingLayer.cloneNode(true);
+                exportSvg.appendChild(drawingClone);
+
+                const svgContent = new XMLSerializer().serializeToString(exportSvg);
                 const blob = new Blob([svgContent], { type: 'image/svg+xml' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -2007,7 +2138,18 @@
             }
 
             exportPNG() {
-                const svgData = new XMLSerializer().serializeToString(this.canvas);
+                // Create a clean SVG for export
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const exportSvg = document.createElementNS(svgNS, 'svg');
+                exportSvg.setAttribute('width', this.canvas.getAttribute('width'));
+                exportSvg.setAttribute('height', this.canvas.getAttribute('height'));
+                exportSvg.setAttribute('xmlns', svgNS);
+
+                // Clone only the drawing layer
+                const drawingClone = this.drawingLayer.cloneNode(true);
+                exportSvg.appendChild(drawingClone);
+
+                const svgData = new XMLSerializer().serializeToString(exportSvg);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const img = new Image();

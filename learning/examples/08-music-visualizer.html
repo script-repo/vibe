@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Music Visualizer</title>
+    <title>Pro Music Visualizer Studio</title>
     <style>
         * {
             margin: 0;
@@ -18,6 +18,22 @@
             --bg: #0f0f23;
             --glass: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.18);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes beatPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         body {
@@ -62,7 +78,13 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .beat-pulse {
+            animation: beatPulse 0.2s ease-out;
         }
 
         .canvas-container {
@@ -301,6 +323,10 @@
         .theme-purple { background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); }
         .theme-matrix { background: linear-gradient(135deg, #00ff00, #00cc00, #009900); }
         .theme-sunset { background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f); }
+        .theme-cyber { background: linear-gradient(135deg, #00d9ff, #ff00e5, #7000ff); }
+        .theme-aurora { background: linear-gradient(135deg, #00ffbd, #00a8ff, #bd00ff); }
+        .theme-lava { background: linear-gradient(135deg, #ff0080, #ff8c00, #ffd700); }
+        .theme-ice { background: linear-gradient(135deg, #00ffff, #4da6ff, #b366ff); }
 
         .upload-area {
             position: fixed;
@@ -404,9 +430,236 @@
         .btn:hover .tooltip {
             opacity: 1;
         }
+
+        .keyboard-shortcuts {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 999;
+            max-width: 250px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .keyboard-shortcuts.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .keyboard-shortcuts h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .shortcut-key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .preset-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: var(--accent);
+        }
+
+        .recording-indicator {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 10px 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            animation: pulse 1s infinite;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        .beat-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.1s;
+            z-index: 3;
+        }
+
+        .beat-flash.active {
+            opacity: 1;
+        }
+
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 999;
+            min-width: 200px;
+        }
+
+        .info-panel h3 {
+            font-size: 12px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin: 4px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .info-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .help-btn {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+
+        .help-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .advanced-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: var(--primary);
+        }
+
+        .toggle-switch input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::before {
+            left: 22px;
+        }
     </style>
 </head>
 <body>
+    <div class="beat-flash" id="beatFlash"></div>
     <canvas id="bg-canvas"></canvas>
 
     <div class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
@@ -415,9 +668,37 @@
         </svg>
     </div>
 
+    <div class="help-btn" onclick="toggleHelp()" title="Keyboard Shortcuts (?)">?</div>
+
+    <div class="keyboard-shortcuts" id="keyboardShortcuts">
+        <h3>Keyboard Shortcuts</h3>
+        <div class="shortcut-item"><span>Play/Pause</span><span class="shortcut-key">Space</span></div>
+        <div class="shortcut-item"><span>Next Mode</span><span class="shortcut-key">→</span></div>
+        <div class="shortcut-item"><span>Prev Mode</span><span class="shortcut-key">←</span></div>
+        <div class="shortcut-item"><span>Next Theme</span><span class="shortcut-key">T</span></div>
+        <div class="shortcut-item"><span>Fullscreen</span><span class="shortcut-key">F</span></div>
+        <div class="shortcut-item"><span>Screenshot</span><span class="shortcut-key">S</span></div>
+        <div class="shortcut-item"><span>Volume Up</span><span class="shortcut-key">↑</span></div>
+        <div class="shortcut-item"><span>Volume Down</span><span class="shortcut-key">↓</span></div>
+        <div class="shortcut-item"><span>Toggle Help</span><span class="shortcut-key">?</span></div>
+    </div>
+
+    <div class="recording-indicator" id="recordingIndicator">
+        <div class="rec-dot"></div>
+        <span>Recording</span>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+        <h3>Audio Analysis</h3>
+        <div class="info-item"><span>Frequency:</span><span class="info-value" id="dominantFreq">--</span></div>
+        <div class="info-item"><span>Energy:</span><span class="info-value" id="energy">--</span></div>
+        <div class="info-item"><span>Dynamics:</span><span class="info-value" id="dynamics">--</span></div>
+        <div class="info-item"><span>Mode:</span><span class="info-value" id="currentMode">Bars</span></div>
+    </div>
+
     <div class="container">
         <header>
-            <h1>🎵 INTERACTIVE MUSIC VISUALIZER</h1>
+            <h1 id="mainTitle">🎵 PRO MUSIC VISUALIZER STUDIO</h1>
         </header>
 
         <div class="canvas-container">
@@ -453,6 +734,21 @@
                 <button class="btn btn-small" onclick="setVisualizerMode('spectrum3d')">3D Spectrum</button>
                 <button class="btn btn-small" onclick="setVisualizerMode('radial')">Radial</button>
                 <button class="btn btn-small" onclick="setVisualizerMode('dna')">DNA</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('galaxy')">Galaxy</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('tunnel')">Tunnel</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('kaleidoscope')">Kaleidoscope</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('liquid')">Liquid Wave</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('matrix')">Matrix</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('neural')">Neural Net</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('fireworks')">Fireworks</button>
+            </div>
+
+            <div class="preset-selector">
+                <button class="preset-btn active" onclick="applyPreset('default')">Default</button>
+                <button class="preset-btn" onclick="applyPreset('energy')">High Energy</button>
+                <button class="preset-btn" onclick="applyPreset('smooth')">Smooth</button>
+                <button class="preset-btn" onclick="applyPreset('psychedelic')">Psychedelic</button>
+                <button class="preset-btn" onclick="applyPreset('minimal')">Minimal</button>
             </div>
 
             <div class="control-group">
@@ -477,6 +773,29 @@
                 <div class="theme-btn theme-fire" onclick="setTheme('fire')" title="Fire Storm"></div>
                 <div class="theme-btn theme-matrix" onclick="setTheme('matrix')" title="Matrix Code"></div>
                 <div class="theme-btn theme-sunset" onclick="setTheme('sunset')" title="Sunset Vibes"></div>
+                <div class="theme-btn theme-cyber" onclick="setTheme('cyber')" title="Cyberpunk"></div>
+                <div class="theme-btn theme-aurora" onclick="setTheme('aurora')" title="Aurora Borealis"></div>
+                <div class="theme-btn theme-lava" onclick="setTheme('lava')" title="Lava Flow"></div>
+                <div class="theme-btn theme-ice" onclick="setTheme('ice')" title="Ice Crystal"></div>
+            </div>
+
+            <div class="advanced-controls">
+                <label class="toggle-switch">
+                    <span>Beat Flash</span>
+                    <input type="checkbox" id="beatFlashToggle" checked onchange="toggleBeatFlash()">
+                </label>
+                <label class="toggle-switch">
+                    <span>Bloom Effect</span>
+                    <input type="checkbox" id="bloomToggle" checked onchange="toggleBloom()">
+                </label>
+                <label class="toggle-switch">
+                    <span>Auto Theme</span>
+                    <input type="checkbox" id="autoThemeToggle" onchange="toggleAutoTheme()">
+                </label>
+                <label class="toggle-switch">
+                    <span>Particles</span>
+                    <input type="checkbox" id="bgParticlesToggle" checked onchange="toggleBgParticles()">
+                </label>
             </div>
 
             <div class="stats">
@@ -534,14 +853,20 @@
 
         // Theme colors
         const themes = {
-            purple: ['#6366f1', '#8b5cf6', '#ec4899'],
-            neon: ['#ff006e', '#8338ec', '#3a86ff'],
-            ocean: ['#06ffa5', '#0099ff', '#4d4dff'],
-            fire: ['#ff0000', '#ff7f00', '#ffff00'],
-            matrix: ['#00ff00', '#00cc00', '#009900'],
-            sunset: ['#ff6b6b', '#ffd93d', '#6bcf7f']
+            purple: ['#6366f1', '#8b5cf6', '#ec4899', '#d946ef'],
+            neon: ['#ff006e', '#8338ec', '#3a86ff', '#06ffa5'],
+            ocean: ['#06ffa5', '#0099ff', '#4d4dff', '#00d9ff'],
+            fire: ['#ff0000', '#ff7f00', '#ffff00', '#ff3300'],
+            matrix: ['#00ff00', '#00cc00', '#009900', '#00ff80'],
+            sunset: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#ff8a80'],
+            cyber: ['#00d9ff', '#ff00e5', '#7000ff', '#00ffff'],
+            aurora: ['#00ffbd', '#00a8ff', '#bd00ff', '#00ff88'],
+            lava: ['#ff0080', '#ff8c00', '#ffd700', '#ff1493'],
+            ice: ['#00ffff', '#4da6ff', '#b366ff', '#80d4ff']
         };
         let currentTheme = 'purple';
+        let themeIndex = 0;
+        const themeNames = Object.keys(themes);
 
         // Particles for particle mode
         let particles = [];
@@ -553,6 +878,22 @@
 
         // Background animation
         let bgParticles = [];
+
+        // New feature states
+        let beatFlashEnabled = true;
+        let bloomEnabled = true;
+        let autoThemeEnabled = false;
+        let bgParticlesEnabled = true;
+        let lastBeatTime = 0;
+        let galaxyParticles = [];
+        let tunnelOffset = 0;
+        let matrixColumns = [];
+        let fireworksParticles = [];
+        let neuralNodes = [];
+
+        // Mode list for keyboard navigation
+        const modes = ['bars', 'circular', 'waveform', 'particles', 'spectrum3d', 'radial', 'dna', 'galaxy', 'tunnel', 'kaleidoscope', 'liquid', 'matrix', 'neural', 'fireworks'];
+        let currentModeIndex = 0;
 
         // Initialize
         function init() {
@@ -601,7 +942,146 @@
                 });
             }
 
+            // Initialize matrix columns
+            const columnCount = Math.floor(window.innerWidth / 20);
+            for (let i = 0; i < columnCount; i++) {
+                matrixColumns.push({
+                    x: i * 20,
+                    y: Math.random() * -1000,
+                    speed: Math.random() * 5 + 2,
+                    chars: []
+                });
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyPress);
+
             animateBackground();
+        }
+
+        function handleKeyPress(e) {
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'arrowright':
+                    e.preventDefault();
+                    nextMode();
+                    break;
+                case 'arrowleft':
+                    e.preventDefault();
+                    previousMode();
+                    break;
+                case 't':
+                    nextTheme();
+                    break;
+                case 'f':
+                    toggleFullscreen();
+                    break;
+                case 's':
+                    takeScreenshot();
+                    break;
+                case 'arrowup':
+                    e.preventDefault();
+                    adjustVolume(10);
+                    break;
+                case 'arrowdown':
+                    e.preventDefault();
+                    adjustVolume(-10);
+                    break;
+                case '?':
+                    toggleHelp();
+                    break;
+            }
+        }
+
+        function nextMode() {
+            currentModeIndex = (currentModeIndex + 1) % modes.length;
+            setVisualizerMode(modes[currentModeIndex]);
+        }
+
+        function previousMode() {
+            currentModeIndex = (currentModeIndex - 1 + modes.length) % modes.length;
+            setVisualizerMode(modes[currentModeIndex]);
+        }
+
+        function nextTheme() {
+            themeIndex = (themeIndex + 1) % themeNames.length;
+            setTheme(themeNames[themeIndex]);
+        }
+
+        function adjustVolume(delta) {
+            const slider = document.getElementById('volumeSlider');
+            let newValue = parseInt(slider.value) + delta;
+            newValue = Math.max(0, Math.min(100, newValue));
+            slider.value = newValue;
+            setVolume(newValue);
+        }
+
+        function toggleHelp() {
+            document.getElementById('keyboardShortcuts').classList.toggle('show');
+        }
+
+        function toggleBeatFlash() {
+            beatFlashEnabled = !beatFlashEnabled;
+        }
+
+        function toggleBloom() {
+            bloomEnabled = !bloomEnabled;
+        }
+
+        function toggleAutoTheme() {
+            autoThemeEnabled = !autoThemeEnabled;
+        }
+
+        function toggleBgParticles() {
+            bgParticlesEnabled = !bgParticlesEnabled;
+        }
+
+        function applyPreset(preset) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            switch(preset) {
+                case 'default':
+                    document.getElementById('smoothingSlider').value = 80;
+                    document.getElementById('sensitivitySlider').value = 150;
+                    setSmoothing(80);
+                    setSensitivity(150);
+                    break;
+                case 'energy':
+                    document.getElementById('smoothingSlider').value = 50;
+                    document.getElementById('sensitivitySlider').value = 250;
+                    setSmoothing(50);
+                    setSensitivity(250);
+                    setTheme('fire');
+                    break;
+                case 'smooth':
+                    document.getElementById('smoothingSlider').value = 95;
+                    document.getElementById('sensitivitySlider').value = 100;
+                    setSmoothing(95);
+                    setSensitivity(100);
+                    setTheme('ocean');
+                    break;
+                case 'psychedelic':
+                    document.getElementById('smoothingSlider').value = 70;
+                    document.getElementById('sensitivitySlider').value = 200;
+                    setSmoothing(70);
+                    setSensitivity(200);
+                    setTheme('neon');
+                    document.getElementById('autoThemeToggle').checked = true;
+                    autoThemeEnabled = true;
+                    break;
+                case 'minimal':
+                    document.getElementById('smoothingSlider').value = 90;
+                    document.getElementById('sensitivitySlider').value = 80;
+                    setSmoothing(90);
+                    setSensitivity(80);
+                    document.getElementById('bgParticlesToggle').checked = false;
+                    bgParticlesEnabled = false;
+                    break;
+            }
         }
 
         function resizeCanvas() {
@@ -781,12 +1261,26 @@
 
         function setVisualizerMode(mode) {
             visualizerMode = mode;
+            currentModeIndex = modes.indexOf(mode);
 
             // Update active button
             document.querySelectorAll('.mode-selector .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically, find and activate the button
+                const buttons = document.querySelectorAll('.mode-selector .btn');
+                buttons.forEach(btn => {
+                    if (btn.textContent.toLowerCase().includes(mode.toLowerCase().substring(0, 4))) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            // Update info panel
+            document.getElementById('currentMode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
 
             // Show/hide canvases
             if (mode === 'spectrum3d') {
@@ -813,14 +1307,54 @@
                     });
                 }
             }
+
+            // Initialize galaxy particles
+            if (mode === 'galaxy' && galaxyParticles.length === 0) {
+                for (let i = 0; i < 500; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 300;
+                    galaxyParticles.push({
+                        angle: angle,
+                        distance: distance,
+                        speed: Math.random() * 0.02 + 0.01,
+                        size: Math.random() * 2 + 1,
+                        brightness: Math.random()
+                    });
+                }
+            }
+
+            // Initialize fireworks
+            if (mode === 'fireworks' && fireworksParticles.length === 0) {
+                // Fireworks will be created dynamically
+            }
+
+            // Initialize neural nodes
+            if (mode === 'neural' && neuralNodes.length === 0) {
+                for (let i = 0; i < 50; i++) {
+                    neuralNodes.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        connections: []
+                    });
+                }
+            }
         }
 
         function setTheme(theme) {
             currentTheme = theme;
+            themeIndex = themeNames.indexOf(theme);
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically
+                const themeBtn = document.querySelector(`.theme-${theme}`);
+                if (themeBtn) themeBtn.classList.add('active');
+            }
         }
 
         function initThreeJS() {
@@ -868,13 +1402,49 @@
             const mid = getAverageFrequency(50, 200);
             const treble = getAverageFrequency(200, bufferLength);
 
+            // Calculate overall energy
+            const energy = Math.round((bass + mid + treble) / 3);
+
             // Update stats
             document.getElementById('bass').textContent = bass;
             document.getElementById('mid').textContent = mid;
             document.getElementById('treble').textContent = treble;
+            document.getElementById('energy').textContent = energy + '%';
 
-            // BPM detection
-            detectBPM(bass);
+            // Calculate dominant frequency
+            let maxVal = 0;
+            let maxIndex = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                if (dataArray[i] > maxVal) {
+                    maxVal = dataArray[i];
+                    maxIndex = i;
+                }
+            }
+            const dominantFreq = Math.round(maxIndex * audioContext.sampleRate / analyser.fftSize);
+            document.getElementById('dominantFreq').textContent = dominantFreq + ' Hz';
+
+            // Calculate dynamics (variation in volume)
+            const dynamics = Math.round(Math.abs(bass - treble) / 2.55);
+            document.getElementById('dynamics').textContent = dynamics + '%';
+
+            // BPM detection and beat flash
+            const beatDetected = detectBPM(bass);
+            if (beatDetected && beatFlashEnabled) {
+                triggerBeatFlash();
+            }
+
+            // Auto theme switching based on energy
+            if (autoThemeEnabled && Math.random() < 0.001) {
+                if (energy > 180) {
+                    setTheme('fire');
+                } else if (energy > 140) {
+                    setTheme('neon');
+                } else if (energy > 100) {
+                    setTheme('cyber');
+                } else {
+                    setTheme('ocean');
+                }
+            }
 
             // Render visualization
             switch (visualizerMode) {
@@ -899,6 +1469,43 @@
                 case 'dna':
                     drawDNA();
                     break;
+                case 'galaxy':
+                    drawGalaxy();
+                    break;
+                case 'tunnel':
+                    drawTunnel();
+                    break;
+                case 'kaleidoscope':
+                    drawKaleidoscope();
+                    break;
+                case 'liquid':
+                    drawLiquid();
+                    break;
+                case 'matrix':
+                    drawMatrix();
+                    break;
+                case 'neural':
+                    drawNeural();
+                    break;
+                case 'fireworks':
+                    drawFireworks();
+                    break;
+            }
+        }
+
+        function triggerBeatFlash() {
+            const now = Date.now();
+            if (now - lastBeatTime > 200) {
+                const flash = document.getElementById('beatFlash');
+                flash.classList.add('active');
+                setTimeout(() => flash.classList.remove('active'), 100);
+
+                // Pulse the title
+                const title = document.getElementById('mainTitle');
+                title.classList.add('beat-pulse');
+                setTimeout(() => title.classList.remove('beat-pulse'), 200);
+
+                lastBeatTime = now;
             }
         }
 
@@ -913,10 +1520,12 @@
         function detectBPM(bass) {
             const threshold = 200;
             const now = Date.now();
+            let beatDetected = false;
 
             if (bass > threshold && now - lastPeakTime > 200) {
                 peaks.push(now);
                 lastPeakTime = now;
+                beatDetected = true;
 
                 // Keep only last 20 peaks
                 if (peaks.length > 20) {
@@ -940,6 +1549,8 @@
                     }
                 }
             }
+
+            return beatDetected;
         }
 
         function drawBars() {
@@ -958,7 +1569,6 @@
 
                 const colorIndex = Math.floor((i / barCount) * colors.length);
                 const nextColorIndex = (colorIndex + 1) % colors.length;
-                const t = (i / barCount) * colors.length - colorIndex;
 
                 const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
                 gradient.addColorStop(0, colors[colorIndex]);
@@ -967,11 +1577,13 @@
                 ctx.fillStyle = gradient;
                 ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
 
-                // Add glow effect
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = colors[colorIndex];
-                ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
-                ctx.shadowBlur = 0;
+                // Add bloom/glow effect
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = colors[colorIndex];
+                    ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
+                    ctx.shadowBlur = 0;
+                }
             }
         }
 
@@ -1274,7 +1886,397 @@
             ctx.shadowBlur = 0;
         }
 
+        function drawGalaxy() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            const rotationSpeed = (bass / 255) * 0.05;
+
+            galaxyParticles.forEach((particle, index) => {
+                particle.angle += particle.speed + rotationSpeed;
+                const freqIndex = Math.floor((index / galaxyParticles.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+
+                const adjustedDistance = particle.distance * (1 + freqValue * (sensitivity / 200));
+                const x = centerX + Math.cos(particle.angle) * adjustedDistance;
+                const y = centerY + Math.sin(particle.angle) * adjustedDistance;
+
+                const colorIndex = Math.floor((particle.angle / (Math.PI * 2)) * colors.length);
+                ctx.fillStyle = colors[colorIndex % colors.length] + Math.floor(particle.brightness * 255).toString(16).padStart(2, '0');
+
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 15 * freqValue;
+                    ctx.shadowColor = colors[colorIndex % colors.length];
+                }
+
+                ctx.beginPath();
+                ctx.arc(x, y, particle.size * (1 + freqValue), 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawTunnel() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            tunnelOffset += (bass / 255) * 5 + 1;
+
+            const ringCount = 30;
+            const maxRadius = Math.max(width, height);
+
+            for (let i = 0; i < ringCount; i++) {
+                const depth = (i + (tunnelOffset % 20)) / 20;
+                const radius = (maxRadius * depth) / 2;
+                const freqIndex = Math.floor((i / ringCount) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+
+                const colorIndex = (i + Math.floor(tunnelOffset / 20)) % colors.length;
+                const thickness = 5 + freqValue * 20 * (sensitivity / 150);
+
+                ctx.strokeStyle = colors[colorIndex];
+                ctx.lineWidth = thickness;
+
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 20 * freqValue;
+                    ctx.shadowColor = colors[colorIndex];
+                }
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawKaleidoscope() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const segments = 12;
+            const angleStep = (Math.PI * 2) / segments;
+            const time = Date.now() / 1000;
+
+            for (let segment = 0; segment < segments; segment++) {
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angleStep * segment);
+
+                for (let i = 0; i < 64; i++) {
+                    const index = Math.floor(i * dataArray.length / 64);
+                    const value = dataArray[index] / 255;
+                    const distance = i * 5 * (sensitivity / 150);
+                    const size = value * 30;
+
+                    const x = distance * Math.cos(time + i * 0.1);
+                    const y = distance * Math.sin(time + i * 0.1);
+
+                    const colorIndex = Math.floor((i / 64) * colors.length);
+                    ctx.fillStyle = colors[colorIndex];
+
+                    if (bloomEnabled) {
+                        ctx.shadowBlur = 20 * value;
+                        ctx.shadowColor = colors[colorIndex];
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawLiquid() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const time = Date.now() / 1000;
+            const waveCount = 5;
+
+            for (let wave = 0; wave < waveCount; wave++) {
+                const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                colors.forEach((color, i) => {
+                    gradient.addColorStop(i / (colors.length - 1), color + '40');
+                });
+
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 4;
+
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = colors[wave % colors.length];
+                }
+
+                ctx.beginPath();
+
+                for (let x = 0; x < width; x += 5) {
+                    const freqIndex = Math.floor((x / width) * dataArray.length);
+                    const amplitude = (dataArray[freqIndex] / 255) * (height / 4) * (sensitivity / 150);
+                    const y = height / 2 +
+                              Math.sin(x * 0.01 + time * 2 + wave) * amplitude +
+                              Math.cos(x * 0.02 + time + wave * 2) * (amplitude / 2);
+
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                ctx.stroke();
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawMatrix() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+
+            matrixColumns.forEach((column, colIndex) => {
+                const freqIndex = Math.floor((colIndex / matrixColumns.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+
+                column.y += column.speed * (1 + freqValue * (sensitivity / 150));
+
+                if (column.y > height) {
+                    column.y = -100;
+                    column.chars = [];
+                }
+
+                if (Math.random() < 0.05) {
+                    column.chars.push({
+                        char: characters[Math.floor(Math.random() * characters.length)],
+                        y: column.y,
+                        brightness: 1
+                    });
+                }
+
+                column.chars.forEach((char, charIndex) => {
+                    const colorIndex = Math.floor((charIndex / column.chars.length) * colors.length);
+                    ctx.fillStyle = colors[colorIndex] + Math.floor(char.brightness * 255).toString(16).padStart(2, '0');
+                    ctx.font = '16px monospace';
+
+                    if (bloomEnabled && char.brightness > 0.7) {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = colors[colorIndex];
+                    }
+
+                    ctx.fillText(char.char, column.x, char.y);
+                    char.brightness *= 0.98;
+                });
+
+                column.chars = column.chars.filter(char => char.brightness > 0.1);
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawNeural() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            const mid = getAverageFrequency(50, 200);
+
+            // Update node positions
+            neuralNodes.forEach((node, index) => {
+                const freqIndex = Math.floor((index / neuralNodes.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+
+                node.vx += (Math.random() - 0.5) * freqValue * (sensitivity / 100);
+                node.vy += (Math.random() - 0.5) * freqValue * (sensitivity / 100);
+                node.vx *= 0.95;
+                node.vy *= 0.95;
+
+                node.x += node.vx;
+                node.y += node.vy;
+
+                if (node.x < 0 || node.x > width) node.vx *= -1;
+                if (node.y < 0 || node.y > height) node.vy *= -1;
+
+                node.x = Math.max(0, Math.min(width, node.x));
+                node.y = Math.max(0, Math.min(height, node.y));
+            });
+
+            // Draw connections
+            ctx.strokeStyle = colors[0] + '40';
+            ctx.lineWidth = 2;
+
+            neuralNodes.forEach((node, i) => {
+                for (let j = i + 1; j < neuralNodes.length; j++) {
+                    const dx = node.x - neuralNodes[j].x;
+                    const dy = node.y - neuralNodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 200) {
+                        const opacity = 1 - (distance / 200);
+                        const colorIndex = Math.floor((i / neuralNodes.length) * colors.length);
+                        ctx.strokeStyle = colors[colorIndex] + Math.floor(opacity * 100).toString(16).padStart(2, '0');
+
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(neuralNodes[j].x, neuralNodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Draw nodes
+            neuralNodes.forEach((node, index) => {
+                const freqIndex = Math.floor((index / neuralNodes.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+                const colorIndex = Math.floor((index / neuralNodes.length) * colors.length);
+
+                ctx.fillStyle = colors[colorIndex];
+
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 20 * freqValue;
+                    ctx.shadowColor = colors[colorIndex];
+                }
+
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 5 + freqValue * 10, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawFireworks() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+
+            // Create new firework on beat
+            if (bass > 200 && Math.random() < 0.1) {
+                const x = Math.random() * width;
+                const y = height;
+                const targetY = Math.random() * height / 2;
+
+                fireworksParticles.push({
+                    x: x,
+                    y: y,
+                    targetY: targetY,
+                    exploded: false,
+                    particles: []
+                });
+            }
+
+            // Update fireworks
+            fireworksParticles.forEach((firework, fIndex) => {
+                if (!firework.exploded) {
+                    firework.y -= 5;
+
+                    const colorIndex = fIndex % colors.length;
+                    ctx.fillStyle = colors[colorIndex];
+
+                    if (bloomEnabled) {
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = colors[colorIndex];
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(firework.x, firework.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (firework.y <= firework.targetY) {
+                        firework.exploded = true;
+
+                        // Create explosion particles
+                        for (let i = 0; i < 50; i++) {
+                            const angle = (i / 50) * Math.PI * 2;
+                            const speed = Math.random() * 5 + 2;
+                            firework.particles.push({
+                                x: firework.x,
+                                y: firework.y,
+                                vx: Math.cos(angle) * speed,
+                                vy: Math.sin(angle) * speed,
+                                life: 1,
+                                color: colors[Math.floor(Math.random() * colors.length)]
+                            });
+                        }
+                    }
+                } else {
+                    // Draw explosion particles
+                    firework.particles.forEach(particle => {
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        particle.vy += 0.1; // Gravity
+                        particle.life *= 0.98;
+
+                        ctx.fillStyle = particle.color + Math.floor(particle.life * 255).toString(16).padStart(2, '0');
+
+                        if (bloomEnabled) {
+                            ctx.shadowBlur = 15 * particle.life;
+                            ctx.shadowColor = particle.color;
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    firework.particles = firework.particles.filter(p => p.life > 0.1);
+                }
+            });
+
+            // Remove dead fireworks
+            fireworksParticles = fireworksParticles.filter(f => !f.exploded || f.particles.length > 0);
+
+            ctx.shadowBlur = 0;
+        }
+
         function animateBackground() {
+            if (!bgParticlesEnabled) {
+                bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+                return;
+            }
+
             bgCtx.fillStyle = 'rgba(15, 15, 35, 0.1)';
             bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
 
