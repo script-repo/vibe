@@ -1018,9 +1018,12 @@
                 this.recognition = null;
                 this.synthesis = window.speechSynthesis;
                 this.isListening = false;
+                this.autoListenStopped = false;
                 this.audioContext = null;
                 this.analyser = null;
                 this.dataArray = null;
+                this.audioStream = null;
+                this.audioSource = null;
                 this.settings = this.loadSettings();
 
                 this.init();
@@ -1039,67 +1042,103 @@
 
                 // Check for due dates every minute
                 setInterval(() => this.checkDueDates(), 60000);
+
+                // Show welcome message if voice is supported
+                if (this.recognition) {
+                    setTimeout(() => {
+                        const hasSeenWelcome = localStorage.getItem('voiceTasksWelcome');
+                        if (!hasSeenWelcome) {
+                            this.showToast('Click the microphone button or press Space to start using voice commands!', 'success');
+                            localStorage.setItem('voiceTasksWelcome', 'true');
+                        }
+                    }, 1000);
+                }
             }
 
             setupVoiceRecognition() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
                 if (!SpeechRecognition) {
-                    this.showToast('Voice recognition not supported in this browser', 'error');
+                    this.showToast('Voice recognition not supported in this browser. Please use Chrome, Edge, or Safari.', 'error');
+                    document.getElementById('voiceBtn').disabled = true;
                     return;
                 }
 
-                this.recognition = new SpeechRecognition();
-                this.recognition.continuous = false;
-                this.recognition.interimResults = true;
-                this.recognition.lang = 'en-US';
+                try {
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = true;
+                    this.recognition.lang = 'en-US';
 
-                this.recognition.onstart = () => {
-                    this.isListening = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    this.updateTranscription('Listening...');
-                    this.startAudioVisualization();
-                };
+                    this.recognition.onstart = () => {
+                        this.isListening = true;
+                        document.getElementById('voiceBtn').classList.add('listening');
+                        this.updateTranscription('Listening...');
+                        this.startAudioVisualization();
+                    };
 
-                this.recognition.onend = () => {
-                    this.isListening = false;
-                    document.getElementById('voiceBtn').classList.remove('listening');
-                    this.stopAudioVisualization();
+                    this.recognition.onend = () => {
+                        this.isListening = false;
+                        document.getElementById('voiceBtn').classList.remove('listening');
+                        this.stopAudioVisualization();
 
-                    if (this.settings.autoListen) {
-                        setTimeout(() => this.startListening(), 1000);
-                    }
-                };
-
-                this.recognition.onresult = (event) => {
-                    let interimTranscript = '';
-                    let finalTranscript = '';
-
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const transcript = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) {
-                            finalTranscript += transcript;
-                        } else {
-                            interimTranscript += transcript;
+                        if (this.settings.autoListen && !this.autoListenStopped) {
+                            setTimeout(() => this.startListening(), 1000);
                         }
-                    }
+                    };
 
-                    if (interimTranscript) {
-                        this.updateTranscription(interimTranscript, true);
-                    }
+                    this.recognition.onresult = (event) => {
+                        let interimTranscript = '';
+                        let finalTranscript = '';
 
-                    if (finalTranscript) {
-                        this.updateTranscription(finalTranscript);
-                        this.processVoiceCommand(finalTranscript);
-                    }
-                };
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const transcript = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                finalTranscript += transcript;
+                            } else {
+                                interimTranscript += transcript;
+                            }
+                        }
 
-                this.recognition.onerror = (event) => {
-                    console.error('Speech recognition error:', event.error);
-                    if (event.error !== 'no-speech') {
-                        this.showToast(`Voice error: ${event.error}`, 'error');
-                    }
-                };
+                        if (interimTranscript) {
+                            this.updateTranscription(interimTranscript, true);
+                        }
+
+                        if (finalTranscript) {
+                            this.updateTranscription(finalTranscript);
+                            this.processVoiceCommand(finalTranscript);
+                        }
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.isListening = false;
+                        document.getElementById('voiceBtn').classList.remove('listening');
+
+                        switch(event.error) {
+                            case 'no-speech':
+                                this.updateTranscription('No speech detected. Try again.');
+                                break;
+                            case 'audio-capture':
+                                this.showToast('Microphone not found. Please check your device.', 'error');
+                                break;
+                            case 'not-allowed':
+                                this.showToast('Microphone permission denied. Please allow access in your browser settings.', 'error');
+                                break;
+                            case 'network':
+                                this.showToast('Network error. Speech recognition requires internet connection.', 'error');
+                                break;
+                            case 'aborted':
+                                // Silently handle aborted
+                                break;
+                            default:
+                                this.showToast(`Voice error: ${event.error}`, 'error');
+                        }
+                    };
+                } catch (error) {
+                    console.error('Error setting up voice recognition:', error);
+                    this.showToast('Failed to initialize voice recognition', 'error');
+                }
             }
 
             setupWaveform() {
@@ -1171,16 +1210,33 @@
                         this.dataArray = new Uint8Array(bufferLength);
                     }
 
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const source = this.audioContext.createMediaStreamSource(stream);
-                    source.connect(this.analyser);
+                    // Resume audio context if suspended
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+
+                    // Only create new stream if we don't have one
+                    if (!this.audioStream) {
+                        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const source = this.audioContext.createMediaStreamSource(this.audioStream);
+                        source.connect(this.analyser);
+                        this.audioSource = source;
+                    }
                 } catch (err) {
                     console.error('Error accessing microphone:', err);
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        this.showToast('Microphone permission denied. Please allow access to use voice features.', 'error');
+                    } else if (err.name === 'NotFoundError') {
+                        this.showToast('No microphone found. Please connect a microphone.', 'error');
+                    } else {
+                        this.showToast('Error accessing microphone: ' + err.message, 'error');
+                    }
                 }
             }
 
             stopAudioVisualization() {
-                // Keep context alive for reuse
+                // Keep context and stream alive for reuse
+                // They will be cleaned up when the page is closed
             }
 
             processVoiceCommand(command) {
@@ -1669,22 +1725,35 @@
 
             speak(text) {
                 if (!this.settings.voiceFeedback) return;
-
-                // Cancel any ongoing speech
-                this.synthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = this.settings.rate;
-                utterance.pitch = this.settings.pitch;
-                utterance.volume = this.settings.volume;
-
-                if (this.settings.selectedVoice) {
-                    const voices = this.synthesis.getVoices();
-                    const voice = voices.find(v => v.name === this.settings.selectedVoice);
-                    if (voice) utterance.voice = voice;
+                if (!this.synthesis) {
+                    console.warn('Speech synthesis not available');
+                    return;
                 }
 
-                this.synthesis.speak(utterance);
+                try {
+                    // Cancel any ongoing speech
+                    this.synthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = this.settings.rate || 1.0;
+                    utterance.pitch = this.settings.pitch || 1.0;
+                    utterance.volume = this.settings.volume || 1.0;
+
+                    if (this.settings.selectedVoice) {
+                        const voices = this.synthesis.getVoices();
+                        const voice = voices.find(v => v.name === this.settings.selectedVoice);
+                        if (voice) utterance.voice = voice;
+                    }
+
+                    // Handle errors during speech
+                    utterance.onerror = (event) => {
+                        console.error('Speech synthesis error:', event);
+                    };
+
+                    this.synthesis.speak(utterance);
+                } catch (error) {
+                    console.error('Error in speech synthesis:', error);
+                }
             }
 
             loadVoices() {
@@ -1709,13 +1778,47 @@
             }
 
             startListening() {
+                if (!this.recognition) {
+                    this.showToast('Voice recognition is not available', 'error');
+                    return;
+                }
+
                 if (this.isListening) {
-                    this.recognition.stop();
+                    // Stop listening
+                    this.autoListenStopped = true;
+                    try {
+                        this.recognition.stop();
+                    } catch (err) {
+                        console.error('Error stopping recognition:', err);
+                        this.isListening = false;
+                        document.getElementById('voiceBtn').classList.remove('listening');
+                    }
                 } else {
+                    // Start listening
+                    this.autoListenStopped = false;
                     try {
                         this.recognition.start();
                     } catch (err) {
                         console.error('Error starting recognition:', err);
+
+                        // Handle common errors
+                        if (err.message && err.message.includes('already started')) {
+                            // Recognition already running, try to stop and restart
+                            try {
+                                this.recognition.stop();
+                                setTimeout(() => {
+                                    try {
+                                        this.recognition.start();
+                                    } catch (e) {
+                                        this.showToast('Could not start voice recognition. Please try again.', 'error');
+                                    }
+                                }, 100);
+                            } catch (e) {
+                                this.showToast('Voice recognition error. Please refresh the page.', 'error');
+                            }
+                        } else {
+                            this.showToast('Could not start voice recognition. Please check microphone permissions.', 'error');
+                        }
                     }
                 }
             }
@@ -1931,9 +2034,12 @@
 
                 toast.classList.add('active');
 
+                // Longer duration for errors and warnings so users can read them
+                const duration = (type === 'error' || type === 'warning') ? 5000 : 3000;
+
                 setTimeout(() => {
                     toast.classList.remove('active');
-                }, 3000);
+                }, duration);
             }
 
             loadTasks() {

@@ -745,6 +745,7 @@
         let originalImage = null;
         let currentTexture = null;
         let workingTexture = null;
+        let previewBaseTexture = null; // Texture before preview
         let framebuffer = null;
         let shaderPrograms = {};
         let layers = [];
@@ -752,6 +753,7 @@
         let historyIndex = -1;
         let currentFilter = null;
         let filterParams = {};
+        let isPreviewing = false; // Track if we're in preview mode
         let zoom = 1;
         let panX = 0, panY = 0;
         let isDragging = false;
@@ -1315,7 +1317,7 @@
             canvas.style.transform = `translate(${panX}px, ${panY}px)`;
         }
 
-        function applyFilter(filterName, params, strength = 1.0) {
+        function applyFilter(filterName, params, strength = 1.0, isPreview = false) {
             if (!currentTexture || !fragmentShaders[filterName]) return;
 
             const program = shaderPrograms[filterName];
@@ -1350,9 +1352,10 @@
             gl.enableVertexAttribArray(texCoordLocation);
             gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-            // Bind input texture
+            // Bind input texture - use previewBaseTexture if in preview mode
+            const inputTexture = (isPreview && previewBaseTexture) ? previewBaseTexture : currentTexture;
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, currentTexture);
+            gl.bindTexture(gl.TEXTURE_2D, inputTexture);
             gl.uniform1i(gl.getUniformLocation(program, 'u_image'), 0);
 
             // Set filter-specific uniforms
@@ -1388,15 +1391,33 @@
             // Unbind framebuffer
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+            // Clean up old preview texture if in preview mode
+            if (isPreview && isPreviewing && currentTexture !== previewBaseTexture) {
+                // Don't delete the texture if it's the base or in history
+                if (!isTextureInHistory(currentTexture)) {
+                    gl.deleteTexture(currentTexture);
+                }
+            }
+
             // Update current texture
             currentTexture = outputTexture;
 
             // Render to screen
             render();
+
+            return outputTexture;
+        }
+
+        function isTextureInHistory(texture) {
+            return history.some(state => state.texture === texture);
         }
 
         function selectFilter(filterName) {
             currentFilter = filterName;
+
+            // Save current texture as preview base
+            previewBaseTexture = currentTexture;
+            isPreviewing = true;
 
             // Update UI
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1446,9 +1467,9 @@
             document.getElementById(`${paramName}Value`).textContent = parseFloat(value).toFixed(2);
 
             // Preview filter in real-time
-            if (currentFilter && currentTexture) {
+            if (currentFilter && previewBaseTexture) {
                 const strength = parseFloat(document.getElementById('strengthSlider').value) / 100;
-                applyFilter(currentFilter, filterParams, strength);
+                applyFilter(currentFilter, filterParams, strength, true);
             }
         }
 
@@ -1456,17 +1477,20 @@
             document.getElementById('strengthValue').textContent = value + '%';
 
             // Preview with updated strength
-            if (currentFilter && currentTexture) {
+            if (currentFilter && previewBaseTexture) {
                 const strength = parseFloat(value) / 100;
-                applyFilter(currentFilter, filterParams, strength);
+                applyFilter(currentFilter, filterParams, strength, true);
             }
         }
 
         function applyCurrentFilter() {
             if (!currentFilter || !currentTexture) return;
 
+            // Exit preview mode
+            isPreviewing = false;
+            previewBaseTexture = null;
+
             const strength = parseFloat(document.getElementById('strengthSlider').value) / 100;
-            applyFilter(currentFilter, filterParams, strength);
 
             // Add to layers
             layers.push({
@@ -1502,6 +1526,10 @@
 
         function undo() {
             if (historyIndex > 0) {
+                // Exit preview mode if active
+                isPreviewing = false;
+                previewBaseTexture = null;
+
                 historyIndex--;
                 const state = history[historyIndex];
                 currentTexture = state.texture;
@@ -1514,6 +1542,10 @@
 
         function redo() {
             if (historyIndex < history.length - 1) {
+                // Exit preview mode if active
+                isPreviewing = false;
+                previewBaseTexture = null;
+
                 historyIndex++;
                 const state = history[historyIndex];
                 currentTexture = state.texture;
@@ -1526,6 +1558,10 @@
 
         function resetImage() {
             if (originalImage) {
+                // Exit preview mode if active
+                isPreviewing = false;
+                previewBaseTexture = null;
+
                 initializeImage(originalImage);
             }
         }
@@ -1554,12 +1590,16 @@
         }
 
         function removeLayer(index) {
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
             layers.splice(index, 1);
 
-            // Reapply all remaining layers
+            // Reapply all remaining layers from original image
             currentTexture = createTexture(originalImage);
             layers.forEach(layer => {
-                applyFilter(layer.name, layer.params, layer.strength);
+                applyFilter(layer.name, layer.params, layer.strength, false);
             });
 
             saveHistory();
@@ -1744,8 +1784,12 @@
             const width = histCanvas.width = histCanvas.clientWidth;
             const height = histCanvas.height = histCanvas.clientHeight;
 
-            // Get image data
-            const imageData = gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(canvas.width * canvas.height * 4));
+            // Make sure we're reading from the main framebuffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            // Get image data - FIX: properly allocate buffer for gl.readPixels
+            const imageData = new Uint8Array(canvas.width * canvas.height * 4);
+            gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
 
             // Calculate histogram
             const histR = new Array(256).fill(0);
@@ -1753,7 +1797,7 @@
             const histB = new Array(256).fill(0);
 
             // Sample pixels (to improve performance)
-            const step = Math.ceil(canvas.width * canvas.height / 10000);
+            const step = Math.max(1, Math.ceil(canvas.width * canvas.height / 10000));
             for (let i = 0; i < imageData.length; i += step * 4) {
                 histR[imageData[i]]++;
                 histG[imageData[i + 1]]++;
@@ -1765,6 +1809,9 @@
             const maxG = Math.max(...histG);
             const maxB = Math.max(...histB);
             const max = Math.max(maxR, maxG, maxB);
+
+            // Avoid division by zero
+            if (max === 0) return;
 
             // Clear canvas
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-tertiary');
@@ -1827,6 +1874,10 @@
         function applyPreset(presetName) {
             if (!currentTexture) return;
 
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
             // Reset to base image
             currentTexture = history[0].texture;
             layers = [];
@@ -1865,7 +1916,7 @@
             const preset = presets[presetName];
             if (preset) {
                 preset.forEach(({ filter, params, strength }) => {
-                    applyFilter(filter, params, strength);
+                    applyFilter(filter, params, strength, false);
                     layers.push({ name: filter, params: params, strength: strength });
                 });
 
@@ -1879,10 +1930,14 @@
         function autoEnhance() {
             if (!currentTexture) return;
 
-            applyFilter('contrast', { contrast: 1.2 }, 1.0);
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
+            applyFilter('contrast', { contrast: 1.2 }, 1.0, false);
             layers.push({ name: 'contrast', params: { contrast: 1.2 }, strength: 1.0 });
 
-            applyFilter('saturation', { saturation: 1.15 }, 1.0);
+            applyFilter('saturation', { saturation: 1.15 }, 1.0, false);
             layers.push({ name: 'saturation', params: { saturation: 1.15 }, strength: 1.0 });
 
             saveHistory();
@@ -1893,7 +1948,11 @@
         function autoContrast() {
             if (!currentTexture) return;
 
-            applyFilter('contrast', { contrast: 1.3 }, 1.0);
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
+            applyFilter('contrast', { contrast: 1.3 }, 1.0, false);
             layers.push({ name: 'contrast', params: { contrast: 1.3 }, strength: 1.0 });
 
             saveHistory();
@@ -1904,7 +1963,11 @@
         function autoLevel() {
             if (!currentTexture) return;
 
-            applyFilter('gamma', { gamma: 1.2 }, 1.0);
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
+            applyFilter('gamma', { gamma: 1.2 }, 1.0, false);
             layers.push({ name: 'gamma', params: { gamma: 1.2 }, strength: 1.0 });
 
             saveHistory();
@@ -1915,8 +1978,12 @@
         function normalizeColors() {
             if (!currentTexture) return;
 
-            applyFilter('saturation', { saturation: 1.0 }, 1.0);
-            applyFilter('contrast', { contrast: 1.0 }, 1.0);
+            // Exit preview mode if active
+            isPreviewing = false;
+            previewBaseTexture = null;
+
+            applyFilter('saturation', { saturation: 1.0 }, 1.0, false);
+            applyFilter('contrast', { contrast: 1.0 }, 1.0, false);
 
             layers.push({ name: 'normalize', params: {}, strength: 1.0 });
 

@@ -774,8 +774,8 @@
             <!-- Canvas -->
             <div class="canvas-container">
                 <div class="canvas-tabs">
-                    <button class="canvas-tab active" onclick="switchTab('builder')">🔧 Builder</button>
-                    <button class="canvas-tab" onclick="switchTab('preview')">👁️ Preview</button>
+                    <button class="canvas-tab active" onclick="switchTab('builder', event)">🔧 Builder</button>
+                    <button class="canvas-tab" onclick="switchTab('preview', event)">👁️ Preview</button>
                 </div>
 
                 <div id="builderTab" class="tab-content">
@@ -1441,10 +1441,10 @@
         }
 
         // Tab Switching
-        function switchTab(tab) {
+        function switchTab(tab, evt) {
             currentTab = tab;
             document.querySelectorAll('.canvas-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            evt.target.classList.add('active');
 
             if (tab === 'builder') {
                 document.getElementById('builderTab').style.display = 'block';
@@ -1945,10 +1945,15 @@
             if (currentStep < 0) currentStep = 0;
             steps[currentStep].classList.add('active');
 
-            document.getElementById('prevBtn').style.display = currentStep === 0 ? 'none' : 'block';
-            document.getElementById('nextBtn').style.display = currentStep === totalSteps - 1 ? 'none' : 'block';
-            document.getElementById('submitBtn').style.display = currentStep === totalSteps - 1 ? 'block' : 'none';
-            document.getElementById('progressFill').style.width = ((currentStep + 1) / totalSteps * 100) + '%';
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressFill = document.getElementById('progressFill');
+
+            if (prevBtn) prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
+            if (nextBtn) nextBtn.style.display = currentStep === totalSteps - 1 ? 'none' : 'block';
+            if (submitBtn) submitBtn.style.display = currentStep === totalSteps - 1 ? 'block' : 'none';
+            if (progressFill) progressFill.style.width = ((currentStep + 1) / totalSteps * 100) + '%';
         }
 
         function checkConditionals() {

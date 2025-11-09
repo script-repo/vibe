@@ -607,24 +607,26 @@
                 const boardEl = document.getElementById('board');
                 boardEl.innerHTML = '';
 
-                for (let row = 0; row < 8; row++) {
-                    for (let col = 0; col < 8; col++) {
-                        const square = document.createElement('div');
-                        const displayRow = this.isFlipped ? 7 - row : row;
-                        const displayCol = this.isFlipped ? 7 - col : col;
+                // Create squares in display order (flipped or not)
+                for (let displayRow = 0; displayRow < 8; displayRow++) {
+                    for (let displayCol = 0; displayCol < 8; displayCol++) {
+                        // Map display coordinates to board array coordinates
+                        const row = this.isFlipped ? 7 - displayRow : displayRow;
+                        const col = this.isFlipped ? 7 - displayCol : displayCol;
 
+                        const square = document.createElement('div');
                         square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
                         square.dataset.row = row;
                         square.dataset.col = col;
 
-                        // Add coordinates
-                        if (col === 7) {
+                        // Add coordinates (always show from white's perspective on the right square)
+                        if ((this.isFlipped && displayCol === 0) || (!this.isFlipped && displayCol === 7)) {
                             const rankCoord = document.createElement('span');
                             rankCoord.className = 'coords coord-rank';
                             rankCoord.textContent = 8 - row;
                             square.appendChild(rankCoord);
                         }
-                        if (row === 7) {
+                        if ((this.isFlipped && displayRow === 0) || (!this.isFlipped && displayRow === 7)) {
                             const fileCoord = document.createElement('span');
                             fileCoord.className = 'coords coord-file';
                             fileCoord.textContent = String.fromCharCode(97 + col);
@@ -805,7 +807,7 @@
                 }
             }
 
-            getLegalMovesForPiece(row, col) {
+            getPseudoLegalMovesForPiece(row, col) {
                 const moves = [];
                 const piece = this.board[row][col].toLowerCase();
 
@@ -834,7 +836,18 @@
                     this.addCastlingMoves(moves, row, col);
                 }
 
-                return moves.filter(move => this.isLegalMove(move));
+                return moves;
+            }
+
+            getLegalMovesForPiece(row, col) {
+                const pseudoLegalMoves = this.getPseudoLegalMovesForPiece(row, col);
+
+                // Filter out moves that would leave the king in check
+                return pseudoLegalMoves.filter(move => {
+                    const testBoard = this.copyBoard();
+                    this.applyMoveToBoard(testBoard, move);
+                    return !this.isBoardInCheck(testBoard, this.currentPlayer);
+                });
             }
 
             addPawnMoves(moves, row, col) {
@@ -971,7 +984,8 @@
                 if (piece === '.') return false;
                 if (!this.isPlayerPiece(piece)) return false;
 
-                const possibleMoves = this.getLegalMovesForPiece(fromRow, fromCol);
+                // Check if move is pseudo-legal (follows piece movement rules)
+                const possibleMoves = this.getPseudoLegalMovesForPiece(fromRow, fromCol);
                 const moveExists = possibleMoves.some(m =>
                     m.to[0] === toRow && m.to[1] === toCol
                 );
@@ -985,7 +999,7 @@
                 return !this.isBoardInCheck(testBoard, this.currentPlayer);
             }
 
-            makeMove(move) {
+            makeMove(move, isRedo = false) {
                 const [fromRow, fromCol] = move.from;
                 const [toRow, toCol] = move.to;
                 const piece = this.board[fromRow][fromCol];
@@ -1007,6 +1021,7 @@
                     const captureRow = this.currentPlayer === 'white' ? toRow + 1 : toRow - 1;
                     moveData.captured = this.board[captureRow][toCol];
                     this.board[captureRow][toCol] = '.';
+                    moveData.enPassant = true;
                 }
 
                 // Handle castling
@@ -1061,7 +1076,10 @@
                 }
 
                 this.moveHistory.push(moveData);
-                this.redoStack = [];
+                // Only clear redo stack if this is a new move, not a redo
+                if (!isRedo) {
+                    this.redoStack = [];
+                }
                 this.lastMove = move;
 
                 // Play sound
@@ -1623,7 +1641,7 @@
                 if (this.redoStack.length === 0) return;
 
                 const move = this.redoStack.pop();
-                this.makeMove(move);
+                this.makeMove(move, true);
             }
 
             flipBoard() {

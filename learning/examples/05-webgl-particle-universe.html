@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WebGL Particle Universe</title>
+    <title>Quantum Particle Universe</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
             overflow: hidden;
             background: #000;
             color: #fff;
@@ -26,115 +26,179 @@
             cursor: crosshair;
         }
 
-        /* Control Panel - Glassmorphism */
+        /* Control Panel - Modern Glassmorphism */
         .control-panel {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            min-width: 280px;
+            background: rgba(20, 20, 30, 0.8);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 24px;
+            min-width: 320px;
             max-height: calc(100vh - 40px);
             overflow-y: auto;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
+                        0 0 80px rgba(100, 200, 255, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
+            animation: panelSlideIn 0.6s ease;
+        }
+
+        @keyframes panelSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .control-panel.collapsed {
-            transform: translateX(calc(100% + 20px));
+            transform: translateX(calc(100% + 30px));
             opacity: 0;
             pointer-events: none;
         }
 
         .control-panel h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #fff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 20px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, #a0d8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+            margin: 20px 0 12px 0;
+            font-weight: 600;
         }
 
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .control-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 13px;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
         }
 
         .control-group input[type="range"] {
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.08);
             outline: none;
             -webkit-appearance: none;
+            position: relative;
         }
 
         .control-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 2px 12px rgba(0, 153, 255, 0.6),
+                        0 0 20px rgba(0, 212, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 20px rgba(0, 153, 255, 0.8);
         }
 
         .control-group input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 2px 12px rgba(0, 153, 255, 0.6);
         }
 
         .value-display {
             display: inline-block;
             float: right;
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2px 8px;
-            border-radius: 4px;
+            color: rgba(100, 200, 255, 0.9);
+            background: rgba(0, 153, 255, 0.1);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
         }
 
         .preset-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
         button {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
             color: #fff;
             cursor: pointer;
             font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         button:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
 
         button:active {
@@ -142,14 +206,16 @@
         }
 
         button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%);
             border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 24px rgba(0, 153, 255, 0.5),
+                        0 0 40px rgba(0, 212, 255, 0.3);
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .action-button {
             width: 100%;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         /* FPS Counter */
@@ -157,16 +223,24 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #0f0;
-            border: 1px solid rgba(0, 255, 0, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.3);
             z-index: 1000;
-            font-family: 'Courier New', monospace;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5),
+                        0 0 30px rgba(0, 255, 136, 0.1);
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Toggle Button */
@@ -174,54 +248,87 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 10px 15px;
+            border-radius: 12px;
+            padding: 12px 18px;
             cursor: pointer;
             z-index: 1001;
             font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            transition: all 0.3s ease;
             display: none;
         }
 
         .toggle-panel:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 153, 255, 0.3);
+            border-color: rgba(0, 153, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 153, 255, 0.3);
         }
 
         .control-panel.collapsed ~ .toggle-panel {
             display: block;
         }
 
-        /* Color input styling */
-        .color-control {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        /* Color Scheme Selector */
+        .color-scheme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
-        .color-control input[type="color"] {
-            width: 50px;
-            height: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            background: transparent;
-            cursor: pointer;
+        .color-scheme-btn {
+            aspect-ratio: 1;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
         }
+
+        .color-scheme-btn.cyberpunk { background: linear-gradient(135deg, #ff006e, #8338ec, #3a86ff); }
+        .color-scheme-btn.synthwave { background: linear-gradient(135deg, #ff006e, #fb5607, #ffbe0b); }
+        .color-scheme-btn.neon { background: linear-gradient(135deg, #00ff88, #00d4ff, #7b2cbf); }
+        .color-scheme-btn.aurora { background: linear-gradient(135deg, #06ffa5, #00d4ff, #ff006e); }
+        .color-scheme-btn.plasma { background: linear-gradient(135deg, #ff006e, #8338ec, #06ffa5); }
+        .color-scheme-btn.cosmic { background: linear-gradient(135deg, #7b2cbf, #3a86ff, #06ffa5); }
 
         /* Checkbox styling */
         .checkbox-control {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            padding: 10px 0;
         }
 
         .checkbox-control input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             cursor: pointer;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-control input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            border-color: #00d4ff;
+        }
+
+        .checkbox-control input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         /* Mobile responsive */
@@ -232,46 +339,75 @@
                 left: 10px;
                 min-width: auto;
                 max-height: calc(100vh - 100px);
-                padding: 15px;
+                padding: 20px;
             }
 
             .preset-buttons {
                 grid-template-columns: 1fr;
             }
 
+            .color-scheme-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
             .fps-counter {
                 top: 10px;
                 left: 10px;
-                font-size: 12px;
-                padding: 8px 12px;
+                font-size: 11px;
+                padding: 10px 14px;
             }
         }
 
         /* Scrollbar styling */
         .control-panel::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         .control-panel::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
         }
 
         .control-panel::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            border-radius: 4px;
         }
 
         .control-panel::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
         }
 
         /* Info text */
         .info-text {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 6px;
             font-style: italic;
+        }
+
+        /* Mode indicator */
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            font-family: 'SF Mono', Monaco, monospace;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .mode-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -279,96 +415,153 @@
     <canvas id="canvas"></canvas>
 
     <div class="fps-counter">FPS: <span id="fps">60</span></div>
+    <div class="mode-indicator" id="modeIndicator"></div>
 
     <div class="toggle-panel">Show Controls</div>
 
     <div class="control-panel">
-        <h2>Particle Universe</h2>
+        <h2>Quantum Universe</h2>
+        <div class="subtitle">WebGL Particle System</div>
 
+        <div class="section-title">Visual Modes</div>
         <div class="preset-buttons">
-            <button class="preset-btn active" data-preset="galaxy">Galaxy</button>
-            <button class="preset-btn" data-preset="fireworks">Fireworks</button>
+            <button class="preset-btn active" data-preset="quantum">Quantum</button>
+            <button class="preset-btn" data-preset="vortex">Vortex</button>
+            <button class="preset-btn" data-preset="plasma">Plasma</button>
+            <button class="preset-btn" data-preset="galaxy">Galaxy</button>
             <button class="preset-btn" data-preset="aurora">Aurora</button>
+            <button class="preset-btn" data-preset="helix">DNA Helix</button>
             <button class="preset-btn" data-preset="nebula">Nebula</button>
+            <button class="preset-btn" data-preset="crystal">Crystal</button>
+        </div>
+
+        <div class="section-title">Color Schemes</div>
+        <div class="color-scheme-grid">
+            <button class="color-scheme-btn cyberpunk active" data-scheme="cyberpunk" title="Cyberpunk"></button>
+            <button class="color-scheme-btn synthwave" data-scheme="synthwave" title="Synthwave"></button>
+            <button class="color-scheme-btn neon" data-scheme="neon" title="Neon"></button>
+            <button class="color-scheme-btn aurora" data-scheme="aurora" title="Aurora"></button>
+            <button class="color-scheme-btn plasma" data-scheme="plasma" title="Plasma"></button>
+            <button class="color-scheme-btn cosmic" data-scheme="cosmic" title="Cosmic"></button>
+        </div>
+
+        <div class="section-title">Particles</div>
+        <div class="control-group">
+            <label>
+                Count
+                <span class="value-display" id="particleCountValue">8000</span>
+            </label>
+            <input type="range" id="particleCount" min="1000" max="30000" step="1000" value="8000">
         </div>
 
         <div class="control-group">
             <label>
-                Particle Count
-                <span class="value-display" id="particleCountValue">5000</span>
+                Size
+                <span class="value-display" id="particleSizeValue">3.0</span>
             </label>
-            <input type="range" id="particleCount" min="1000" max="20000" step="1000" value="5000">
+            <input type="range" id="particleSize" min="0.5" max="12" step="0.5" value="3.0">
         </div>
 
         <div class="control-group">
             <label>
-                Mouse Attraction
-                <span class="value-display" id="mouseAttractionValue">0.5</span>
+                Glow Intensity
+                <span class="value-display" id="glowValue">1.0</span>
             </label>
-            <input type="range" id="mouseAttraction" min="0" max="2" step="0.1" value="0.5">
+            <input type="range" id="glow" min="0" max="3" step="0.1" value="1.0">
+        </div>
+
+        <div class="section-title">Physics</div>
+        <div class="control-group">
+            <label>
+                Attraction Force
+                <span class="value-display" id="mouseAttractionValue">0.8</span>
+            </label>
+            <input type="range" id="mouseAttraction" min="0" max="3" step="0.1" value="0.8">
         </div>
 
         <div class="control-group">
             <label>
-                Particle Interaction
-                <span class="value-display" id="particleInteractionValue">0.1</span>
+                Interaction Strength
+                <span class="value-display" id="particleInteractionValue">0.15</span>
             </label>
-            <input type="range" id="particleInteraction" min="0" max="1" step="0.05" value="0.1">
+            <input type="range" id="particleInteraction" min="0" max="1" step="0.05" value="0.15">
         </div>
 
         <div class="control-group">
             <label>
                 Velocity Damping
-                <span class="value-display" id="dampingValue">0.99</span>
+                <span class="value-display" id="dampingValue">0.98</span>
             </label>
-            <input type="range" id="damping" min="0.9" max="0.999" step="0.001" value="0.99">
+            <input type="range" id="damping" min="0.9" max="0.999" step="0.001" value="0.98">
         </div>
 
         <div class="control-group">
             <label>
-                Particle Size
-                <span class="value-display" id="particleSizeValue">2.5</span>
+                Turbulence
+                <span class="value-display" id="turbulenceValue">0.5</span>
             </label>
-            <input type="range" id="particleSize" min="0.5" max="8" step="0.5" value="2.5">
+            <input type="range" id="turbulence" min="0" max="2" step="0.1" value="0.5">
         </div>
 
+        <div class="section-title">Visual Effects</div>
         <div class="control-group">
             <label>
-                Trail Length
-                <span class="value-display" id="trailLengthValue">0.05</span>
+                Trail Fade
+                <span class="value-display" id="trailLengthValue">0.08</span>
             </label>
-            <input type="range" id="trailLength" min="0" max="0.2" step="0.01" value="0.05">
+            <input type="range" id="trailLength" min="0" max="0.3" step="0.01" value="0.08">
             <div class="info-text">Lower = longer trails</div>
         </div>
 
         <div class="control-group">
             <label>
-                Color Speed
-                <span class="value-display" id="colorSpeedValue">1.0</span>
+                Color Shift Speed
+                <span class="value-display" id="colorSpeedValue">1.5</span>
             </label>
-            <input type="range" id="colorSpeed" min="0" max="5" step="0.1" value="1.0">
+            <input type="range" id="colorSpeed" min="0" max="8" step="0.1" value="1.5">
+        </div>
+
+        <div class="control-group">
+            <label>
+                Chromatic Aberration
+                <span class="value-display" id="chromaticValue">0.2</span>
+            </label>
+            <input type="range" id="chromatic" min="0" max="1" step="0.05" value="0.2">
+        </div>
+
+        <div class="section-title">Options</div>
+        <div class="control-group checkbox-control">
+            <input type="checkbox" id="showTrails" checked>
+            <label for="showTrails">Motion Trails</label>
         </div>
 
         <div class="control-group checkbox-control">
-            <input type="checkbox" id="showTrails" checked>
-            <label for="showTrails">Show Trails</label>
+            <input type="checkbox" id="clickMode" checked>
+            <label for="clickMode">Click Burst Mode</label>
         </div>
 
+        <div class="control-group checkbox-control">
+            <input type="checkbox" id="autoRotate">
+            <label for="autoRotate">Auto Rotate</label>
+        </div>
+
+        <div class="section-title">Actions</div>
         <button class="action-button" id="clearBtn">Clear Canvas</button>
         <button class="action-button" id="resetBtn">Reset Particles</button>
-        <button class="action-button" id="fullscreenBtn">Toggle Fullscreen</button>
+        <button class="action-button" id="fullscreenBtn">Enter Fullscreen</button>
         <button class="action-button" id="togglePanelBtn">Hide Controls</button>
     </div>
 
     <script>
-        // WebGL Particle Universe
+        // Quantum Particle Universe - Modern WebGL
         class ParticleUniverse {
             constructor(canvas) {
                 this.canvas = canvas;
                 this.gl = canvas.getContext('webgl', {
                     alpha: false,
                     antialias: true,
-                    preserveDrawingBuffer: false
+                    preserveDrawingBuffer: false,
+                    powerPreference: 'high-performance'
                 });
 
                 if (!this.gl) {
@@ -377,57 +570,135 @@
                 }
 
                 this.gl.enable(this.gl.BLEND);
-                this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+                this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
                 this.particles = [];
-                this.particleCount = 5000;
-                this.mouse = { x: 0, y: 0, active: false };
+                this.particleCount = 8000;
+                this.mouse = { x: 0, y: 0, active: false, clicking: false };
                 this.time = 0;
+                this.attractors = [];
 
-                // Physics parameters
+                // Modern physics parameters
                 this.params = {
-                    mouseAttraction: 0.5,
-                    particleInteraction: 0.1,
-                    damping: 0.99,
-                    particleSize: 2.5,
-                    trailLength: 0.05,
-                    colorSpeed: 1.0,
-                    showTrails: true
+                    mouseAttraction: 0.8,
+                    particleInteraction: 0.15,
+                    damping: 0.98,
+                    particleSize: 3.0,
+                    trailLength: 0.08,
+                    colorSpeed: 1.5,
+                    showTrails: true,
+                    glowIntensity: 1.0,
+                    turbulence: 0.5,
+                    chromatic: 0.2,
+                    clickMode: true,
+                    autoRotate: false
                 };
 
-                // Preset configurations
+                // Modern color schemes
+                this.colorSchemes = {
+                    cyberpunk: [
+                        { h: 330, s: 100, l: 60 }, // Pink
+                        { h: 270, s: 85, l: 60 },  // Purple
+                        { h: 200, s: 100, l: 60 }  // Cyan
+                    ],
+                    synthwave: [
+                        { h: 330, s: 100, l: 60 }, // Hot pink
+                        { h: 15, s: 100, l: 60 },  // Orange
+                        { h: 50, s: 100, l: 60 }   // Yellow
+                    ],
+                    neon: [
+                        { h: 160, s: 100, l: 60 }, // Mint
+                        { h: 190, s: 100, l: 60 }, // Cyan
+                        { h: 280, s: 80, l: 60 }   // Purple
+                    ],
+                    aurora: [
+                        { h: 160, s: 100, l: 65 }, // Teal
+                        { h: 190, s: 100, l: 60 }, // Cyan
+                        { h: 330, s: 100, l: 60 }  // Pink
+                    ],
+                    plasma: [
+                        { h: 330, s: 100, l: 60 }, // Pink
+                        { h: 270, s: 85, l: 60 },  // Purple
+                        { h: 160, s: 100, l: 65 }  // Teal
+                    ],
+                    cosmic: [
+                        { h: 280, s: 80, l: 60 },  // Purple
+                        { h: 210, s: 100, l: 60 }, // Blue
+                        { h: 160, s: 100, l: 65 }  // Teal
+                    ]
+                };
+
+                this.currentColorScheme = 'cyberpunk';
+
+                // Enhanced preset configurations
                 this.presets = {
+                    quantum: {
+                        mouseAttraction: 0.8,
+                        particleInteraction: 0.15,
+                        damping: 0.98,
+                        colorSpeed: 1.5,
+                        turbulence: 0.5,
+                        initPattern: 'quantum'
+                    },
+                    vortex: {
+                        mouseAttraction: 1.2,
+                        particleInteraction: 0.1,
+                        damping: 0.99,
+                        colorSpeed: 2.0,
+                        turbulence: 0.3,
+                        initPattern: 'vortex'
+                    },
+                    plasma: {
+                        mouseAttraction: 0.6,
+                        particleInteraction: 0.25,
+                        damping: 0.96,
+                        colorSpeed: 2.5,
+                        turbulence: 1.0,
+                        initPattern: 'plasma'
+                    },
                     galaxy: {
                         mouseAttraction: 0.5,
                         particleInteraction: 0.1,
                         damping: 0.99,
                         colorSpeed: 1.0,
+                        turbulence: 0.2,
                         initPattern: 'spiral'
                     },
-                    fireworks: {
-                        mouseAttraction: 0.2,
-                        particleInteraction: 0.05,
-                        damping: 0.95,
-                        colorSpeed: 3.0,
-                        initPattern: 'burst'
-                    },
                     aurora: {
-                        mouseAttraction: 0.3,
-                        particleInteraction: 0.15,
-                        damping: 0.98,
+                        mouseAttraction: 0.4,
+                        particleInteraction: 0.2,
+                        damping: 0.97,
                         colorSpeed: 2.0,
+                        turbulence: 0.8,
                         initPattern: 'wave'
                     },
+                    helix: {
+                        mouseAttraction: 0.7,
+                        particleInteraction: 0.05,
+                        damping: 0.985,
+                        colorSpeed: 1.2,
+                        turbulence: 0.1,
+                        initPattern: 'helix'
+                    },
                     nebula: {
-                        mouseAttraction: 0.8,
+                        mouseAttraction: 0.9,
                         particleInteraction: 0.2,
                         damping: 0.97,
                         colorSpeed: 1.5,
+                        turbulence: 0.7,
                         initPattern: 'cloud'
+                    },
+                    crystal: {
+                        mouseAttraction: 0.3,
+                        particleInteraction: 0.3,
+                        damping: 0.995,
+                        colorSpeed: 0.8,
+                        turbulence: 0.1,
+                        initPattern: 'crystal'
                     }
                 };
 
-                this.currentPreset = 'galaxy';
+                this.currentPreset = 'quantum';
 
                 this.initShaders();
                 this.resize();
@@ -442,31 +713,51 @@
                     attribute vec2 a_position;
                     attribute vec3 a_color;
                     attribute float a_size;
+                    attribute float a_alpha;
 
                     varying vec3 v_color;
+                    varying float v_alpha;
 
                     void main() {
                         gl_Position = vec4(a_position, 0.0, 1.0);
                         gl_PointSize = a_size;
                         v_color = a_color;
+                        v_alpha = a_alpha;
                     }
                 `;
 
                 const fragmentShaderSource = `
-                    precision mediump float;
+                    precision highp float;
                     varying vec3 v_color;
+                    varying float v_alpha;
+
+                    uniform float u_glow;
+                    uniform float u_chromatic;
 
                     void main() {
                         vec2 center = gl_PointCoord - vec2(0.5);
-                        float dist = length(center);
+                        float dist = length(center) * 2.0;
 
-                        // Soft circular particle
-                        float alpha = smoothstep(0.5, 0.0, dist);
+                        // Multi-layer glow effect
+                        float alpha = smoothstep(1.0, 0.0, dist);
+                        float glow1 = exp(-dist * 2.0) * 0.6 * u_glow;
+                        float glow2 = exp(-dist * 4.0) * 0.4 * u_glow;
+                        float glow3 = exp(-dist * 8.0) * 0.3 * u_glow;
 
-                        // Add glow effect
-                        float glow = exp(-dist * 3.0) * 0.5;
+                        float totalGlow = (glow1 + glow2 + glow3) * v_alpha;
+                        float totalAlpha = (alpha + totalGlow) * v_alpha;
 
-                        gl_FragColor = vec4(v_color, alpha + glow);
+                        // Chromatic aberration effect
+                        vec3 finalColor = v_color;
+                        if (u_chromatic > 0.01) {
+                            float angle = atan(center.y, center.x);
+                            vec2 offset = vec2(cos(angle), sin(angle)) * u_chromatic * 0.02;
+                            float r = v_color.r * (1.0 + offset.x);
+                            float b = v_color.b * (1.0 - offset.x);
+                            finalColor = vec3(r, v_color.g, b);
+                        }
+
+                        gl_FragColor = vec4(finalColor, totalAlpha);
                     }
                 `;
 
@@ -478,11 +769,16 @@
                 this.positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
                 this.colorLocation = this.gl.getAttribLocation(this.program, 'a_color');
                 this.sizeLocation = this.gl.getAttribLocation(this.program, 'a_size');
+                this.alphaLocation = this.gl.getAttribLocation(this.program, 'a_alpha');
+
+                this.glowUniform = this.gl.getUniformLocation(this.program, 'u_glow');
+                this.chromaticUniform = this.gl.getUniformLocation(this.program, 'u_chromatic');
 
                 // Create buffers
                 this.positionBuffer = this.gl.createBuffer();
                 this.colorBuffer = this.gl.createBuffer();
                 this.sizeBuffer = this.gl.createBuffer();
+                this.alphaBuffer = this.gl.createBuffer();
             }
 
             createShader(type, source) {
@@ -514,45 +810,85 @@
                 return program;
             }
 
-            initParticles(pattern = 'spiral') {
+            initParticles(pattern = 'quantum') {
                 this.particles = [];
+                const schemes = this.colorSchemes[this.currentColorScheme];
 
                 for (let i = 0; i < this.particleCount; i++) {
                     let x, y, vx, vy;
+                    const t = i / this.particleCount;
 
                     switch (pattern) {
-                        case 'spiral':
-                            const angle = (i / this.particleCount) * Math.PI * 8;
-                            const radius = (i / this.particleCount) * 0.8;
-                            x = Math.cos(angle) * radius;
-                            y = Math.sin(angle) * radius;
-                            vx = -Math.sin(angle) * 0.002;
-                            vy = Math.cos(angle) * 0.002;
+                        case 'quantum':
+                            const rings = 5;
+                            const ring = Math.floor(t * rings);
+                            const angleQ = (i % (this.particleCount / rings)) / (this.particleCount / rings) * Math.PI * 2;
+                            const radiusQ = (ring / rings) * 0.7 + 0.2;
+                            x = Math.cos(angleQ) * radiusQ + (Math.random() - 0.5) * 0.1;
+                            y = Math.sin(angleQ) * radiusQ + (Math.random() - 0.5) * 0.1;
+                            vx = -Math.sin(angleQ) * 0.001;
+                            vy = Math.cos(angleQ) * 0.001;
                             break;
 
-                        case 'burst':
-                            const burstAngle = Math.random() * Math.PI * 2;
-                            const burstSpeed = Math.random() * 0.01 + 0.005;
-                            x = (Math.random() - 0.5) * 0.2;
-                            y = (Math.random() - 0.5) * 0.2;
-                            vx = Math.cos(burstAngle) * burstSpeed;
-                            vy = Math.sin(burstAngle) * burstSpeed;
+                        case 'vortex':
+                            const angleV = t * Math.PI * 12 + Math.random() * 0.5;
+                            const radiusV = Math.pow(t, 0.8) * 0.9;
+                            x = Math.cos(angleV) * radiusV;
+                            y = Math.sin(angleV) * radiusV;
+                            vx = -Math.sin(angleV) * radiusV * 0.003;
+                            vy = Math.cos(angleV) * radiusV * 0.003;
+                            break;
+
+                        case 'plasma':
+                            x = (Math.random() - 0.5) * 1.6;
+                            y = (Math.random() - 0.5) * 1.6;
+                            vx = (Math.random() - 0.5) * 0.003;
+                            vy = (Math.random() - 0.5) * 0.003;
+                            break;
+
+                        case 'spiral':
+                            const angleS = t * Math.PI * 10;
+                            const radiusS = t * 0.85;
+                            x = Math.cos(angleS) * radiusS;
+                            y = Math.sin(angleS) * radiusS;
+                            vx = -Math.sin(angleS) * 0.002;
+                            vy = Math.cos(angleS) * 0.002;
                             break;
 
                         case 'wave':
-                            x = (i / this.particleCount) * 2 - 1;
-                            y = Math.sin(x * Math.PI * 4) * 0.3;
-                            vx = 0;
+                            x = t * 2 - 1;
+                            y = Math.sin(x * Math.PI * 5 + Math.random()) * 0.4;
+                            vx = 0.001;
                             vy = (Math.random() - 0.5) * 0.002;
                             break;
 
+                        case 'helix':
+                            const helixT = t * Math.PI * 8;
+                            const helixRadius = 0.3;
+                            x = Math.cos(helixT) * helixRadius;
+                            y = t * 1.8 - 0.9 + Math.sin(helixT) * helixRadius;
+                            vx = -Math.sin(helixT) * 0.001;
+                            vy = Math.cos(helixT) * 0.001;
+                            break;
+
                         case 'cloud':
-                            const cloudRadius = Math.random() * 0.6 + 0.2;
+                            const cloudRadius = Math.random() * 0.7 + 0.2;
                             const cloudAngle = Math.random() * Math.PI * 2;
-                            x = Math.cos(cloudAngle) * cloudRadius * (Math.random() * 0.5 + 0.5);
-                            y = Math.sin(cloudAngle) * cloudRadius * (Math.random() * 0.5 + 0.5);
+                            const cloudDist = Math.pow(Math.random(), 0.5);
+                            x = Math.cos(cloudAngle) * cloudRadius * cloudDist;
+                            y = Math.sin(cloudAngle) * cloudRadius * cloudDist;
                             vx = (Math.random() - 0.5) * 0.001;
                             vy = (Math.random() - 0.5) * 0.001;
+                            break;
+
+                        case 'crystal':
+                            const sides = 6;
+                            const crystalAngle = Math.floor(Math.random() * sides) * (Math.PI * 2 / sides);
+                            const crystalDist = Math.random() * 0.8;
+                            x = Math.cos(crystalAngle) * crystalDist;
+                            y = Math.sin(crystalAngle) * crystalDist;
+                            vx = Math.cos(crystalAngle + Math.PI / 2) * 0.0005;
+                            vy = Math.sin(crystalAngle + Math.PI / 2) * 0.0005;
                             break;
 
                         default:
@@ -562,23 +898,39 @@
                             vy = (Math.random() - 0.5) * 0.002;
                     }
 
+                    // Assign color from scheme
+                    const colorIndex = Math.floor(t * schemes.length);
+                    const color = schemes[colorIndex];
+
                     this.particles.push({
                         x, y,
                         vx, vy,
-                        hue: (i / this.particleCount) * 360,
-                        saturation: 80 + Math.random() * 20,
-                        lightness: 50 + Math.random() * 20,
-                        size: this.params.particleSize * (0.5 + Math.random() * 1.5)
+                        hue: color.h,
+                        saturation: color.s,
+                        lightness: color.l,
+                        baseHue: color.h,
+                        size: this.params.particleSize * (0.6 + Math.random() * 1.4),
+                        alpha: 0.8 + Math.random() * 0.2,
+                        phase: Math.random() * Math.PI * 2
                     });
                 }
             }
 
             updateParticles() {
-                const mouseRadius = 0.3;
-                const interactionRadius = 0.1;
+                const mouseRadius = 0.35;
+                const interactionRadius = 0.12;
+                const turbulence = this.params.turbulence;
+
+                // Update attractors
+                this.attractors = this.attractors.filter(a => {
+                    a.life--;
+                    a.strength *= 0.95;
+                    return a.life > 0;
+                });
 
                 for (let i = 0; i < this.particles.length; i++) {
                     const p = this.particles[i];
+                    p.phase += 0.02;
 
                     // Mouse interaction
                     if (this.mouse.active) {
@@ -593,9 +945,22 @@
                         }
                     }
 
-                    // Particle-to-particle interaction (optimized - only check nearby)
-                    if (this.params.particleInteraction > 0.01 && i % 5 === 0) {
-                        const checkCount = Math.min(10, this.particles.length);
+                    // Attractor interaction
+                    for (const attractor of this.attractors) {
+                        const dx = attractor.x - p.x;
+                        const dy = attractor.y - p.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist > 0.001) {
+                            const force = attractor.strength * 0.002 / (dist + 0.1);
+                            p.vx += (dx / dist) * force;
+                            p.vy += (dy / dist) * force;
+                        }
+                    }
+
+                    // Particle-to-particle interaction (optimized)
+                    if (this.params.particleInteraction > 0.01 && i % 6 === 0) {
+                        const checkCount = Math.min(12, this.particles.length);
                         for (let j = 0; j < checkCount; j++) {
                             const other = this.particles[(i + j * Math.floor(this.particles.length / checkCount)) % this.particles.length];
                             if (other === p) continue;
@@ -612,6 +977,22 @@
                         }
                     }
 
+                    // Turbulence (Perlin-like noise)
+                    if (turbulence > 0.01) {
+                        const noiseX = Math.sin(p.x * 3 + this.time * 0.01) * Math.cos(p.y * 2);
+                        const noiseY = Math.cos(p.x * 2) * Math.sin(p.y * 3 + this.time * 0.01);
+                        p.vx += noiseX * turbulence * 0.0001;
+                        p.vy += noiseY * turbulence * 0.0001;
+                    }
+
+                    // Auto-rotate field
+                    if (this.params.autoRotate) {
+                        const angle = Math.atan2(p.y, p.x);
+                        const dist = Math.sqrt(p.x * p.x + p.y * p.y);
+                        p.vx += -Math.sin(angle) * dist * 0.0002;
+                        p.vy += Math.cos(angle) * dist * 0.0002;
+                    }
+
                     // Apply velocity
                     p.x += p.vx;
                     p.y += p.vy;
@@ -620,21 +1001,56 @@
                     p.vx *= this.params.damping;
                     p.vy *= this.params.damping;
 
-                    // Boundary wrapping
-                    if (p.x < -1.2) p.x = 1.2;
-                    if (p.x > 1.2) p.x = -1.2;
-                    if (p.y < -1.2) p.y = 1.2;
-                    if (p.y > 1.2) p.y = -1.2;
+                    // Boundary wrapping with smooth transition
+                    if (p.x < -1.3) p.x = 1.3;
+                    if (p.x > 1.3) p.x = -1.3;
+                    if (p.y < -1.3) p.y = 1.3;
+                    if (p.y > 1.3) p.y = -1.3;
 
-                    // Update color (rainbow effect)
-                    p.hue = (p.hue + this.params.colorSpeed * 0.1) % 360;
+                    // Update color with color shift
+                    const colorShift = this.params.colorSpeed * 0.2;
+                    p.hue = (p.baseHue + this.time * colorShift + Math.sin(p.phase) * 20) % 360;
+
+                    // Pulsating alpha
+                    p.alpha = 0.7 + Math.sin(p.phase) * 0.2;
+                }
+            }
+
+            spawnBurst(x, y, count = 200) {
+                const burstParticles = Math.min(count, 500);
+                this.attractors.push({ x, y, strength: 2.0, life: 60 });
+
+                for (let i = 0; i < burstParticles; i++) {
+                    const angle = (i / burstParticles) * Math.PI * 2;
+                    const speed = 0.005 + Math.random() * 0.01;
+                    const schemes = this.colorSchemes[this.currentColorScheme];
+                    const color = schemes[Math.floor(Math.random() * schemes.length)];
+
+                    this.particles.push({
+                        x: x + (Math.random() - 0.5) * 0.05,
+                        y: y + (Math.random() - 0.5) * 0.05,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        hue: color.h,
+                        saturation: color.s,
+                        lightness: color.l,
+                        baseHue: color.h,
+                        size: this.params.particleSize * (0.4 + Math.random() * 1.0),
+                        alpha: 1.0,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+
+                // Remove old particles to maintain performance
+                if (this.particles.length > this.particleCount * 1.5) {
+                    this.particles.splice(0, burstParticles);
                 }
             }
 
             render() {
                 const gl = this.gl;
 
-                // Trail effect by not completely clearing
+                // Enhanced trail effect
                 if (this.params.showTrails && this.params.trailLength > 0) {
                     gl.clearColor(0, 0, 0, this.params.trailLength);
                 } else {
@@ -646,6 +1062,7 @@
                 const positions = new Float32Array(this.particles.length * 2);
                 const colors = new Float32Array(this.particles.length * 3);
                 const sizes = new Float32Array(this.particles.length);
+                const alphas = new Float32Array(this.particles.length);
 
                 for (let i = 0; i < this.particles.length; i++) {
                     const p = this.particles[i];
@@ -658,6 +1075,7 @@
                     colors[i * 3 + 2] = rgb[2];
 
                     sizes[i] = p.size;
+                    alphas[i] = p.alpha;
                 }
 
                 // Upload data to GPU
@@ -670,8 +1088,15 @@
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.sizeBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, sizes, gl.DYNAMIC_DRAW);
 
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.alphaBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, alphas, gl.DYNAMIC_DRAW);
+
                 // Render
                 gl.useProgram(this.program);
+
+                // Set uniforms
+                gl.uniform1f(this.glowUniform, this.params.glowIntensity);
+                gl.uniform1f(this.chromaticUniform, this.params.chromatic);
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
                 gl.enableVertexAttribArray(this.positionLocation);
@@ -685,7 +1110,14 @@
                 gl.enableVertexAttribArray(this.sizeLocation);
                 gl.vertexAttribPointer(this.sizeLocation, 1, gl.FLOAT, false, 0, 0);
 
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.alphaBuffer);
+                gl.enableVertexAttribArray(this.alphaLocation);
+                gl.vertexAttribPointer(this.alphaLocation, 1, gl.FLOAT, false, 0, 0);
+
+                // Use additive blending for glow
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
                 gl.drawArrays(gl.POINTS, 0, this.particles.length);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             }
 
             hslToRgb(h, s, l) {
@@ -730,6 +1162,15 @@
                     this.mouse.active = false;
                 });
 
+                this.canvas.addEventListener('mousedown', (e) => {
+                    if (this.params.clickMode) {
+                        const rect = this.canvas.getBoundingClientRect();
+                        const x = (e.clientX - rect.left) / rect.width * 2 - 1;
+                        const y = -((e.clientY - rect.top) / rect.height * 2 - 1);
+                        this.spawnBurst(x, y);
+                    }
+                });
+
                 // Touch events
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
@@ -738,6 +1179,17 @@
                     this.mouse.x = (touch.clientX - rect.left) / rect.width * 2 - 1;
                     this.mouse.y = -((touch.clientY - rect.top) / rect.height * 2 - 1);
                     this.mouse.active = true;
+                }, { passive: false });
+
+                this.canvas.addEventListener('touchstart', (e) => {
+                    if (this.params.clickMode) {
+                        e.preventDefault();
+                        const rect = this.canvas.getBoundingClientRect();
+                        const touch = e.touches[0];
+                        const x = (touch.clientX - rect.left) / rect.width * 2 - 1;
+                        const y = -((touch.clientY - rect.top) / rect.height * 2 - 1);
+                        this.spawnBurst(x, y);
+                    }
                 }, { passive: false });
 
                 this.canvas.addEventListener('touchend', () => {
@@ -756,6 +1208,11 @@
                 this.initParticles(this.presets[this.currentPreset].initPattern);
             }
 
+            setColorScheme(schemeName) {
+                this.currentColorScheme = schemeName;
+                this.initParticles(this.presets[this.currentPreset].initPattern);
+            }
+
             setPreset(presetName) {
                 this.currentPreset = presetName;
                 const preset = this.presets[presetName];
@@ -764,6 +1221,7 @@
                 this.params.particleInteraction = preset.particleInteraction;
                 this.params.damping = preset.damping;
                 this.params.colorSpeed = preset.colorSpeed;
+                this.params.turbulence = preset.turbulence;
 
                 this.initParticles(preset.initPattern);
 
@@ -779,6 +1237,19 @@
 
                 document.getElementById('colorSpeed').value = preset.colorSpeed;
                 document.getElementById('colorSpeedValue').textContent = preset.colorSpeed.toFixed(1);
+
+                document.getElementById('turbulence').value = preset.turbulence;
+                document.getElementById('turbulenceValue').textContent = preset.turbulence.toFixed(1);
+
+                // Show mode indicator
+                this.showModeIndicator(presetName);
+            }
+
+            showModeIndicator(text) {
+                const indicator = document.getElementById('modeIndicator');
+                indicator.textContent = `Mode: ${text.toUpperCase()}`;
+                indicator.classList.add('show');
+                setTimeout(() => indicator.classList.remove('show'), 2000);
             }
 
             clear() {
@@ -853,13 +1324,25 @@
             universe.params.damping = value;
         });
 
+        document.getElementById('turbulence').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('turbulenceValue').textContent = value.toFixed(1);
+            universe.params.turbulence = value;
+        });
+
         document.getElementById('particleSize').addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
             document.getElementById('particleSizeValue').textContent = value.toFixed(1);
             universe.params.particleSize = value;
             universe.particles.forEach(p => {
-                p.size = value * (0.5 + Math.random() * 1.5);
+                p.size = value * (0.6 + Math.random() * 1.4);
             });
+        });
+
+        document.getElementById('glow').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('glowValue').textContent = value.toFixed(1);
+            universe.params.glowIntensity = value;
         });
 
         document.getElementById('trailLength').addEventListener('input', (e) => {
@@ -874,11 +1357,25 @@
             universe.params.colorSpeed = value;
         });
 
+        document.getElementById('chromatic').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('chromaticValue').textContent = value.toFixed(2);
+            universe.params.chromatic = value;
+        });
+
         document.getElementById('showTrails').addEventListener('change', (e) => {
             universe.params.showTrails = e.target.checked;
             if (!e.target.checked) {
                 universe.clear();
             }
+        });
+
+        document.getElementById('clickMode').addEventListener('change', (e) => {
+            universe.params.clickMode = e.target.checked;
+        });
+
+        document.getElementById('autoRotate').addEventListener('change', (e) => {
+            universe.params.autoRotate = e.target.checked;
         });
 
         // Preset buttons
@@ -887,6 +1384,16 @@
                 document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 universe.setPreset(btn.dataset.preset);
+            });
+        });
+
+        // Color scheme buttons
+        document.querySelectorAll('.color-scheme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.color-scheme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                universe.setColorScheme(btn.dataset.scheme);
+                universe.showModeIndicator(`Color: ${btn.dataset.scheme}`);
             });
         });
 
@@ -938,17 +1445,47 @@
                 case 'H':
                     document.getElementById('togglePanelBtn').click();
                     break;
+                case 't':
+                case 'T':
+                    const trailsCheckbox = document.getElementById('showTrails');
+                    trailsCheckbox.checked = !trailsCheckbox.checked;
+                    trailsCheckbox.dispatchEvent(new Event('change'));
+                    break;
+                case 'a':
+                case 'A':
+                    const autoCheckbox = document.getElementById('autoRotate');
+                    autoCheckbox.checked = !autoCheckbox.checked;
+                    autoCheckbox.dispatchEvent(new Event('change'));
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    const clickCheckbox = document.getElementById('clickMode');
+                    clickCheckbox.checked = !clickCheckbox.checked;
+                    clickCheckbox.dispatchEvent(new Event('change'));
+                    break;
                 case '1':
-                    document.querySelector('[data-preset="galaxy"]').click();
+                    document.querySelector('[data-preset="quantum"]').click();
                     break;
                 case '2':
-                    document.querySelector('[data-preset="fireworks"]').click();
+                    document.querySelector('[data-preset="vortex"]').click();
                     break;
                 case '3':
-                    document.querySelector('[data-preset="aurora"]').click();
+                    document.querySelector('[data-preset="plasma"]').click();
                     break;
                 case '4':
+                    document.querySelector('[data-preset="galaxy"]').click();
+                    break;
+                case '5':
+                    document.querySelector('[data-preset="aurora"]').click();
+                    break;
+                case '6':
+                    document.querySelector('[data-preset="helix"]').click();
+                    break;
+                case '7':
                     document.querySelector('[data-preset="nebula"]').click();
+                    break;
+                case '8':
+                    document.querySelector('[data-preset="crystal"]').click();
                     break;
             }
         });
@@ -956,13 +1493,26 @@
         // Prevent context menu on canvas
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        console.log('%c WebGL Particle Universe ', 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; font-size: 16px; font-weight: bold;');
-        console.log('Keyboard shortcuts:');
-        console.log('  1-4: Switch presets');
-        console.log('  F: Toggle fullscreen');
-        console.log('  C: Clear canvas');
-        console.log('  R: Reset particles');
-        console.log('  H: Hide/show controls');
+        console.log('%c Quantum Particle Universe ', 'background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%); color: white; padding: 12px 24px; font-size: 18px; font-weight: bold; border-radius: 8px;');
+        console.log('%c Modern WebGL Particle System with Advanced Effects ', 'color: #00d4ff; font-size: 12px; font-weight: 600;');
+        console.log('\n%cKeyboard Shortcuts:', 'color: #00ff88; font-weight: bold; font-size: 14px;');
+        console.log('  %c1-8%c: Switch visual modes', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cF%c: Toggle fullscreen', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cC%c: Clear canvas', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cR%c: Reset particles', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cT%c: Toggle trails', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cA%c: Toggle auto-rotate', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cSpace%c: Toggle click burst mode', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('  %cH%c: Hide/show controls', 'color: #00d4ff; font-weight: bold;', 'color: #aaa;');
+        console.log('\n%cFeatures:', 'color: #ff006e; font-weight: bold; font-size: 14px;');
+        console.log('  • 8 unique visual modes');
+        console.log('  • 6 modern color schemes');
+        console.log('  • Multi-layer glow effects');
+        console.log('  • Chromatic aberration');
+        console.log('  • Click burst particles');
+        console.log('  • Turbulence simulation');
+        console.log('  • Auto-rotate field');
+        console.log('  • Up to 30,000 particles');
     </script>
 </body>
 </html>
