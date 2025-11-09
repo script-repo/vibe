@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor - Professional Writing Tool</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f7fa;
+            --bg-tertiary: #e8ecef;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-tertiary: #718096;
+            --border-color: #cbd5e0;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --code-bg: #f8fafc;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --bg-tertiary: #374151;
+            --text-primary: #f7fafc;
+            --text-secondary: #e2e8f0;
+            --text-tertiary: #a0aec0;
+            --border-color: #4a5568;
+            --accent-color: #60a5fa;
+            --accent-hover: #3b82f6;
+            --code-bg: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0 0.5rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .btn {
+            padding: 0.5rem 0.875rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            min-width: auto;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            height: calc(100vh - 120px);
+            position: relative;
+        }
+
+        /* Editor Pane */
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        #editor {
+            flex: 1;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            border: none;
+            outline: none;
+            resize: none;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-y: auto;
+            tab-size: 4;
+        }
+
+        /* Resizer */
+        .resizer {
+            width: 8px;
+            background: var(--border-color);
+            cursor: col-resize;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .resizer:hover,
+        .resizer.active {
+            background: var(--accent-color);
+        }
+
+        .resizer::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 3px;
+            height: 40px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+        }
+
+        /* Preview Pane */
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        #preview {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        /* Markdown Styles */
+        #preview h1, #preview h2, #preview h3, #preview h4, #preview h5, #preview h6 {
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--text-primary);
+        }
+
+        #preview h1 { font-size: 2.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        #preview h2 { font-size: 1.875rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.375rem; }
+        #preview h3 { font-size: 1.5rem; }
+        #preview h4 { font-size: 1.25rem; }
+        #preview h5 { font-size: 1.125rem; }
+        #preview h6 { font-size: 1rem; color: var(--text-secondary); }
+
+        #preview p {
+            margin: 1em 0;
+            line-height: 1.7;
+        }
+
+        #preview a {
+            color: var(--accent-color);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        #preview a:hover {
+            border-bottom-color: var(--accent-color);
+        }
+
+        #preview ul, #preview ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+
+        #preview li {
+            margin: 0.5em 0;
+            line-height: 1.7;
+        }
+
+        #preview blockquote {
+            margin: 1.5em 0;
+            padding: 1em 1.5em;
+            border-left: 4px solid var(--accent-color);
+            background: var(--code-bg);
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        #preview code {
+            padding: 0.2em 0.4em;
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+            color: var(--danger-color);
+        }
+
+        #preview pre {
+            margin: 1.5em 0;
+            padding: 1.25rem;
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        #preview pre code {
+            padding: 0;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        #preview table {
+            width: 100%;
+            margin: 1.5em 0;
+            border-collapse: collapse;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview th {
+            background: var(--bg-secondary);
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview td {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        #preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin: 1em 0;
+        }
+
+        #preview hr {
+            margin: 2em 0;
+            border: none;
+            border-top: 2px solid var(--border-color);
+        }
+
+        #preview .task-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        #preview .task-list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        #preview .task-list-item input[type="checkbox"] {
+            margin-top: 0.4em;
+            cursor: pointer;
+        }
+
+        /* Code Syntax Highlighting */
+        .token.comment { color: #6a9955; }
+        .token.keyword { color: #569cd6; font-weight: bold; }
+        .token.string { color: #ce9178; }
+        .token.number { color: #b5cea8; }
+        .token.function { color: #dcdcaa; }
+        .token.operator { color: #d4d4d4; }
+        .token.punctuation { color: #808080; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        /* TOC */
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: background 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .toc-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .toc-item.level-1 { padding-left: 0.75rem; font-weight: 600; }
+        .toc-item.level-2 { padding-left: 1.5rem; }
+        .toc-item.level-3 { padding-left: 2.25rem; font-size: 0.875rem; }
+        .toc-item.level-4 { padding-left: 3rem; font-size: 0.875rem; }
+
+        /* Recent Documents */
+        .recent-doc {
+            padding: 0.875rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .recent-doc:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .recent-doc-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .recent-doc-meta {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Templates */
+        .template-item {
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .template-item:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .template-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+            font-family: var(--font-mono);
+        }
+
+        /* Search Bar */
+        .search-container {
+            display: none;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            gap: 0.5rem;
+        }
+
+        .search-container.active {
+            display: flex;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .search-results {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 0.5rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .header,
+            .toolbar,
+            .editor-pane,
+            .resizer,
+            .sidebar,
+            .preview-header {
+                display: none !important;
+            }
+
+            .container {
+                height: auto;
+            }
+
+            .preview-pane {
+                width: 100%;
+            }
+
+            #preview {
+                padding: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .resizer {
+                display: none;
+            }
+
+            .header-stats {
+                display: none;
+            }
+
+            .toolbar {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Icon styles */
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">
+                <span>✍️</span>
+                <span>Markdown Editor</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat">
+                    <span>Words:</span>
+                    <strong id="wordCount">0</strong>
+                </div>
+                <div class="stat">
+                    <span>Characters:</span>
+                    <strong id="charCount">0</strong>
+                </div>
+                <div class="stat">
+                    <span>Reading:</span>
+                    <strong id="readingTime">0 min</strong>
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" id="newBtn" title="New Document (Ctrl+N)">
+                📄 New
+            </button>
+            <button class="btn" id="saveBtn" title="Save (Ctrl+S)">
+                💾 Save
+            </button>
+            <button class="btn" id="exportBtn" title="Export">
+                📥 Export
+            </button>
+            <button class="btn" id="themeBtn" title="Toggle Theme">
+                🌙
+            </button>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-group">
+            <button class="btn btn-icon" data-action="bold" title="Bold (Ctrl+B)">
+                <strong>B</strong>
+            </button>
+            <button class="btn btn-icon" data-action="italic" title="Italic (Ctrl+I)">
+                <em>I</em>
+            </button>
+            <button class="btn btn-icon" data-action="strikethrough" title="Strikethrough">
+                <s>S</s>
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="btn btn-icon" data-action="h1" title="Heading 1">
+                H1
+            </button>
+            <button class="btn btn-icon" data-action="h2" title="Heading 2">
+                H2
+            </button>
+            <button class="btn btn-icon" data-action="h3" title="Heading 3">
+                H3
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="btn btn-icon" data-action="ul" title="Unordered List">
+                • List
+            </button>
+            <button class="btn btn-icon" data-action="ol" title="Ordered List">
+                1. List
+            </button>
+            <button class="btn btn-icon" data-action="task" title="Task List">
+                ☑ Task
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="btn btn-icon" data-action="link" title="Link (Ctrl+K)">
+                🔗
+            </button>
+            <button class="btn btn-icon" data-action="image" title="Image">
+                🖼️
+            </button>
+            <button class="btn btn-icon" data-action="code" title="Inline Code">
+                &lt;/&gt;
+            </button>
+            <button class="btn btn-icon" data-action="codeblock" title="Code Block">
+                { }
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="btn btn-icon" data-action="quote" title="Blockquote">
+                ❝
+            </button>
+            <button class="btn btn-icon" data-action="table" title="Table">
+                ▦
+            </button>
+            <button class="btn btn-icon" data-action="hr" title="Horizontal Rule">
+                ―
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="btn" id="templatesBtn">
+                📋 Templates
+            </button>
+            <button class="btn" id="tocBtn">
+                📑 Outline
+            </button>
+            <button class="btn" id="searchBtn">
+                🔍 Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Container -->
+    <div class="search-container" id="searchContainer">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search...">
+        <input type="text" class="search-input" id="replaceInput" placeholder="Replace with...">
+        <button class="btn btn-icon" id="findNextBtn" title="Find Next">▼</button>
+        <button class="btn btn-icon" id="findPrevBtn" title="Find Previous">▲</button>
+        <button class="btn" id="replaceBtn">Replace</button>
+        <button class="btn" id="replaceAllBtn">Replace All</button>
+        <div class="search-results" id="searchResults"></div>
+        <button class="btn btn-icon" id="closeSearchBtn">✕</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Editor Pane -->
+        <div class="editor-pane">
+            <div class="editor-header">
+                <span>MARKDOWN</span>
+                <button class="btn btn-icon" id="clearBtn" title="Clear Editor">🗑️</button>
+            </div>
+            <textarea id="editor" placeholder="Start writing your markdown here...
+
+# Welcome to Markdown Editor
+
+Try some **bold text** or *italic text*.
+
+## Features
+- Live preview
+- Syntax highlighting
+- Export options
+- And much more!"></textarea>
+        </div>
+
+        <!-- Resizer -->
+        <div class="resizer" id="resizer"></div>
+
+        <!-- Preview Pane -->
+        <div class="preview-pane">
+            <div class="preview-header">
+                <span>PREVIEW</span>
+                <button class="btn btn-icon" id="printBtn" title="Print">🖨️</button>
+            </div>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title" id="sidebarTitle">Outline</h2>
+            <button class="btn btn-icon" id="closeSidebarBtn">✕</button>
+        </div>
+        <div class="sidebar-content" id="sidebarContent"></div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Document</h3>
+                <button class="btn btn-icon" id="closeExportBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Document Title</label>
+                    <input type="text" class="form-input" id="exportTitle" placeholder="My Document">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Export Format</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" id="exportMarkdownBtn">
+                            📝 Markdown (.md)
+                        </button>
+                        <button class="btn btn-primary" id="exportHtmlBtn">
+                            🌐 HTML (.html)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Markdown Parser
+        // ============================================
+        class MarkdownParser {
+            constructor() {
+                this.rules = [
+                    // Headers
+                    { pattern: /^#{6}\s+(.+)$/gm, replacement: '<h6>$1</h6>' },
+                    { pattern: /^#{5}\s+(.+)$/gm, replacement: '<h5>$1</h5>' },
+                    { pattern: /^#{4}\s+(.+)$/gm, replacement: '<h4>$1</h4>' },
+                    { pattern: /^#{3}\s+(.+)$/gm, replacement: '<h3>$1</h3>' },
+                    { pattern: /^#{2}\s+(.+)$/gm, replacement: '<h2>$1</h2>' },
+                    { pattern: /^#{1}\s+(.+)$/gm, replacement: '<h1>$1</h1>' },
+                ];
+            }
+
+            parse(markdown) {
+                if (!markdown) return '';
+
+                let html = markdown;
+
+                // Escape HTML
+                html = this.escapeHtml(html);
+
+                // Code blocks (process first to protect them)
+                html = this.parseCodeBlocks(html);
+
+                // Tables
+                html = this.parseTables(html);
+
+                // Task lists (before regular lists)
+                html = this.parseTaskLists(html);
+
+                // Lists
+                html = this.parseLists(html);
+
+                // Blockquotes
+                html = this.parseBlockquotes(html);
+
+                // Horizontal rules
+                html = html.replace(/^(?:---|\*\*\*|___)$/gm, '<hr>');
+
+                // Headers
+                for (let rule of this.rules) {
+                    html = html.replace(rule.pattern, rule.replacement);
+                }
+
+                // Bold
+                html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+                // Italic
+                html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+                html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+                // Strikethrough
+                html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+                // Inline code (after bold/italic)
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+                // Images (before links)
+                html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1">');
+
+                // Links
+                html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+                // Paragraphs
+                html = this.parseParagraphs(html);
+
+                return html;
+            }
+
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                // Don't escape code blocks and inline code
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            parseCodeBlocks(text) {
+                return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                    const language = lang || 'plaintext';
+                    const highlighted = this.highlightCode(code.trim(), language);
+                    return `<pre><code class="language-${language}">${highlighted}</code></pre>`;
+                });
+            }
+
+            highlightCode(code, language) {
+                // Simple syntax highlighting
+                let highlighted = code;
+
+                if (['javascript', 'js', 'typescript', 'ts'].includes(language)) {
+                    // Keywords
+                    highlighted = highlighted.replace(/\b(const|let|var|function|return|if|else|for|while|class|extends|import|export|from|async|await|new|this|super)\b/g,
+                        '<span class="token keyword">$1</span>');
+
+                    // Strings
+                    highlighted = highlighted.replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g,
+                        '<span class="token string">$&</span>');
+
+                    // Numbers
+                    highlighted = highlighted.replace(/\b(\d+)\b/g,
+                        '<span class="token number">$1</span>');
+
+                    // Functions
+                    highlighted = highlighted.replace(/\b(\w+)(?=\()/g,
+                        '<span class="token function">$1</span>');
+                }
+
+                return highlighted;
+            }
+
+            parseTables(text) {
+                const tableRegex = /^\|(.+)\|\n\|[-:\s|]+\|\n((?:\|.+\|\n?)+)/gm;
+
+                return text.replace(tableRegex, (match, header, rows) => {
+                    const headers = header.split('|').map(h => h.trim()).filter(h => h);
+                    const rowData = rows.trim().split('\n').map(row =>
+                        row.split('|').map(cell => cell.trim()).filter(cell => cell)
+                    );
+
+                    let table = '<table>\n<thead>\n<tr>\n';
+                    headers.forEach(h => {
+                        table += `<th>${h}</th>\n`;
+                    });
+                    table += '</tr>\n</thead>\n<tbody>\n';
+
+                    rowData.forEach(row => {
+                        table += '<tr>\n';
+                        row.forEach(cell => {
+                            table += `<td>${cell}</td>\n`;
+                        });
+                        table += '</tr>\n';
+                    });
+
+                    table += '</tbody>\n</table>';
+                    return table;
+                });
+            }
+
+            parseTaskLists(text) {
+                // Unchecked tasks
+                text = text.replace(/^- \[ \] (.+)$/gm,
+                    '<ul class="task-list"><li class="task-list-item"><input type="checkbox"> <span>$1</span></li></ul>');
+
+                // Checked tasks
+                text = text.replace(/^- \[x\] (.+)$/gim,
+                    '<ul class="task-list"><li class="task-list-item"><input type="checkbox" checked> <span>$1</span></li></ul>');
+
+                return text;
+            }
+
+            parseLists(text) {
+                // Unordered lists
+                text = text.replace(/^[\*\-\+]\s+(.+)$/gm, '<ul><li>$1</li></ul>');
+
+                // Ordered lists
+                text = text.replace(/^\d+\.\s+(.+)$/gm, '<ol><li>$1</li></ol>');
+
+                // Merge consecutive lists
+                text = text.replace(/<\/ul>\n<ul>/g, '\n');
+                text = text.replace(/<\/ol>\n<ol>/g, '\n');
+                text = text.replace(/<\/ul>\n<ul class="task-list">/g, '\n');
+
+                return text;
+            }
+
+            parseBlockquotes(text) {
+                return text.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>')
+                    .replace(/<\/blockquote>\n<blockquote>/g, '\n');
+            }
+
+            parseParagraphs(text) {
+                const lines = text.split('\n');
+                let result = [];
+                let inParagraph = false;
+                let paragraphText = '';
+
+                for (let line of lines) {
+                    const trimmed = line.trim();
+
+                    // Check if line is a block element
+                    if (trimmed.match(/^<(h[1-6]|ul|ol|pre|blockquote|table|hr)/)) {
+                        // Close any open paragraph
+                        if (inParagraph && paragraphText) {
+                            result.push(`<p>${paragraphText.trim()}</p>`);
+                            paragraphText = '';
+                            inParagraph = false;
+                        }
+                        result.push(line);
+                    } else if (trimmed === '') {
+                        // Empty line closes paragraph
+                        if (inParagraph && paragraphText) {
+                            result.push(`<p>${paragraphText.trim()}</p>`);
+                            paragraphText = '';
+                            inParagraph = false;
+                        }
+                        result.push('');
+                    } else if (trimmed.match(/<\/(h[1-6]|ul|ol|pre|blockquote|table|li|code)>/)) {
+                        // Closing tag
+                        result.push(line);
+                    } else {
+                        // Regular text line
+                        if (inParagraph) {
+                            paragraphText += ' ' + trimmed;
+                        } else {
+                            inParagraph = true;
+                            paragraphText = trimmed;
+                        }
+                    }
+                }
+
+                // Close final paragraph if open
+                if (inParagraph && paragraphText) {
+                    result.push(`<p>${paragraphText.trim()}</p>`);
+                }
+
+                return result.join('\n');
+            }
+        }
+
+        // ============================================
+        // Application State
+        // ============================================
+        class MarkdownEditor {
+            constructor() {
+                this.parser = new MarkdownParser();
+                this.currentDoc = {
+                    id: this.generateId(),
+                    title: 'Untitled',
+                    content: '',
+                    savedAt: new Date().toISOString()
+                };
+                this.autoSaveTimeout = null;
+                this.searchMatches = [];
+                this.currentMatchIndex = -1;
+
+                this.initElements();
+                this.initEventListeners();
+                this.loadFromLocalStorage();
+                this.updatePreview();
+                this.updateStats();
+            }
+
+            generateId() {
+                return 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initElements() {
+                // Main elements
+                this.editor = document.getElementById('editor');
+                this.preview = document.getElementById('preview');
+                this.resizer = document.getElementById('resizer');
+                this.sidebar = document.getElementById('sidebar');
+                this.sidebarContent = document.getElementById('sidebarContent');
+                this.sidebarTitle = document.getElementById('sidebarTitle');
+
+                // Stats
+                this.wordCount = document.getElementById('wordCount');
+                this.charCount = document.getElementById('charCount');
+                this.readingTime = document.getElementById('readingTime');
+
+                // Buttons
+                this.newBtn = document.getElementById('newBtn');
+                this.saveBtn = document.getElementById('saveBtn');
+                this.exportBtn = document.getElementById('exportBtn');
+                this.themeBtn = document.getElementById('themeBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.printBtn = document.getElementById('printBtn');
+                this.templatesBtn = document.getElementById('templatesBtn');
+                this.tocBtn = document.getElementById('tocBtn');
+                this.searchBtn = document.getElementById('searchBtn');
+
+                // Search
+                this.searchContainer = document.getElementById('searchContainer');
+                this.searchInput = document.getElementById('searchInput');
+                this.replaceInput = document.getElementById('replaceInput');
+                this.searchResults = document.getElementById('searchResults');
+
+                // Modals
+                this.exportModal = document.getElementById('exportModal');
+            }
+
+            initEventListeners() {
+                // Editor events
+                this.editor.addEventListener('input', () => {
+                    this.updatePreview();
+                    this.updateStats();
+                    this.scheduleAutoSave();
+                });
+
+                this.editor.addEventListener('scroll', () => {
+                    this.syncScroll();
+                });
+
+                // Toolbar buttons
+                document.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const action = e.currentTarget.dataset.action;
+                        this.applyFormatting(action);
+                    });
+                });
+
+                // Header buttons
+                this.newBtn.addEventListener('click', () => this.newDocument());
+                this.saveBtn.addEventListener('click', () => this.saveDocument());
+                this.exportBtn.addEventListener('click', () => this.showExportModal());
+                this.themeBtn.addEventListener('click', () => this.toggleTheme());
+                this.clearBtn.addEventListener('click', () => this.clearEditor());
+                this.printBtn.addEventListener('click', () => window.print());
+                this.templatesBtn.addEventListener('click', () => this.showTemplates());
+                this.tocBtn.addEventListener('click', () => this.showTOC());
+                this.searchBtn.addEventListener('click', () => this.toggleSearch());
+
+                // Sidebar
+                document.getElementById('closeSidebarBtn').addEventListener('click', () => {
+                    this.sidebar.classList.remove('active');
+                });
+
+                // Resizer
+                this.initResizer();
+
+                // Keyboard shortcuts
+                this.initKeyboardShortcuts();
+
+                // Search
+                this.initSearch();
+
+                // Export modal
+                document.getElementById('closeExportBtn').addEventListener('click', () => {
+                    this.exportModal.classList.remove('active');
+                });
+
+                document.getElementById('exportMarkdownBtn').addEventListener('click', () => {
+                    this.exportMarkdown();
+                });
+
+                document.getElementById('exportHtmlBtn').addEventListener('click', () => {
+                    this.exportHtml();
+                });
+
+                // Close modal on overlay click
+                this.exportModal.addEventListener('click', (e) => {
+                    if (e.target === this.exportModal) {
+                        this.exportModal.classList.remove('active');
+                    }
+                });
+            }
+
+            initResizer() {
+                let isResizing = false;
+                let startX = 0;
+                let startWidth = 0;
+
+                this.resizer.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startWidth = document.querySelector('.editor-pane').offsetWidth;
+                    this.resizer.classList.add('active');
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const diff = e.clientX - startX;
+                    const newWidth = startWidth + diff;
+                    const container = document.querySelector('.container');
+                    const containerWidth = container.offsetWidth;
+
+                    if (newWidth > 300 && newWidth < containerWidth - 300) {
+                        document.querySelector('.editor-pane').style.flex = `0 0 ${newWidth}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isResizing) {
+                        isResizing = false;
+                        this.resizer.classList.remove('active');
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                    }
+                });
+            }
+
+            initKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Ctrl/Cmd + S - Save
+                    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                        e.preventDefault();
+                        this.saveDocument();
+                    }
+
+                    // Ctrl/Cmd + N - New
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                        e.preventDefault();
+                        this.newDocument();
+                    }
+
+                    // Ctrl/Cmd + B - Bold
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                        e.preventDefault();
+                        this.applyFormatting('bold');
+                    }
+
+                    // Ctrl/Cmd + I - Italic
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+                        e.preventDefault();
+                        this.applyFormatting('italic');
+                    }
+
+                    // Ctrl/Cmd + K - Link
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        this.applyFormatting('link');
+                    }
+
+                    // Ctrl/Cmd + F - Search
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                        e.preventDefault();
+                        this.toggleSearch();
+                    }
+
+                    // Esc - Close search/sidebar
+                    if (e.key === 'Escape') {
+                        this.searchContainer.classList.remove('active');
+                        this.sidebar.classList.remove('active');
+                    }
+                });
+            }
+
+            initSearch() {
+                this.searchInput.addEventListener('input', () => {
+                    this.performSearch();
+                });
+
+                document.getElementById('findNextBtn').addEventListener('click', () => {
+                    this.findNext();
+                });
+
+                document.getElementById('findPrevBtn').addEventListener('click', () => {
+                    this.findPrevious();
+                });
+
+                document.getElementById('replaceBtn').addEventListener('click', () => {
+                    this.replaceCurrent();
+                });
+
+                document.getElementById('replaceAllBtn').addEventListener('click', () => {
+                    this.replaceAll();
+                });
+
+                document.getElementById('closeSearchBtn').addEventListener('click', () => {
+                    this.searchContainer.classList.remove('active');
+                });
+            }
+
+            updatePreview() {
+                const markdown = this.editor.value;
+                const html = this.parser.parse(markdown);
+                this.preview.innerHTML = html;
+            }
+
+            updateStats() {
+                const text = this.editor.value;
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+                const chars = text.length;
+                const readingMinutes = Math.ceil(words / 200) || 0;
+
+                this.wordCount.textContent = words;
+                this.charCount.textContent = chars;
+                this.readingTime.textContent = `${readingMinutes} min`;
+            }
+
+            syncScroll() {
+                const editorScrollPercent = this.editor.scrollTop / (this.editor.scrollHeight - this.editor.clientHeight);
+                const previewScrollTarget = editorScrollPercent * (this.preview.scrollHeight - this.preview.clientHeight);
+                this.preview.scrollTop = previewScrollTarget;
+            }
+
+            applyFormatting(action) {
+                const start = this.editor.selectionStart;
+                const end = this.editor.selectionEnd;
+                const selectedText = this.editor.value.substring(start, end);
+                const beforeText = this.editor.value.substring(0, start);
+                const afterText = this.editor.value.substring(end);
+
+                let formattedText = '';
+                let cursorOffset = 0;
+
+                switch (action) {
+                    case 'bold':
+                        formattedText = `**${selectedText || 'bold text'}**`;
+                        cursorOffset = selectedText ? formattedText.length : 2;
+                        break;
+                    case 'italic':
+                        formattedText = `*${selectedText || 'italic text'}*`;
+                        cursorOffset = selectedText ? formattedText.length : 1;
+                        break;
+                    case 'strikethrough':
+                        formattedText = `~~${selectedText || 'strikethrough'}~~`;
+                        cursorOffset = selectedText ? formattedText.length : 2;
+                        break;
+                    case 'h1':
+                        formattedText = `\n# ${selectedText || 'Heading 1'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'h2':
+                        formattedText = `\n## ${selectedText || 'Heading 2'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'h3':
+                        formattedText = `\n### ${selectedText || 'Heading 3'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'ul':
+                        formattedText = `\n- ${selectedText || 'List item'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'ol':
+                        formattedText = `\n1. ${selectedText || 'List item'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'task':
+                        formattedText = `\n- [ ] ${selectedText || 'Task item'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'link':
+                        formattedText = `[${selectedText || 'link text'}](url)`;
+                        cursorOffset = selectedText ? formattedText.length - 4 : 1;
+                        break;
+                    case 'image':
+                        formattedText = `![${selectedText || 'alt text'}](image-url)`;
+                        cursorOffset = selectedText ? formattedText.length - 11 : 2;
+                        break;
+                    case 'code':
+                        formattedText = `\`${selectedText || 'code'}\``;
+                        cursorOffset = selectedText ? formattedText.length : 1;
+                        break;
+                    case 'codeblock':
+                        formattedText = `\n\`\`\`\n${selectedText || 'code'}\n\`\`\`\n`;
+                        cursorOffset = selectedText ? 4 : 4;
+                        break;
+                    case 'quote':
+                        formattedText = `\n> ${selectedText || 'Quote'}\n`;
+                        cursorOffset = formattedText.length - 1;
+                        break;
+                    case 'table':
+                        formattedText = '\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n';
+                        cursorOffset = formattedText.length;
+                        break;
+                    case 'hr':
+                        formattedText = '\n---\n';
+                        cursorOffset = formattedText.length;
+                        break;
+                }
+
+                this.editor.value = beforeText + formattedText + afterText;
+                this.editor.focus();
+                this.editor.setSelectionRange(start + cursorOffset, start + cursorOffset);
+
+                this.updatePreview();
+                this.updateStats();
+                this.scheduleAutoSave();
+            }
+
+            newDocument() {
+                if (this.editor.value.trim() && confirm('Create new document? Any unsaved changes will be lost.')) {
+                    this.currentDoc = {
+                        id: this.generateId(),
+                        title: 'Untitled',
+                        content: '',
+                        savedAt: new Date().toISOString()
+                    };
+                    this.editor.value = '';
+                    this.updatePreview();
+                    this.updateStats();
+                    this.showNotification('New document created', 'success');
+                }
+            }
+
+            saveDocument() {
+                this.currentDoc.content = this.editor.value;
+                this.currentDoc.savedAt = new Date().toISOString();
+
+                // Save to localStorage
+                const recentDocs = this.getRecentDocuments();
+                const existingIndex = recentDocs.findIndex(d => d.id === this.currentDoc.id);
+
+                if (existingIndex >= 0) {
+                    recentDocs[existingIndex] = this.currentDoc;
+                } else {
+                    recentDocs.unshift(this.currentDoc);
+                }
+
+                // Keep only last 10 documents
+                localStorage.setItem('recentDocuments', JSON.stringify(recentDocs.slice(0, 10)));
+                localStorage.setItem('currentDocument', JSON.stringify(this.currentDoc));
+
+                this.showNotification('Document saved', 'success');
+            }
+
+            scheduleAutoSave() {
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = setTimeout(() => {
+                    this.saveDocument();
+                }, 3000);
+            }
+
+            loadFromLocalStorage() {
+                const saved = localStorage.getItem('currentDocument');
+                if (saved) {
+                    this.currentDoc = JSON.parse(saved);
+                    this.editor.value = this.currentDoc.content || '';
+                    this.updatePreview();
+                    this.updateStats();
+                }
+
+                // Load theme
+                const theme = localStorage.getItem('theme') || 'light';
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    this.themeBtn.textContent = '☀️';
+                }
+            }
+
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+
+                this.themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            }
+
+            clearEditor() {
+                if (confirm('Clear all content?')) {
+                    this.editor.value = '';
+                    this.updatePreview();
+                    this.updateStats();
+                }
+            }
+
+            showExportModal() {
+                this.exportModal.classList.add('active');
+                document.getElementById('exportTitle').value = this.currentDoc.title;
+            }
+
+            exportMarkdown() {
+                const title = document.getElementById('exportTitle').value || 'document';
+                const content = this.editor.value;
+                const blob = new Blob([content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title}.md`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.exportModal.classList.remove('active');
+                this.showNotification('Markdown exported', 'success');
+            }
+
+            exportHtml() {
+                const title = document.getElementById('exportTitle').value || 'document';
+                const content = this.preview.innerHTML;
+
+                const htmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #1a202c;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.25rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+        h2 { font-size: 1.875rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.375rem; }
+        h3 { font-size: 1.5rem; }
+        code {
+            padding: 0.2em 0.4em;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+            font-size: 0.875em;
+            color: #ef4444;
+        }
+        pre {
+            padding: 1.25rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        pre code {
+            padding: 0;
+            background: none;
+            border: none;
+            color: inherit;
+        }
+        blockquote {
+            margin: 1.5em 0;
+            padding: 1em 1.5em;
+            border-left: 4px solid #3b82f6;
+            background: #f8fafc;
+            color: #4a5568;
+        }
+        table {
+            width: 100%;
+            margin: 1.5em 0;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+${content}
+</body>
+</html>`;
+
+                const blob = new Blob([htmlTemplate], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.exportModal.classList.remove('active');
+                this.showNotification('HTML exported', 'success');
+            }
+
+            showTemplates() {
+                this.sidebarTitle.textContent = 'Templates';
+                this.sidebar.classList.add('active');
+
+                const templates = [
+                    {
+                        title: 'Blog Post',
+                        desc: 'Standard blog post template',
+                        content: `# Blog Post Title
+
+*Published on ${new Date().toLocaleDateString()}*
+
+## Introduction
+
+Start with a compelling introduction...
+
+## Main Content
+
+### Section 1
+
+Content here...
+
+### Section 2
+
+More content...
+
+## Conclusion
+
+Wrap up your thoughts...
+
+---
+
+*Tags: #tag1 #tag2*`
+                    },
+                    {
+                        title: 'Meeting Notes',
+                        desc: 'Template for meeting documentation',
+                        content: `# Meeting Notes
+
+**Date:** ${new Date().toLocaleDateString()}
+**Attendees:**
+**Agenda:**
+
+## Discussion Points
+
+1. Topic 1
+2. Topic 2
+3. Topic 3
+
+## Action Items
+
+- [ ] Action item 1
+- [ ] Action item 2
+- [ ] Action item 3
+
+## Next Meeting
+
+**Date:** TBD
+**Time:** TBD`
+                    },
+                    {
+                        title: 'Project README',
+                        desc: 'Standard project documentation',
+                        content: `# Project Name
+
+Brief description of your project.
+
+## Features
+
+- Feature 1
+- Feature 2
+- Feature 3
+
+## Installation
+
+\`\`\`bash
+npm install
+\`\`\`
+
+## Usage
+
+\`\`\`javascript
+// Example code
+\`\`\`
+
+## Contributing
+
+Contributions are welcome!
+
+## License
+
+MIT License`
+                    },
+                    {
+                        title: 'Technical Documentation',
+                        desc: 'Technical docs template',
+                        content: `# Technical Documentation
+
+## Overview
+
+Brief overview of the system/feature.
+
+## Architecture
+
+Describe the architecture...
+
+## API Reference
+
+### Endpoint 1
+
+\`\`\`
+GET /api/endpoint
+\`\`\`
+
+**Parameters:**
+| Name | Type | Description |
+|------|------|-------------|
+| param1 | string | Description |
+
+**Response:**
+\`\`\`json
+{
+  "data": "example"
+}
+\`\`\`
+
+## Examples
+
+Provide code examples...
+
+## Troubleshooting
+
+Common issues and solutions...`
+                    },
+                    {
+                        title: 'Task List',
+                        desc: 'Simple task management',
+                        content: `# Task List
+
+## Today
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+## This Week
+- [ ] Task 4
+- [ ] Task 5
+
+## Later
+- [ ] Task 6
+- [ ] Task 7
+
+## Completed
+- [x] Completed task 1
+- [x] Completed task 2`
+                    }
+                ];
+
+                let html = '<div class="sidebar-section">';
+                html += '<h3 class="sidebar-section-title">Choose a Template</h3>';
+
+                templates.forEach(template => {
+                    html += `
+                        <div class="template-item" data-content="${this.escapeHtml(template.content)}">
+                            <div class="template-title">${template.title}</div>
+                            <div class="template-desc">${template.desc}</div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                this.sidebarContent.innerHTML = html;
+
+                // Add click handlers
+                document.querySelectorAll('.template-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const content = item.dataset.content;
+                        this.editor.value = this.unescapeHtml(content);
+                        this.updatePreview();
+                        this.updateStats();
+                        this.sidebar.classList.remove('active');
+                        this.showNotification('Template loaded', 'success');
+                    });
+                });
+            }
+
+            showTOC() {
+                this.sidebarTitle.textContent = 'Outline';
+                this.sidebar.classList.add('active');
+
+                const content = this.editor.value;
+                const headings = [];
+                const headerRegex = /^(#{1,6})\s+(.+)$/gm;
+                let match;
+
+                while ((match = headerRegex.exec(content)) !== null) {
+                    headings.push({
+                        level: match[1].length,
+                        text: match[2],
+                        line: content.substring(0, match.index).split('\n').length
+                    });
+                }
+
+                if (headings.length === 0) {
+                    this.sidebarContent.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📄</div>
+                            <p>No headings found in your document.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '<div class="sidebar-section">';
+                html += '<h3 class="sidebar-section-title">Document Outline</h3>';
+                html += '<div class="toc-list">';
+
+                headings.forEach((heading, index) => {
+                    html += `
+                        <div class="toc-item level-${heading.level}" data-line="${heading.line}">
+                            ${heading.text}
+                        </div>
+                    `;
+                });
+
+                html += '</div></div>';
+                this.sidebarContent.innerHTML = html;
+
+                // Add click handlers
+                document.querySelectorAll('.toc-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const line = parseInt(item.dataset.line);
+                        const lines = this.editor.value.split('\n');
+                        let pos = 0;
+                        for (let i = 0; i < line - 1; i++) {
+                            pos += lines[i].length + 1;
+                        }
+                        this.editor.focus();
+                        this.editor.setSelectionRange(pos, pos);
+                        this.editor.scrollTop = (line - 1) * 20;
+                    });
+                });
+            }
+
+            toggleSearch() {
+                this.searchContainer.classList.toggle('active');
+                if (this.searchContainer.classList.contains('active')) {
+                    this.searchInput.focus();
+                }
+            }
+
+            performSearch() {
+                const query = this.searchInput.value;
+                if (!query) {
+                    this.searchResults.textContent = '';
+                    return;
+                }
+
+                const content = this.editor.value;
+                const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                const matches = [...content.matchAll(regex)];
+
+                this.searchMatches = matches.map(m => m.index);
+                this.currentMatchIndex = 0;
+
+                this.searchResults.textContent = `${matches.length} match${matches.length !== 1 ? 'es' : ''}`;
+
+                if (matches.length > 0) {
+                    this.highlightMatch(this.searchMatches[0], query.length);
+                }
+            }
+
+            findNext() {
+                if (this.searchMatches.length === 0) return;
+                this.currentMatchIndex = (this.currentMatchIndex + 1) % this.searchMatches.length;
+                this.highlightMatch(this.searchMatches[this.currentMatchIndex], this.searchInput.value.length);
+            }
+
+            findPrevious() {
+                if (this.searchMatches.length === 0) return;
+                this.currentMatchIndex = (this.currentMatchIndex - 1 + this.searchMatches.length) % this.searchMatches.length;
+                this.highlightMatch(this.searchMatches[this.currentMatchIndex], this.searchInput.value.length);
+            }
+
+            highlightMatch(position, length) {
+                this.editor.focus();
+                this.editor.setSelectionRange(position, position + length);
+
+                // Scroll to match
+                const lines = this.editor.value.substring(0, position).split('\n').length;
+                const lineHeight = 20;
+                this.editor.scrollTop = (lines - 5) * lineHeight;
+            }
+
+            replaceCurrent() {
+                if (this.searchMatches.length === 0) return;
+
+                const start = this.searchMatches[this.currentMatchIndex];
+                const end = start + this.searchInput.value.length;
+                const before = this.editor.value.substring(0, start);
+                const after = this.editor.value.substring(end);
+
+                this.editor.value = before + this.replaceInput.value + after;
+                this.updatePreview();
+                this.updateStats();
+                this.performSearch();
+            }
+
+            replaceAll() {
+                const query = this.searchInput.value;
+                const replacement = this.replaceInput.value;
+
+                if (!query) return;
+
+                const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                this.editor.value = this.editor.value.replace(regex, replacement);
+
+                this.updatePreview();
+                this.updateStats();
+                this.showNotification(`Replaced all occurrences`, 'success');
+                this.performSearch();
+            }
+
+            getRecentDocuments() {
+                const saved = localStorage.getItem('recentDocuments');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            unescapeHtml(html) {
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                return div.textContent;
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <span>${type === 'success' ? '✓' : '✗'}</span>
+                    <span>${message}</span>
+                `;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // Initialize the editor
+        const editor = new MarkdownEditor();
+    </script>
+</body>
+</html>

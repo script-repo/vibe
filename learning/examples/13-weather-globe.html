@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Globe 3D - Immersive Weather Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* Glassmorphism UI */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Header */
+        #header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+        }
+
+        #header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(100, 200, 255, 0.8);
+            letter-spacing: 2px;
+        }
+
+        /* Search Panel */
+        #search-panel {
+            position: fixed;
+            top: 120px;
+            left: 20px;
+            z-index: 100;
+            width: 300px;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #search-results {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 15px;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-result-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(5px);
+        }
+
+        /* Weather Info Panel */
+        #weather-info {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            z-index: 100;
+            width: 350px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            display: none;
+        }
+
+        #weather-info.active {
+            display: block;
+        }
+
+        .weather-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .weather-header h2 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .weather-header .country {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2em;
+        }
+
+        .current-weather {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .temperature {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .weather-icon {
+            font-size: 4em;
+            margin: 10px 0;
+        }
+
+        .weather-description {
+            font-size: 1.3em;
+            text-transform: capitalize;
+            margin-bottom: 10px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .weather-detail {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .weather-detail-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .weather-detail-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        /* Forecast Cards */
+        .forecast-section {
+            margin-top: 20px;
+        }
+
+        .forecast-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .forecast-cards {
+            display: grid;
+            gap: 10px;
+        }
+
+        .forecast-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .forecast-day {
+            font-weight: bold;
+        }
+
+        .forecast-temps {
+            display: flex;
+            gap: 10px;
+        }
+
+        .forecast-high {
+            color: #ff6b6b;
+        }
+
+        .forecast-low {
+            color: #4dabf7;
+        }
+
+        /* Controls Panel */
+        #controls-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 300px;
+        }
+
+        .control-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: rgba(100, 200, 255, 0.4);
+            border-color: rgba(100, 200, 255, 0.6);
+        }
+
+        /* Legend */
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 250px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        /* Mini Map */
+        #mini-map {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: 150px;
+            height: 75px;
+            display: none;
+        }
+
+        #mini-map canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Loading */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Tooltip for city markers */
+        .city-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Initializing Weather Globe...</div>
+    </div>
+
+    <div id="header" class="glass-panel">
+        <h1>🌍 Weather Globe 3D</h1>
+    </div>
+
+    <div id="search-panel">
+        <input type="text" id="search-input" placeholder="🔍 Search for a city...">
+        <div id="search-results"></div>
+    </div>
+
+    <div id="weather-info" class="glass-panel">
+        <!-- Weather info will be dynamically populated -->
+    </div>
+
+    <div id="controls-panel">
+        <button class="control-btn active" id="auto-rotate-btn">🔄 Auto Rotate</button>
+        <button class="control-btn active" id="clouds-btn">☁️ Clouds</button>
+        <button class="control-btn active" id="day-night-btn">🌓 Day/Night</button>
+        <button class="control-btn" id="temperature-btn">🌡️ Temperature</button>
+        <button class="control-btn" id="reset-btn">🏠 Reset View</button>
+    </div>
+
+    <div id="legend" class="glass-panel">
+        <div class="legend-title">Temperature Scale</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1e3a8a;"></div>
+            <span>&lt; -10°C (Cold)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3b82f6;"></div>
+            <span>-10°C to 10°C</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #22c55e;"></div>
+            <span>10°C to 20°C</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #eab308;"></div>
+            <span>20°C to 30°C</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ef4444;"></div>
+            <span>&gt; 30°C (Hot)</span>
+        </div>
+    </div>
+
+    <div class="city-tooltip" id="tooltip"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ====================================
+        // GLOBAL VARIABLES
+        // ====================================
+        let scene, camera, renderer, globe, clouds, atmosphere, stars;
+        let cities = [];
+        let cityMarkers = [];
+        let selectedCity = null;
+        let autoRotate = true;
+        let showClouds = true;
+        let showDayNight = true;
+        let showTemperature = false;
+        let raycaster, mouse;
+        let controls = {
+            isDragging: false,
+            previousMousePosition: { x: 0, y: 0 },
+            rotationSpeed: { x: 0, y: 0 }
+        };
+
+        // ====================================
+        // WEATHER ICONS
+        // ====================================
+        const weatherIcons = {
+            clear: '☀️',
+            clouds: '☁️',
+            rain: '🌧️',
+            snow: '❄️',
+            thunderstorm: '⛈️',
+            drizzle: '🌦️',
+            mist: '🌫️',
+            fog: '🌫️'
+        };
+
+        // ====================================
+        // CITY DATA
+        // ====================================
+        const cityData = [
+            { name: 'Tokyo', country: 'Japan', lat: 35.6762, lon: 139.6503 },
+            { name: 'New York', country: 'USA', lat: 40.7128, lon: -74.0060 },
+            { name: 'London', country: 'UK', lat: 51.5074, lon: -0.1278 },
+            { name: 'Paris', country: 'France', lat: 48.8566, lon: 2.3522 },
+            { name: 'Sydney', country: 'Australia', lat: -33.8688, lon: 151.2093 },
+            { name: 'Dubai', country: 'UAE', lat: 25.2048, lon: 55.2708 },
+            { name: 'Singapore', country: 'Singapore', lat: 1.3521, lon: 103.8198 },
+            { name: 'Hong Kong', country: 'China', lat: 22.3193, lon: 114.1694 },
+            { name: 'Los Angeles', country: 'USA', lat: 34.0522, lon: -118.2437 },
+            { name: 'Chicago', country: 'USA', lat: 41.8781, lon: -87.6298 },
+            { name: 'Toronto', country: 'Canada', lat: 43.6532, lon: -79.3832 },
+            { name: 'São Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333 },
+            { name: 'Mexico City', country: 'Mexico', lat: 19.4326, lon: -99.1332 },
+            { name: 'Moscow', country: 'Russia', lat: 55.7558, lon: 37.6173 },
+            { name: 'Istanbul', country: 'Turkey', lat: 41.0082, lon: 28.9784 },
+            { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357 },
+            { name: 'Mumbai', country: 'India', lat: 19.0760, lon: 72.8777 },
+            { name: 'Delhi', country: 'India', lat: 28.7041, lon: 77.1025 },
+            { name: 'Bangkok', country: 'Thailand', lat: 13.7563, lon: 100.5018 },
+            { name: 'Seoul', country: 'South Korea', lat: 37.5665, lon: 126.9780 },
+            { name: 'Beijing', country: 'China', lat: 39.9042, lon: 116.4074 },
+            { name: 'Shanghai', country: 'China', lat: 31.2304, lon: 121.4737 },
+            { name: 'Berlin', country: 'Germany', lat: 52.5200, lon: 13.4050 },
+            { name: 'Madrid', country: 'Spain', lat: 40.4168, lon: -3.7038 },
+            { name: 'Rome', country: 'Italy', lat: 41.9028, lon: 12.4964 },
+            { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lon: 4.9041 },
+            { name: 'Vienna', country: 'Austria', lat: 48.2082, lon: 16.3738 },
+            { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lon: -58.3816 },
+            { name: 'Rio de Janeiro', country: 'Brazil', lat: -22.9068, lon: -43.1729 },
+            { name: 'Cape Town', country: 'South Africa', lat: -33.9249, lon: 18.4241 },
+            { name: 'Lagos', country: 'Nigeria', lat: 6.5244, lon: 3.3792 },
+            { name: 'Nairobi', country: 'Kenya', lat: -1.2921, lon: 36.8219 },
+            { name: 'Stockholm', country: 'Sweden', lat: 59.3293, lon: 18.0686 },
+            { name: 'Copenhagen', country: 'Denmark', lat: 55.6761, lon: 12.5683 },
+            { name: 'Oslo', country: 'Norway', lat: 59.9139, lon: 10.7522 },
+            { name: 'Helsinki', country: 'Finland', lat: 60.1699, lon: 24.9384 },
+            { name: 'Warsaw', country: 'Poland', lat: 52.2297, lon: 21.0122 },
+            { name: 'Prague', country: 'Czech Republic', lat: 50.0755, lon: 14.4378 },
+            { name: 'Athens', country: 'Greece', lat: 37.9838, lon: 23.7275 },
+            { name: 'Lisbon', country: 'Portugal', lat: 38.7223, lon: -9.1393 },
+            { name: 'Vancouver', country: 'Canada', lat: 49.2827, lon: -123.1207 },
+            { name: 'Montreal', country: 'Canada', lat: 45.5017, lon: -73.5673 },
+            { name: 'San Francisco', country: 'USA', lat: 37.7749, lon: -122.4194 },
+            { name: 'Seattle', country: 'USA', lat: 47.6062, lon: -122.3321 },
+            { name: 'Miami', country: 'USA', lat: 25.7617, lon: -80.1918 },
+            { name: 'Las Vegas', country: 'USA', lat: 36.1699, lon: -115.1398 },
+            { name: 'Boston', country: 'USA', lat: 42.3601, lon: -71.0589 },
+            { name: 'Washington DC', country: 'USA', lat: 38.9072, lon: -77.0369 }
+        ];
+
+        // ====================================
+        // UTILITY FUNCTIONS
+        // ====================================
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function getTemperatureColor(temp) {
+            if (temp < -10) return new THREE.Color(0x1e3a8a);
+            if (temp < 10) return new THREE.Color(0x3b82f6);
+            if (temp < 20) return new THREE.Color(0x22c55e);
+            if (temp < 30) return new THREE.Color(0xeab308);
+            return new THREE.Color(0xef4444);
+        }
+
+        function generateWeatherData(city) {
+            const weatherTypes = ['clear', 'clouds', 'rain', 'snow', 'thunderstorm', 'drizzle'];
+            const temp = Math.round(-20 + Math.random() * 60);
+            const weatherType = temp < -5 ? 'snow' :
+                               temp > 35 ? 'clear' :
+                               weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+
+            return {
+                temp: temp,
+                feelsLike: temp + Math.round((Math.random() - 0.5) * 5),
+                humidity: Math.round(30 + Math.random() * 60),
+                pressure: Math.round(980 + Math.random() * 50),
+                windSpeed: Math.round(Math.random() * 30),
+                windDirection: Math.round(Math.random() * 360),
+                cloudiness: Math.round(Math.random() * 100),
+                visibility: Math.round(5 + Math.random() * 10),
+                weather: weatherType,
+                description: getWeatherDescription(weatherType),
+                forecast: generateForecast()
+            };
+        }
+
+        function getWeatherDescription(type) {
+            const descriptions = {
+                clear: 'Clear sky',
+                clouds: 'Partly cloudy',
+                rain: 'Moderate rain',
+                snow: 'Light snow',
+                thunderstorm: 'Thunderstorm',
+                drizzle: 'Light drizzle',
+                mist: 'Misty',
+                fog: 'Foggy'
+            };
+            return descriptions[type] || 'Clear';
+        }
+
+        function generateForecast() {
+            const days = ['Tomorrow', 'Day 3', 'Day 4', 'Day 5'];
+            return days.map(day => ({
+                day: day,
+                high: Math.round(-10 + Math.random() * 50),
+                low: Math.round(-20 + Math.random() * 40),
+                weather: ['clear', 'clouds', 'rain'][Math.floor(Math.random() * 3)]
+            }));
+        }
+
+        // ====================================
+        // PROCEDURAL TEXTURES
+        // ====================================
+        function createEarthTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Ocean background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a4d7a');
+            gradient.addColorStop(0.5, '#2563eb');
+            gradient.addColorStop(1, '#1a4d7a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add noise to ocean
+            for (let i = 0; i < 5000; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.1})`;
+                ctx.fillRect(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    2, 2
+                );
+            }
+
+            // Simple landmasses (procedural)
+            ctx.fillStyle = '#2d5016';
+
+            // North America
+            ctx.beginPath();
+            ctx.ellipse(150, 150, 80, 60, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // South America
+            ctx.beginPath();
+            ctx.ellipse(200, 350, 50, 80, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Europe
+            ctx.beginPath();
+            ctx.ellipse(500, 130, 60, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Africa
+            ctx.beginPath();
+            ctx.ellipse(530, 280, 70, 90, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Asia
+            ctx.beginPath();
+            ctx.ellipse(750, 150, 120, 80, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Australia
+            ctx.beginPath();
+            ctx.ellipse(850, 380, 50, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add texture to land
+            ctx.fillStyle = '#3d6b1f';
+            for (let i = 0; i < 3000; i++) {
+                ctx.fillRect(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    1, 1
+                );
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createCloudTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Generate clouds
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = 20 + Math.random() * 40;
+
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createNightTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // City lights (simple dots on landmasses)
+            ctx.fillStyle = '#ffcc00';
+            const cityLights = [
+                [150, 150], [200, 350], [500, 130], [530, 280],
+                [750, 150], [850, 380], [400, 170], [600, 200]
+            ];
+
+            cityLights.forEach(([x, y]) => {
+                for (let i = 0; i < 20; i++) {
+                    const offsetX = (Math.random() - 0.5) * 100;
+                    const offsetY = (Math.random() - 0.5) * 80;
+                    ctx.beginPath();
+                    ctx.arc(x + offsetX, y + offsetY, 1 + Math.random() * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // ====================================
+        // 3D SCENE SETUP
+        // ====================================
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.z = 3;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Raycaster for click detection
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+            sunLight.position.set(5, 3, 5);
+            scene.add(sunLight);
+
+            // Create starfield
+            createStarfield();
+
+            // Create Earth globe
+            createGlobe();
+
+            // Create cloud layer
+            createClouds();
+
+            // Create atmosphere
+            createAtmosphere();
+
+            // Create city markers
+            createCityMarkers();
+
+            // Event listeners
+            setupEventListeners();
+
+            // Hide loading
+            document.getElementById('loading').style.display = 'none';
+
+            // Start animation
+            animate();
+        }
+
+        function createStarfield() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.7,
+                transparent: true
+            });
+
+            const starsVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                starsVertices.push(x, y, z);
+            }
+
+            starsGeometry.setAttribute('position',
+                new THREE.Float32BufferAttribute(starsVertices, 3));
+
+            stars = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(stars);
+        }
+
+        function createGlobe() {
+            const geometry = new THREE.SphereGeometry(1, 64, 64);
+
+            // Create material with textures
+            const dayTexture = createEarthTexture();
+            const nightTexture = createNightTexture();
+
+            const material = new THREE.MeshPhongMaterial({
+                map: dayTexture,
+                emissiveMap: nightTexture,
+                emissive: new THREE.Color(0xffff88),
+                emissiveIntensity: 0.2,
+                shininess: 5,
+                transparent: false
+            });
+
+            globe = new THREE.Mesh(geometry, material);
+            globe.userData.dayTexture = dayTexture;
+            globe.userData.nightTexture = nightTexture;
+            scene.add(globe);
+        }
+
+        function createClouds() {
+            const geometry = new THREE.SphereGeometry(1.01, 64, 64);
+            const cloudTexture = createCloudTexture();
+
+            const material = new THREE.MeshPhongMaterial({
+                map: cloudTexture,
+                transparent: true,
+                opacity: 0.4,
+                depthWrite: false
+            });
+
+            clouds = new THREE.Mesh(geometry, material);
+            scene.add(clouds);
+        }
+
+        function createAtmosphere() {
+            const geometry = new THREE.SphereGeometry(1.15, 64, 64);
+            const material = new THREE.ShaderMaterial({
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        float intensity = pow(0.7 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
+                        gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+                    }
+                `,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+
+            atmosphere = new THREE.Mesh(geometry, material);
+            scene.add(atmosphere);
+        }
+
+        function createCityMarkers() {
+            cityData.forEach(cityInfo => {
+                const position = latLonToVector3(cityInfo.lat, cityInfo.lon, 1.02);
+
+                // Create marker
+                const markerGeometry = new THREE.SphereGeometry(0.01, 16, 16);
+                const markerMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff6b6b,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+                marker.position.copy(position);
+
+                // Create glow
+                const glowGeometry = new THREE.SphereGeometry(0.015, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff6b6b,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                glow.position.copy(position);
+
+                // Store city info
+                marker.userData = {
+                    cityInfo: cityInfo,
+                    weather: generateWeatherData(cityInfo),
+                    glow: glow
+                };
+
+                globe.add(marker);
+                globe.add(glow);
+                cityMarkers.push(marker);
+                cities.push({...cityInfo, marker: marker});
+            });
+        }
+
+        // ====================================
+        // TEMPERATURE VISUALIZATION
+        // ====================================
+        function updateTemperatureVisualization() {
+            if (showTemperature) {
+                cityMarkers.forEach(marker => {
+                    const temp = marker.userData.weather.temp;
+                    const color = getTemperatureColor(temp);
+                    marker.material.color.copy(color);
+                    marker.userData.glow.material.color.copy(color);
+                });
+            } else {
+                cityMarkers.forEach(marker => {
+                    marker.material.color.set(0xff6b6b);
+                    marker.userData.glow.material.color.set(0xff6b6b);
+                });
+            }
+        }
+
+        // ====================================
+        // EVENT HANDLERS
+        // ====================================
+        function setupEventListeners() {
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Mouse events
+            renderer.domElement.addEventListener('mousedown', onMouseDown);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('mouseup', onMouseUp);
+            renderer.domElement.addEventListener('wheel', onMouseWheel);
+            renderer.domElement.addEventListener('click', onClick);
+
+            // Touch events
+            renderer.domElement.addEventListener('touchstart', onTouchStart);
+            renderer.domElement.addEventListener('touchmove', onTouchMove);
+            renderer.domElement.addEventListener('touchend', onTouchEnd);
+
+            // Search
+            document.getElementById('search-input').addEventListener('input', onSearchInput);
+
+            // Controls
+            document.getElementById('auto-rotate-btn').addEventListener('click', toggleAutoRotate);
+            document.getElementById('clouds-btn').addEventListener('click', toggleClouds);
+            document.getElementById('day-night-btn').addEventListener('click', toggleDayNight);
+            document.getElementById('temperature-btn').addEventListener('click', toggleTemperature);
+            document.getElementById('reset-btn').addEventListener('click', resetView);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseDown(event) {
+            controls.isDragging = true;
+            controls.previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseMove(event) {
+            // Tooltip
+            updateTooltip(event);
+
+            if (!controls.isDragging) return;
+
+            const deltaMove = {
+                x: event.clientX - controls.previousMousePosition.x,
+                y: event.clientY - controls.previousMousePosition.y
+            };
+
+            controls.rotationSpeed.x = deltaMove.y * 0.01;
+            controls.rotationSpeed.y = deltaMove.x * 0.01;
+
+            globe.rotation.y += controls.rotationSpeed.y;
+            globe.rotation.x += controls.rotationSpeed.x;
+
+            controls.previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseUp(event) {
+            controls.isDragging = false;
+        }
+
+        function onMouseWheel(event) {
+            event.preventDefault();
+            const delta = event.deltaY * 0.001;
+            camera.position.z = Math.max(1.5, Math.min(5, camera.position.z + delta));
+        }
+
+        function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                controls.isDragging = true;
+                controls.previousMousePosition = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY
+                };
+            }
+        }
+
+        function onTouchMove(event) {
+            if (!controls.isDragging || event.touches.length !== 1) return;
+
+            const deltaMove = {
+                x: event.touches[0].clientX - controls.previousMousePosition.x,
+                y: event.touches[0].clientY - controls.previousMousePosition.y
+            };
+
+            controls.rotationSpeed.x = deltaMove.y * 0.01;
+            controls.rotationSpeed.y = deltaMove.x * 0.01;
+
+            globe.rotation.y += controls.rotationSpeed.y;
+            globe.rotation.x += controls.rotationSpeed.x;
+
+            controls.previousMousePosition = {
+                x: event.touches[0].clientX,
+                y: event.touches[0].clientY
+            };
+        }
+
+        function onTouchEnd(event) {
+            controls.isDragging = false;
+        }
+
+        function onClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cityMarkers);
+
+            if (intersects.length > 0) {
+                const marker = intersects[0].object;
+                selectCity(marker.userData.cityInfo, marker.userData.weather);
+                zoomToCity(marker);
+            }
+        }
+
+        function updateTooltip(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cityMarkers);
+
+            const tooltip = document.getElementById('tooltip');
+
+            if (intersects.length > 0) {
+                const marker = intersects[0].object;
+                const cityInfo = marker.userData.cityInfo;
+                const weather = marker.userData.weather;
+
+                tooltip.innerHTML = `
+                    <strong>${cityInfo.name}</strong><br>
+                    ${weather.temp}°C - ${weather.description}
+                `;
+                tooltip.style.display = 'block';
+                tooltip.style.left = event.clientX + 10 + 'px';
+                tooltip.style.top = event.clientY + 10 + 'px';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        function onSearchInput(event) {
+            const query = event.target.value.toLowerCase();
+            const resultsContainer = document.getElementById('search-results');
+
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const results = cities.filter(city =>
+                city.name.toLowerCase().includes(query) ||
+                city.country.toLowerCase().includes(query)
+            );
+
+            resultsContainer.innerHTML = results.map(city => `
+                <div class="search-result-item" data-city="${city.name}">
+                    ${city.name}, ${city.country}
+                </div>
+            `).join('');
+
+            // Add click handlers
+            resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const cityName = item.dataset.city;
+                    const city = cities.find(c => c.name === cityName);
+                    if (city) {
+                        selectCity(city, city.marker.userData.weather);
+                        zoomToCity(city.marker);
+                        resultsContainer.innerHTML = '';
+                        document.getElementById('search-input').value = '';
+                    }
+                });
+            });
+        }
+
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            document.getElementById('auto-rotate-btn').classList.toggle('active');
+        }
+
+        function toggleClouds() {
+            showClouds = !showClouds;
+            clouds.visible = showClouds;
+            document.getElementById('clouds-btn').classList.toggle('active');
+        }
+
+        function toggleDayNight() {
+            showDayNight = !showDayNight;
+            globe.material.emissiveIntensity = showDayNight ? 0.2 : 0;
+            document.getElementById('day-night-btn').classList.toggle('active');
+        }
+
+        function toggleTemperature() {
+            showTemperature = !showTemperature;
+            updateTemperatureVisualization();
+            document.getElementById('temperature-btn').classList.toggle('active');
+        }
+
+        function resetView() {
+            camera.position.set(0, 0, 3);
+            globe.rotation.set(0, 0, 0);
+            controls.rotationSpeed = { x: 0, y: 0 };
+            document.getElementById('weather-info').classList.remove('active');
+            selectedCity = null;
+        }
+
+        // ====================================
+        // CITY SELECTION AND ZOOM
+        // ====================================
+        function selectCity(cityInfo, weather) {
+            selectedCity = cityInfo;
+
+            const weatherInfoPanel = document.getElementById('weather-info');
+            weatherInfoPanel.classList.add('active');
+
+            weatherInfoPanel.innerHTML = `
+                <div class="weather-header">
+                    <h2>${cityInfo.name}</h2>
+                    <div class="country">${cityInfo.country}</div>
+                </div>
+
+                <div class="current-weather">
+                    <div class="weather-icon">${weatherIcons[weather.weather] || '☀️'}</div>
+                    <div class="temperature">${weather.temp}°C</div>
+                    <div class="weather-description">${weather.description}</div>
+
+                    <div class="weather-details">
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Feels Like</div>
+                            <div class="weather-detail-value">${weather.feelsLike}°C</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Humidity</div>
+                            <div class="weather-detail-value">${weather.humidity}%</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Wind</div>
+                            <div class="weather-detail-value">${weather.windSpeed} km/h</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Pressure</div>
+                            <div class="weather-detail-value">${weather.pressure} hPa</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Visibility</div>
+                            <div class="weather-detail-value">${weather.visibility} km</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-detail-label">Cloudiness</div>
+                            <div class="weather-detail-value">${weather.cloudiness}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="forecast-section">
+                    <h3>5-Day Forecast</h3>
+                    <div class="forecast-cards">
+                        ${weather.forecast.map(day => `
+                            <div class="forecast-card">
+                                <div>
+                                    <div class="forecast-day">${day.day}</div>
+                                    <div>${weatherIcons[day.weather] || '☀️'}</div>
+                                </div>
+                                <div class="forecast-temps">
+                                    <span class="forecast-high">${day.high}°</span>
+                                    <span class="forecast-low">${day.low}°</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function zoomToCity(marker) {
+            const targetPosition = marker.position.clone();
+            targetPosition.multiplyScalar(2.5);
+
+            // Animate camera
+            const startPosition = camera.position.clone();
+            const startRotation = globe.rotation.clone();
+
+            // Calculate target rotation to face the city
+            const cityLat = marker.userData.cityInfo.lat;
+            const cityLon = marker.userData.cityInfo.lon;
+            const targetRotationY = -(cityLon * Math.PI / 180);
+            const targetRotationX = (cityLat * Math.PI / 180) - Math.PI / 2;
+
+            let progress = 0;
+            const duration = 1500;
+            const startTime = Date.now();
+
+            function animateZoom() {
+                const elapsed = Date.now() - startTime;
+                progress = Math.min(elapsed / duration, 1);
+
+                // Easing function
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                // Interpolate rotation
+                globe.rotation.y = startRotation.y + (targetRotationY - startRotation.y) * eased;
+                globe.rotation.x = startRotation.x + (targetRotationX - startRotation.x) * eased;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateZoom);
+                }
+            }
+
+            animateZoom();
+        }
+
+        // ====================================
+        // ANIMATION LOOP
+        // ====================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Auto-rotate
+            if (autoRotate && !controls.isDragging) {
+                globe.rotation.y += 0.001;
+            }
+
+            // Rotate clouds slightly faster
+            if (clouds && showClouds) {
+                clouds.rotation.y += 0.0005;
+            }
+
+            // Rotate starfield slowly
+            if (stars) {
+                stars.rotation.y += 0.0001;
+            }
+
+            // Pulse city markers
+            const time = Date.now() * 0.001;
+            cityMarkers.forEach((marker, index) => {
+                const scale = 1 + Math.sin(time * 2 + index * 0.5) * 0.3;
+                marker.userData.glow.scale.set(scale, scale, scale);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // ====================================
+        // INITIALIZE
+        // ====================================
+        init();
+    </script>
+</body>
+</html>
