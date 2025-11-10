@@ -1221,7 +1221,7 @@
             const mp3Paths = [
                 'Avicennas_Floating_Man.mp3', // GitHub Pages filename
                 'https://script-repo.github.io/vibe/learning/examples/Avicennas_Floating_Man.mp3', // Absolute URL
-                "Avicenna's%20Floating%20Man.mp3" // Local filename with spaces
+                "Avicennas_Floating_Man.mp3" // Local filename with spaces
             ];
 
             async function tryLoadMP3(paths, index = 0) {
@@ -1239,14 +1239,14 @@
                     }
 
                     const blob = await response.blob();
-                    const file = new File([blob], "Avicenna's Floating Man.mp3", { type: 'audio/mpeg' });
+                    const file = new File([blob], "Avicennas_Floating_Man.mp3", { type: 'audio/mpeg' });
                     const url = URL.createObjectURL(blob);
 
                     // Add to playlist
                     playlist.push({
                         file: file,
                         url: url,
-                        name: "Avicenna's Floating Man"
+                        name: "Avicennas_Floating_Man"
                     });
 
                     updatePlaylistUI();
