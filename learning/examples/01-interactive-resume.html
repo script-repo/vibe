@@ -1295,7 +1295,7 @@
                     </div>
                     <div class="btn-group">
                         <button type="submit" class="btn">Send Message</button>
-                        <button type="button" class="btn btn-secondary" onclick="exportToPDF()">Export to PDF</button>
+                        <button type="button" class="btn btn-secondary" onclick="exportToPDF(this)">Export to PDF</button>
                     </div>
                     <div class="success-message" id="success-message">
                         ✓ Message sent successfully! I'll get back to you soon.
@@ -1527,8 +1527,8 @@
         });
 
         // Export to PDF functionality
-        function exportToPDF() {
-            const btn = event.target;
+        function exportToPDF(button) {
+            const btn = button;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Generating...';
             btn.disabled = true;

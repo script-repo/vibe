@@ -424,9 +424,9 @@
             <div class="panel-section">
                 <h3>Difficulty</h3>
                 <div class="difficulty-selector">
-                    <button class="active" onclick="game.setDifficulty(2)">Easy</button>
-                    <button onclick="game.setDifficulty(3)">Medium</button>
-                    <button onclick="game.setDifficulty(4)">Hard</button>
+                    <button class="active" onclick="game.setDifficulty(2, this)">Easy</button>
+                    <button onclick="game.setDifficulty(3, this)">Medium</button>
+                    <button onclick="game.setDifficulty(4, this)">Hard</button>
                 </div>
             </div>
 
@@ -1743,14 +1743,16 @@
                 this.initBoard();
             }
 
-            setDifficulty(level) {
+            setDifficulty(level, button) {
                 this.difficulty = level;
 
                 document.querySelectorAll('.difficulty-selector button').forEach(btn => {
                     btn.classList.remove('active');
                 });
 
-                event.target.classList.add('active');
+                if (button) {
+                    button.classList.add('active');
+                }
             }
 
             setTheme(theme) {

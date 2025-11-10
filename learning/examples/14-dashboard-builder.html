@@ -837,21 +837,21 @@
                 <div class="sidebar-section">
                     <h3>🎨 Color Themes</h3>
                     <div class="theme-grid">
-                        <div class="theme-option active" onclick="app.setTheme('default')"
+                        <div class="theme-option active" onclick="app.setTheme('default', this)"
                              style="background: linear-gradient(135deg, #6366f1, #8b5cf6)"></div>
-                        <div class="theme-option" onclick="app.setTheme('ocean')"
+                        <div class="theme-option" onclick="app.setTheme('ocean', this)"
                              style="background: linear-gradient(135deg, #0ea5e9, #06b6d4)"></div>
-                        <div class="theme-option" onclick="app.setTheme('sunset')"
+                        <div class="theme-option" onclick="app.setTheme('sunset', this)"
                              style="background: linear-gradient(135deg, #f59e0b, #ef4444)"></div>
-                        <div class="theme-option" onclick="app.setTheme('forest')"
+                        <div class="theme-option" onclick="app.setTheme('forest', this)"
                              style="background: linear-gradient(135deg, #10b981, #059669)"></div>
-                        <div class="theme-option" onclick="app.setTheme('rose')"
+                        <div class="theme-option" onclick="app.setTheme('rose', this)"
                              style="background: linear-gradient(135deg, #ec4899, #db2777)"></div>
-                        <div class="theme-option" onclick="app.setTheme('violet')"
+                        <div class="theme-option" onclick="app.setTheme('violet', this)"
                              style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"></div>
-                        <div class="theme-option" onclick="app.setTheme('amber')"
+                        <div class="theme-option" onclick="app.setTheme('amber', this)"
                              style="background: linear-gradient(135deg, #f59e0b, #d97706)"></div>
-                        <div class="theme-option" onclick="app.setTheme('emerald')"
+                        <div class="theme-option" onclick="app.setTheme('emerald', this)"
                              style="background: linear-gradient(135deg, #10b981, #14b8a6)"></div>
                     </div>
                 </div>
@@ -1780,7 +1780,7 @@
                 btn.textContent = this.autoRefresh ? '⏸️ Pause' : '▶️ Resume';
             },
 
-            setTheme(themeName) {
+            setTheme(themeName, element) {
                 this.currentTheme = themeName;
                 const theme = this.themes[themeName];
 
@@ -1789,7 +1789,9 @@
 
                 // Update active theme indicator
                 document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
-                event.target.classList.add('active');
+                if (element) {
+                    element.classList.add('active');
+                }
 
                 // Re-render all widgets
                 this.getCurrentDashboard().widgets.forEach(widget => {
