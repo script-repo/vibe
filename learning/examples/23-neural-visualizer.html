@@ -106,6 +106,13 @@
                 analyser.connect(gainNode);
                 gainNode.connect(audioContext.destination);
             }
+
+            // Resume audio context if it's suspended (browser autoplay policy)
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(err => {
+                    console.error('Failed to resume audio context:', err);
+                });
+            }
         }
 
         async function loadAndPlayAudio() {
@@ -163,6 +170,11 @@
                 // Wait for user interaction to start audio (browser requirement)
                 const startAudio = async () => {
                     try {
+                        // Resume audio context if suspended
+                        if (audioContext && audioContext.state === 'suspended') {
+                            await audioContext.resume();
+                        }
+
                         await audio.play();
                         if (!animationId) {
                             animate();
@@ -178,6 +190,11 @@
 
                 // Try to autoplay, but if it fails due to browser policy, wait for user interaction
                 try {
+                    // Resume audio context if suspended
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
+
                     await audio.play();
                     if (!animationId) {
                         animate();
