@@ -1428,6 +1428,13 @@
                 analyser.connect(gainNode);
                 gainNode.connect(audioContext.destination);
             }
+
+            // Resume audio context if it's suspended (browser autoplay policy)
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(err => {
+                    console.error('Failed to resume audio context:', err);
+                });
+            }
         }
 
         function handleFileSelect(event) {
@@ -1550,13 +1557,26 @@
             }
 
             const url = existingUrl || URL.createObjectURL(file);
+
+            // Clean up old audio
             if (audio) {
                 audio.pause();
-                audio = null;
+                audio.src = '';
+                audio.load();
+            }
+
+            if (audioSource) {
+                try {
+                    audioSource.disconnect();
+                } catch (e) {
+                    // Ignore disconnect errors
+                }
+                audioSource = null;
             }
 
             audio = new Audio(url);
             audio.volume = 0.7;
+            audio.crossOrigin = 'anonymous'; // Allow CORS for external URLs
 
             audio.addEventListener('loadedmetadata', () => {
                 document.getElementById('duration').textContent = formatTime(audio.duration);
@@ -1572,24 +1592,50 @@
                 }
             });
 
+            audio.addEventListener('error', (e) => {
+                console.error('Audio error:', e, audio.error);
+                alert('Error loading audio file. Please try another file.');
+            });
+
             initAudioContext();
 
-            if (audioSource) {
-                audioSource.disconnect();
+            // Create new media element source
+            try {
+                audioSource = audioContext.createMediaElementSource(audio);
+                audioSource.connect(analyser);
+            } catch (err) {
+                console.error('Error creating audio source:', err);
+                alert('Error setting up audio. Please refresh the page and try again.');
+                return;
             }
-
-            audioSource = audioContext.createMediaElementSource(audio);
-            audioSource.connect(analyser);
 
             document.getElementById('uploadArea').classList.add('hidden');
 
-            audio.play();
-            isPlaying = true;
-            document.getElementById('playBtn').textContent = '⏸️ Pause';
+            // Resume audio context and try to play
+            const playAudio = async () => {
+                try {
+                    // Make sure audio context is running
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
 
-            if (!animationId) {
-                animate();
-            }
+                    await audio.play();
+                    isPlaying = true;
+                    document.getElementById('playBtn').textContent = '⏸️ Pause';
+
+                    if (!animationId) {
+                        animate();
+                    }
+                } catch (err) {
+                    console.error('Error playing audio:', err);
+                    isPlaying = false;
+                    document.getElementById('playBtn').textContent = '▶️ Play';
+                    // Don't show alert immediately - user might just need to click play button
+                    console.log('Autoplay blocked. User needs to click Play button.');
+                }
+            };
+
+            playAudio();
         }
 
         async function toggleMicrophone() {
@@ -1632,17 +1678,32 @@
             }
         }
 
-        function togglePlayPause() {
+        async function togglePlayPause() {
             if (!audio) return;
 
             if (isPlaying) {
                 audio.pause();
+                isPlaying = false;
                 document.getElementById('playBtn').textContent = '▶️ Play';
             } else {
-                audio.play();
-                document.getElementById('playBtn').textContent = '⏸️ Pause';
+                try {
+                    // Resume audio context if suspended
+                    if (audioContext && audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
+
+                    await audio.play();
+                    isPlaying = true;
+                    document.getElementById('playBtn').textContent = '⏸️ Pause';
+
+                    if (!animationId) {
+                        animate();
+                    }
+                } catch (err) {
+                    console.error('Error playing audio:', err);
+                    alert('Unable to play audio. Error: ' + err.message);
+                }
             }
-            isPlaying = !isPlaying;
         }
 
         function setVolume(value) {
