@@ -1004,10 +1004,10 @@
             </div>
 
             <div class="filters-section">
-                <button class="filter-btn active" onclick="filterByDifficulty('')">All</button>
-                <button class="filter-btn" onclick="filterByDifficulty('easy')">Easy</button>
-                <button class="filter-btn" onclick="filterByDifficulty('medium')">Medium</button>
-                <button class="filter-btn" onclick="filterByDifficulty('hard')">Hard</button>
+                <button class="filter-btn active" onclick="filterByDifficulty('', this)">All</button>
+                <button class="filter-btn" onclick="filterByDifficulty('easy', this)">Easy</button>
+                <button class="filter-btn" onclick="filterByDifficulty('medium', this)">Medium</button>
+                <button class="filter-btn" onclick="filterByDifficulty('hard', this)">Hard</button>
             </div>
 
             <div class="results-count" id="results-count"></div>
@@ -2721,14 +2721,16 @@
             displayRecipes(filtered);
         }
 
-        function filterByDifficulty(difficulty) {
+        function filterByDifficulty(difficulty, button) {
             currentDifficultyFilter = difficulty;
 
             // Update button states
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
+            }
 
             filterRecipes();
         }

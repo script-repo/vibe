@@ -961,28 +961,28 @@
             </div>
 
             <div class="control-group mode-selector">
-                <button class="btn btn-small active" onclick="setVisualizerMode('bars')">Bars</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('circular')">Circular</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('waveform')">Waveform</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('particles')">Particles</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('spectrum3d')">3D Spectrum</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('radial')">Radial</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('dna')">DNA</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('galaxy')">Galaxy</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('tunnel')">Tunnel</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('kaleidoscope')">Kaleidoscope</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('liquid')">Liquid Wave</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('matrix')">Matrix</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('neural')">Neural Net</button>
-                <button class="btn btn-small" onclick="setVisualizerMode('fireworks')">Fireworks</button>
+                <button class="btn btn-small active" onclick="setVisualizerMode('bars', this)">Bars</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('circular', this)">Circular</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('waveform', this)">Waveform</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('particles', this)">Particles</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('spectrum3d', this)">3D Spectrum</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('radial', this)">Radial</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('dna', this)">DNA</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('galaxy', this)">Galaxy</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('tunnel', this)">Tunnel</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('kaleidoscope', this)">Kaleidoscope</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('liquid', this)">Liquid Wave</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('matrix', this)">Matrix</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('neural', this)">Neural Net</button>
+                <button class="btn btn-small" onclick="setVisualizerMode('fireworks', this)">Fireworks</button>
             </div>
 
             <div class="preset-selector">
-                <button class="preset-btn active" onclick="applyPreset('default')">Default</button>
-                <button class="preset-btn" onclick="applyPreset('energy')">High Energy</button>
-                <button class="preset-btn" onclick="applyPreset('smooth')">Smooth</button>
-                <button class="preset-btn" onclick="applyPreset('psychedelic')">Psychedelic</button>
-                <button class="preset-btn" onclick="applyPreset('minimal')">Minimal</button>
+                <button class="preset-btn active" onclick="applyPreset('default', this)">Default</button>
+                <button class="preset-btn" onclick="applyPreset('energy', this)">High Energy</button>
+                <button class="preset-btn" onclick="applyPreset('smooth', this)">Smooth</button>
+                <button class="preset-btn" onclick="applyPreset('psychedelic', this)">Psychedelic</button>
+                <button class="preset-btn" onclick="applyPreset('minimal', this)">Minimal</button>
             </div>
 
             <div class="control-group">
@@ -1001,16 +1001,16 @@
             </div>
 
             <div class="theme-selector">
-                <div class="theme-btn theme-purple active" onclick="setTheme('purple')" title="Purple Dream"></div>
-                <div class="theme-btn theme-neon" onclick="setTheme('neon')" title="Neon Nights"></div>
-                <div class="theme-btn theme-ocean" onclick="setTheme('ocean')" title="Ocean Wave"></div>
-                <div class="theme-btn theme-fire" onclick="setTheme('fire')" title="Fire Storm"></div>
-                <div class="theme-btn theme-matrix" onclick="setTheme('matrix')" title="Matrix Code"></div>
-                <div class="theme-btn theme-sunset" onclick="setTheme('sunset')" title="Sunset Vibes"></div>
-                <div class="theme-btn theme-cyber" onclick="setTheme('cyber')" title="Cyberpunk"></div>
-                <div class="theme-btn theme-aurora" onclick="setTheme('aurora')" title="Aurora Borealis"></div>
-                <div class="theme-btn theme-lava" onclick="setTheme('lava')" title="Lava Flow"></div>
-                <div class="theme-btn theme-ice" onclick="setTheme('ice')" title="Ice Crystal"></div>
+                <div class="theme-btn theme-purple active" onclick="setTheme('purple', this)" title="Purple Dream"></div>
+                <div class="theme-btn theme-neon" onclick="setTheme('neon', this)" title="Neon Nights"></div>
+                <div class="theme-btn theme-ocean" onclick="setTheme('ocean', this)" title="Ocean Wave"></div>
+                <div class="theme-btn theme-fire" onclick="setTheme('fire', this)" title="Fire Storm"></div>
+                <div class="theme-btn theme-matrix" onclick="setTheme('matrix', this)" title="Matrix Code"></div>
+                <div class="theme-btn theme-sunset" onclick="setTheme('sunset', this)" title="Sunset Vibes"></div>
+                <div class="theme-btn theme-cyber" onclick="setTheme('cyber', this)" title="Cyberpunk"></div>
+                <div class="theme-btn theme-aurora" onclick="setTheme('aurora', this)" title="Aurora Borealis"></div>
+                <div class="theme-btn theme-lava" onclick="setTheme('lava', this)" title="Lava Flow"></div>
+                <div class="theme-btn theme-ice" onclick="setTheme('ice', this)" title="Ice Crystal"></div>
             </div>
 
             <div class="advanced-controls">
@@ -1143,8 +1143,8 @@
 
             // Drag and drop
             const uploadArea = document.getElementById('uploadArea');
-            uploadArea.addEventListener('click', () => {
-                if (event.target === uploadArea || event.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target === uploadArea || e.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
                     document.getElementById('audioFile').click();
                 }
             });
@@ -1336,9 +1336,11 @@
             bgParticlesEnabled = !bgParticlesEnabled;
         }
 
-        function applyPreset(preset) {
+        function applyPreset(preset, button) {
             document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
+            }
 
             switch(preset) {
                 case 'default':
@@ -1667,7 +1669,7 @@
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        function setVisualizerMode(mode) {
+        function setVisualizerMode(mode, button) {
             visualizerMode = mode;
             currentModeIndex = modes.indexOf(mode);
 
@@ -1675,8 +1677,8 @@
             document.querySelectorAll('.mode-selector .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            if (event && event.target) {
-                event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
             } else {
                 // If called programmatically, find and activate the button
                 const buttons = document.querySelectorAll('.mode-selector .btn');
@@ -1750,14 +1752,14 @@
             }
         }
 
-        function setTheme(theme) {
+        function setTheme(theme, button) {
             currentTheme = theme;
             themeIndex = themeNames.indexOf(theme);
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            if (event && event.target) {
-                event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
             } else {
                 // If called programmatically
                 const themeBtn = document.querySelector(`.theme-${theme}`);

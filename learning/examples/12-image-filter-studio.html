@@ -723,22 +723,22 @@
             <div class="section">
                 <div class="section-title">🎨 Filters</div>
                 <div class="filter-grid">
-                    <div class="filter-btn" onclick="selectFilter('brightness')">Brightness</div>
-                    <div class="filter-btn" onclick="selectFilter('contrast')">Contrast</div>
-                    <div class="filter-btn" onclick="selectFilter('saturation')">Saturation</div>
-                    <div class="filter-btn" onclick="selectFilter('blur')">Blur</div>
-                    <div class="filter-btn" onclick="selectFilter('sharpen')">Sharpen</div>
-                    <div class="filter-btn" onclick="selectFilter('grayscale')">Grayscale</div>
-                    <div class="filter-btn" onclick="selectFilter('sepia')">Sepia</div>
-                    <div class="filter-btn" onclick="selectFilter('vignette')">Vignette</div>
-                    <div class="filter-btn" onclick="selectFilter('pixelate')">Pixelate</div>
-                    <div class="filter-btn" onclick="selectFilter('edge')">Edge Detect</div>
-                    <div class="filter-btn" onclick="selectFilter('emboss')">Emboss</div>
-                    <div class="filter-btn" onclick="selectFilter('oil')">Oil Paint</div>
-                    <div class="filter-btn" onclick="selectFilter('hue')">Hue Shift</div>
-                    <div class="filter-btn" onclick="selectFilter('exposure')">Exposure</div>
-                    <div class="filter-btn" onclick="selectFilter('gamma')">Gamma</div>
-                    <div class="filter-btn" onclick="selectFilter('noise')">Noise</div>
+                    <div class="filter-btn" onclick="selectFilter('brightness', this)">Brightness</div>
+                    <div class="filter-btn" onclick="selectFilter('contrast', this)">Contrast</div>
+                    <div class="filter-btn" onclick="selectFilter('saturation', this)">Saturation</div>
+                    <div class="filter-btn" onclick="selectFilter('blur', this)">Blur</div>
+                    <div class="filter-btn" onclick="selectFilter('sharpen', this)">Sharpen</div>
+                    <div class="filter-btn" onclick="selectFilter('grayscale', this)">Grayscale</div>
+                    <div class="filter-btn" onclick="selectFilter('sepia', this)">Sepia</div>
+                    <div class="filter-btn" onclick="selectFilter('vignette', this)">Vignette</div>
+                    <div class="filter-btn" onclick="selectFilter('pixelate', this)">Pixelate</div>
+                    <div class="filter-btn" onclick="selectFilter('edge', this)">Edge Detect</div>
+                    <div class="filter-btn" onclick="selectFilter('emboss', this)">Emboss</div>
+                    <div class="filter-btn" onclick="selectFilter('oil', this)">Oil Paint</div>
+                    <div class="filter-btn" onclick="selectFilter('hue', this)">Hue Shift</div>
+                    <div class="filter-btn" onclick="selectFilter('exposure', this)">Exposure</div>
+                    <div class="filter-btn" onclick="selectFilter('gamma', this)">Gamma</div>
+                    <div class="filter-btn" onclick="selectFilter('noise', this)">Noise</div>
                 </div>
             </div>
         </div>
@@ -848,6 +848,8 @@
         let currentTexture = null;
         let workingTexture = null;
         let previewBaseTexture = null; // Texture before preview
+        let originalTexture = null;
+        let comparisonSplit = 0.5;
         let framebuffer = null;
         let shaderPrograms = {};
         let layers = [];
@@ -1198,6 +1200,8 @@
                 return;
             }
 
+            gl.clearColor(0, 0, 0, 0);
+
             // Create shader programs
             for (const [name, fragmentSource] of Object.entries(fragmentShaders)) {
                 shaderPrograms[name] = createProgram(vertexShaderSource, fragmentSource);
@@ -1306,11 +1310,38 @@
         }
 
         function initializeImage(img) {
+            // Clean up any existing textures to avoid GPU leaks when loading a new image
+            const texturesToDispose = new Set();
+            [currentTexture, workingTexture, previewBaseTexture, originalTexture].forEach(texture => {
+                if (texture) {
+                    texturesToDispose.add(texture);
+                }
+            });
+            history.forEach(state => {
+                if (state.texture) {
+                    texturesToDispose.add(state.texture);
+                }
+            });
+            texturesToDispose.forEach(texture => gl.deleteTexture(texture));
+
+            previewBaseTexture = null;
+            isPreviewing = false;
+
+            // Reset comparison state
+            compareMode = false;
+            comparisonSplit = 0.5;
+            const comparisonSlider = document.getElementById('comparisonSlider');
+            if (comparisonSlider) {
+                comparisonSlider.classList.add('hidden');
+                comparisonSlider.style.left = '50%';
+            }
+
             // Set canvas size to image size
             canvas.width = img.width;
             canvas.height = img.height;
 
             // Create texture from image
+            originalTexture = createTexture(img);
             currentTexture = createTexture(img);
             workingTexture = createTexture(img);
 
@@ -1392,14 +1423,53 @@
             gl.enableVertexAttribArray(texCoordLocation);
             gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-            // Bind texture
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, currentTexture);
-            gl.uniform1i(gl.getUniformLocation(program, 'u_image'), 0);
+            const imageLocation = gl.getUniformLocation(program, 'u_image');
+            gl.uniform1i(imageLocation, 0);
 
-            // Set viewport and render
+            // Set viewport
             gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            const drawSegment = (texture, startRatio = 0, endRatio = 1) => {
+                if (!texture) return;
+
+                const clampedStart = Math.max(0, Math.min(1, startRatio));
+                const clampedEnd = Math.max(clampedStart, Math.min(1, endRatio));
+                const rawWidth = (clampedEnd - clampedStart) * canvas.width;
+
+                if (rawWidth <= 0) {
+                    return;
+                }
+
+                const startX = Math.max(0, Math.floor(clampedStart * canvas.width));
+                const endX = Math.min(canvas.width, Math.ceil(clampedEnd * canvas.width));
+                const segmentWidth = Math.max(1, endX - startX);
+                gl.enable(gl.SCISSOR_TEST);
+                gl.scissor(startX, 0, Math.min(canvas.width - startX, segmentWidth), canvas.height);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                gl.disable(gl.SCISSOR_TEST);
+            };
+
+            if (compareMode && originalTexture) {
+                gl.disable(gl.SCISSOR_TEST);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+
+                // Draw original on the left portion
+                if (comparisonSplit > 0) {
+                    drawSegment(originalTexture, 0, comparisonSplit);
+                }
+
+                // Draw current result on the right portion
+                if (comparisonSplit < 1) {
+                    drawSegment(currentTexture, comparisonSplit, 1);
+                }
+            } else {
+                gl.disable(gl.SCISSOR_TEST);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, currentTexture);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            }
 
             // Update canvas display size with zoom
             updateCanvasDisplay();
@@ -1514,7 +1584,20 @@
             return history.some(state => state.texture === texture);
         }
 
-        function selectFilter(filterName) {
+        function selectFilter(filterName, button) {
+            if (!filterDefinitions[filterName]) {
+                console.warn(`Unknown filter requested: ${filterName}`);
+                return;
+            }
+
+            if (isPreviewing && previewBaseTexture && currentTexture && currentTexture !== previewBaseTexture) {
+                if (!isTextureInHistory(currentTexture)) {
+                    gl.deleteTexture(currentTexture);
+                }
+                currentTexture = previewBaseTexture;
+                render();
+            }
+
             currentFilter = filterName;
 
             // Save current texture as preview base
@@ -1525,7 +1608,9 @@
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
+            }
 
             // Setup filter controls
             const definition = filterDefinitions[filterName];
@@ -1843,38 +1928,76 @@
 
         // Comparison slider
         function toggleComparison() {
+            if (!currentTexture || !originalTexture) {
+                return;
+            }
+
             compareMode = !compareMode;
             const slider = document.getElementById('comparisonSlider');
 
             if (compareMode) {
                 slider.classList.remove('hidden');
+                slider.style.left = `${comparisonSplit * 100}%`;
             } else {
                 slider.classList.add('hidden');
             }
+
+            render();
         }
 
         function setupComparisonSlider() {
             const slider = document.getElementById('comparisonSlider');
             let isSliding = false;
 
-            slider.addEventListener('mousedown', () => {
+            const updateSplitFromClient = (clientX) => {
+                if (!compareMode) return;
+
+                const canvasRect = canvas.getBoundingClientRect();
+                if (!canvasRect.width || !canvasRect.height) return;
+
+                const clampedX = Math.min(Math.max(clientX, canvasRect.left), canvasRect.right);
+                const ratio = (clampedX - canvasRect.left) / canvasRect.width;
+                comparisonSplit = Math.max(0, Math.min(1, ratio));
+                slider.style.left = `${comparisonSplit * 100}%`;
+                render();
+            };
+
+            slider.addEventListener('mousedown', (event) => {
+                if (!compareMode) return;
+                event.preventDefault();
                 isSliding = true;
+                updateSplitFromClient(event.clientX);
             });
 
-            document.addEventListener('mousemove', (e) => {
-                if (isSliding && compareMode) {
-                    const canvasRect = canvas.getBoundingClientRect();
-                    const x = e.clientX - canvasRect.left;
-                    const percentage = (x / canvasRect.width) * 100;
-                    slider.style.left = Math.max(0, Math.min(100, percentage)) + '%';
-
-                    // TODO: Implement split view rendering
-                }
+            document.addEventListener('mousemove', (event) => {
+                if (!isSliding || !compareMode) return;
+                event.preventDefault();
+                updateSplitFromClient(event.clientX);
             });
 
             document.addEventListener('mouseup', () => {
                 isSliding = false;
             });
+
+            slider.addEventListener('touchstart', (event) => {
+                if (!compareMode) return;
+                event.preventDefault();
+                isSliding = true;
+                updateSplitFromClient(event.touches[0].clientX);
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (event) => {
+                if (!isSliding || !compareMode) return;
+                event.preventDefault();
+                updateSplitFromClient(event.touches[0].clientX);
+            }, { passive: false });
+
+            const endTouch = () => {
+                isSliding = false;
+            };
+
+            document.addEventListener('touchend', endTouch);
+            document.addEventListener('touchcancel', endTouch);
         }
 
         // Histogram

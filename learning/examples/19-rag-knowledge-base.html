@@ -655,12 +655,12 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('upload')">📤 Upload</button>
-            <button class="tab" onclick="switchTab('query')">❓ Ask Questions</button>
-            <button class="tab" onclick="switchTab('documents')">📚 Documents</button>
-            <button class="tab" onclick="switchTab('search')">🔍 Search</button>
-            <button class="tab" onclick="switchTab('graph')">🕸️ Knowledge Graph</button>
-            <button class="tab" onclick="switchTab('history')">📜 History</button>
+            <button class="tab active" onclick="switchTab('upload', this)">📤 Upload</button>
+            <button class="tab" onclick="switchTab('query', this)">❓ Ask Questions</button>
+            <button class="tab" onclick="switchTab('documents', this)">📚 Documents</button>
+            <button class="tab" onclick="switchTab('search', this)">🔍 Search</button>
+            <button class="tab" onclick="switchTab('graph', this)">🕸️ Knowledge Graph</button>
+            <button class="tab" onclick="switchTab('history', this)">📜 History</button>
         </div>
 
         <!-- Upload Tab -->
@@ -1138,10 +1138,12 @@
             document.getElementById('kb-size').textContent = `${size} KB`;
         }
 
-        function switchTab(tabName) {
+        function switchTab(tabName, tabButton) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
+            if (tabButton) {
+                tabButton.classList.add('active');
+            }
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => {
