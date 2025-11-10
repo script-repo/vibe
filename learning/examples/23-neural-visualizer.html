@@ -188,21 +188,26 @@
                     }
                 };
 
-                // Try to autoplay, but if it fails due to browser policy, wait for user interaction
-                try {
-                    // Resume audio context if suspended
-                    if (audioContext.state === 'suspended') {
-                        await audioContext.resume();
-                    }
+                // Function to attempt autoplay after audio is ready
+                const attemptAutoplay = async () => {
+                    try {
+                        // Resume audio context if suspended
+                        if (audioContext.state === 'suspended') {
+                            await audioContext.resume();
+                        }
 
-                    await audio.play();
-                } catch (err) {
-                    // Autoplay blocked - wait for user interaction
-                    console.log('Autoplay blocked. Click, touch, or press any key to start.');
-                    document.addEventListener('click', startAudio);
-                    document.addEventListener('touchstart', startAudio);
-                    document.addEventListener('keydown', startAudio);
-                }
+                        await audio.play();
+                    } catch (err) {
+                        // Autoplay blocked - wait for user interaction
+                        console.log('Autoplay blocked. Click, touch, or press any key to start.');
+                        document.addEventListener('click', startAudio);
+                        document.addEventListener('touchstart', startAudio);
+                        document.addEventListener('keydown', startAudio);
+                    }
+                };
+
+                // Wait for audio to be ready before attempting to play
+                audio.addEventListener('canplaythrough', attemptAutoplay, { once: true });
             } catch (err) {
                 console.error('Error setting up audio:', err);
             }

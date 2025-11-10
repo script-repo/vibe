@@ -1712,6 +1712,11 @@
 
             document.getElementById('uploadArea').classList.add('hidden');
 
+            // Start animation immediately so visualization appears even without audio
+            if (!animationId) {
+                animate();
+            }
+
             // Resume audio context and try to play
             const playAudio = async () => {
                 try {
@@ -1723,10 +1728,6 @@
                     await audio.play();
                     isPlaying = true;
                     document.getElementById('playBtn').textContent = '⏸️ Pause';
-
-                    if (!animationId) {
-                        animate();
-                    }
                 } catch (err) {
                     console.error('Error playing audio:', err);
                     isPlaying = false;
@@ -1741,9 +1742,6 @@
                             await audio.play();
                             isPlaying = true;
                             document.getElementById('playBtn').textContent = '⏸️ Pause';
-                            if (!animationId) {
-                                animate();
-                            }
                             // Remove listeners after successful play
                             document.removeEventListener('click', startOnInteraction);
                             document.removeEventListener('keydown', startOnInteraction);
@@ -1761,7 +1759,10 @@
                 }
             };
 
-            playAudio();
+            // Wait for audio to load before attempting to play
+            audio.addEventListener('canplaythrough', () => {
+                playAudio();
+            }, { once: true });
         }
 
         async function toggleMicrophone() {
