@@ -220,7 +220,7 @@
         /* Cards */
         .card {
             width: 100%;
-            height: 120px;
+            height: 140px;
             background: white;
             border-radius: 8px;
             position: absolute;
@@ -565,7 +565,7 @@
             }
 
             .card {
-                height: 100px;
+                height: 120px;
                 font-size: 14px;
             }
 
@@ -617,7 +617,7 @@
             }
 
             .card {
-                height: 80px;
+                height: 100px;
                 padding: 5px;
                 font-size: 12px;
             }
@@ -891,15 +891,21 @@
             const deck = [];
             const suitsToUse = SUIT_NAMES.slice(0, game.difficulty);
 
-            // Create 2 full decks (104 cards)
-            for (let deckNum = 0; deckNum < 2; deckNum++) {
+            // Calculate how many complete sets of suits we need to reach 104 cards
+            // 1 suit: 8 sets of 13 = 104 cards
+            // 2 suits: 4 sets of 13 each = 104 cards
+            // 4 suits: 2 sets of 13 each = 104 cards
+            const setsNeeded = 8 / game.difficulty;
+
+            // Create the required number of suit sets to get exactly 104 cards
+            for (let setNum = 0; setNum < setsNeeded; setNum++) {
                 for (let suit of suitsToUse) {
                     for (let rank of RANKS) {
                         deck.push({
                             rank,
                             suit,
                             faceUp: false,
-                            id: `${suit}-${rank}-${deckNum}-${Math.random()}`
+                            id: `${suit}-${rank}-${setNum}-${Math.random()}`
                         });
                     }
                 }
