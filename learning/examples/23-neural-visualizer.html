@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Music Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+        }
+
+        #visualizer {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="visualizer"></canvas>
+
+    <script>
+        // Audio Context and Nodes
+        let audioContext, analyser, dataArray, bufferLength;
+        let audioSource, audio;
+        let gainNode;
+
+        // Canvas
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let animationId;
+        let sensitivity = 150;
+        let smoothingValue = 0.8;
+
+        // Theme colors
+        const themes = {
+            purple: ['#6366f1', '#8b5cf6', '#ec4899', '#d946ef'],
+            neon: ['#ff006e', '#8338ec', '#3a86ff', '#06ffa5'],
+            ocean: ['#06ffa5', '#0099ff', '#4d4dff', '#00d9ff'],
+            fire: ['#ff0000', '#ff7f00', '#ffff00', '#ff3300'],
+            matrix: ['#00ff00', '#00cc00', '#009900', '#00ff80'],
+            sunset: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#ff8a80'],
+            cyber: ['#00d9ff', '#ff00e5', '#7000ff', '#00ffff'],
+            aurora: ['#00ffbd', '#00a8ff', '#bd00ff', '#00ff88'],
+            lava: ['#ff0080', '#ff8c00', '#ffd700', '#ff1493'],
+            ice: ['#00ffff', '#4da6ff', '#b366ff', '#80d4ff']
+        };
+        let currentTheme = 'purple';
+
+        // Neural network nodes
+        let neuralNodes = [];
+        const bloomEnabled = true;
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            initNeuralNodes();
+            loadAndPlayAudio();
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Reinitialize neural nodes on resize
+            if (neuralNodes.length > 0) {
+                neuralNodes = [];
+                initNeuralNodes();
+            }
+        }
+
+        function initNeuralNodes() {
+            for (let i = 0; i < 50; i++) {
+                neuralNodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    connections: []
+                });
+            }
+        }
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = smoothingValue;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.7;
+
+                analyser.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+            }
+        }
+
+        async function loadAndPlayAudio() {
+            try {
+                // Load the audio file
+                audio = new Audio('Avicenna\'s%20Floating%20Man.mp3');
+                audio.volume = 0.7;
+                audio.loop = true; // Loop the audio
+
+                initAudioContext();
+
+                // Create audio source and connect
+                audioSource = audioContext.createMediaElementSource(audio);
+                audioSource.connect(analyser);
+
+                // Wait for user interaction to start audio (browser requirement)
+                const startAudio = async () => {
+                    try {
+                        await audio.play();
+                        if (!animationId) {
+                            animate();
+                        }
+                        // Remove the click listener after starting
+                        document.removeEventListener('click', startAudio);
+                        document.removeEventListener('touchstart', startAudio);
+                        document.removeEventListener('keydown', startAudio);
+                    } catch (err) {
+                        console.error('Error playing audio:', err);
+                    }
+                };
+
+                // Try to autoplay, but if it fails due to browser policy, wait for user interaction
+                try {
+                    await audio.play();
+                    if (!animationId) {
+                        animate();
+                    }
+                } catch (err) {
+                    // Autoplay blocked - wait for user interaction
+                    console.log('Autoplay blocked. Click, touch, or press any key to start.');
+                    document.addEventListener('click', startAudio);
+                    document.addEventListener('touchstart', startAudio);
+                    document.addEventListener('keydown', startAudio);
+                }
+            } catch (err) {
+                console.error('Error loading audio:', err);
+            }
+        }
+
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+
+            if (!analyser) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            drawNeural();
+        }
+
+        function drawNeural() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            const colors = themes[currentTheme];
+            const bass = getAverageFrequency(0, 50);
+            const mid = getAverageFrequency(50, 200);
+
+            // Update node positions
+            neuralNodes.forEach((node, index) => {
+                const freqIndex = Math.floor((index / neuralNodes.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+
+                node.vx += (Math.random() - 0.5) * freqValue * (sensitivity / 100);
+                node.vy += (Math.random() - 0.5) * freqValue * (sensitivity / 100);
+                node.vx *= 0.95;
+                node.vy *= 0.95;
+
+                node.x += node.vx;
+                node.y += node.vy;
+
+                if (node.x < 0 || node.x > width) node.vx *= -1;
+                if (node.y < 0 || node.y > height) node.vy *= -1;
+
+                node.x = Math.max(0, Math.min(width, node.x));
+                node.y = Math.max(0, Math.min(height, node.y));
+            });
+
+            // Draw connections
+            ctx.strokeStyle = colors[0] + '40';
+            ctx.lineWidth = 2;
+
+            neuralNodes.forEach((node, i) => {
+                for (let j = i + 1; j < neuralNodes.length; j++) {
+                    const dx = node.x - neuralNodes[j].x;
+                    const dy = node.y - neuralNodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 200) {
+                        const opacity = 1 - (distance / 200);
+                        const colorIndex = Math.floor((i / neuralNodes.length) * colors.length);
+                        ctx.strokeStyle = colors[colorIndex] + Math.floor(opacity * 100).toString(16).padStart(2, '0');
+
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(neuralNodes[j].x, neuralNodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Draw nodes
+            neuralNodes.forEach((node, index) => {
+                const freqIndex = Math.floor((index / neuralNodes.length) * dataArray.length);
+                const freqValue = dataArray[freqIndex] / 255;
+                const colorIndex = Math.floor((index / neuralNodes.length) * colors.length);
+
+                ctx.fillStyle = colors[colorIndex];
+
+                if (bloomEnabled) {
+                    ctx.shadowBlur = 20 * freqValue;
+                    ctx.shadowColor = colors[colorIndex];
+                }
+
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 5 + freqValue * 10, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        function getAverageFrequency(start, end) {
+            let sum = 0;
+            for (let i = start; i < end && i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            return Math.round(sum / (end - start));
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

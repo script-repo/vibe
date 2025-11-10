@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Form Builder - Professional Form Designer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border: #374151;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(31, 41, 55, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .field-item {
+            background: var(--bg-secondary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: move;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .field-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .field-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .template-btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+            background: var(--bg-secondary);
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+        }
+
+        .template-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+        }
+
+        /* Canvas */
+        .canvas-container {
+            flex: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px var(--shadow);
+            position: relative;
+        }
+
+        .canvas-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .canvas-tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .canvas-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .form-canvas {
+            min-height: 400px;
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+        }
+
+        .form-canvas.drag-over {
+            border-color: var(--primary);
+            background: var(--bg-secondary);
+        }
+
+        .form-canvas.empty::before {
+            content: "Drag and drop fields here to start building your form";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: var(--text-tertiary);
+            font-size: 1.125rem;
+        }
+
+        .form-field {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s;
+            cursor: move;
+        }
+
+        .form-field:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .form-field.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-field.dragging {
+            opacity: 0.5;
+        }
+
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .field-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .required-mark {
+            color: var(--danger);
+        }
+
+        .field-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .field-action-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .field-action-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .field-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .field-error {
+            font-size: 0.75rem;
+            color: var(--danger);
+            margin-top: 0.25rem;
+        }
+
+        .page-break {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Properties Panel */
+        .properties-panel {
+            width: 320px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .properties-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .property-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .property-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .checkbox-group, .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"],
+        .radio-group input[type="radio"] {
+            width: auto;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-item {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .option-item input {
+            flex: 1;
+        }
+
+        .btn-small {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+
+        /* Form Preview */
+        .form-preview {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-preview h2 {
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        /* Conditional Logic */
+        .conditional-rules {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .rule-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .rule-item select,
+        .rule-item input {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* Validation */
+        .validation-rules {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 8px 32px var(--shadow);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .properties-panel {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar, .properties-panel {
+                width: 100%;
+                max-height: 200px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">⚡ Smart Form Builder</div>
+            <div class="header-actions">
+                <button class="btn" onclick="showTemplates()">📋 Templates</button>
+                <button class="btn" onclick="addPageBreak()">📄 Add Page</button>
+                <button class="btn" onclick="importForm()">📥 Import</button>
+                <button class="btn" onclick="exportJSON()">💾 Export JSON</button>
+                <button class="btn btn-success" onclick="exportHTML()">🚀 Export HTML</button>
+                <button class="btn" onclick="clearForm()">🗑️ Clear</button>
+                <button class="btn btn-icon" onclick="toggleDarkMode()">🌙</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Field Types</h3>
+                    <div class="field-types">
+                        <div class="field-item" draggable="true" data-field-type="text">
+                            <span class="field-icon">📝</span>
+                            <span>Text Input</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="email">
+                            <span class="field-icon">📧</span>
+                            <span>Email</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="number">
+                            <span class="field-icon">🔢</span>
+                            <span>Number</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="date">
+                            <span class="field-icon">📅</span>
+                            <span>Date</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="textarea">
+                            <span class="field-icon">📄</span>
+                            <span>Text Area</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="select">
+                            <span class="field-icon">📋</span>
+                            <span>Select Dropdown</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="checkbox">
+                            <span class="field-icon">☑️</span>
+                            <span>Checkbox</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="radio">
+                            <span class="field-icon">🔘</span>
+                            <span>Radio Buttons</span>
+                        </div>
+                        <div class="field-item" draggable="true" data-field-type="file">
+                            <span class="field-icon">📎</span>
+                            <span>File Upload</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Form Settings</h3>
+                    <div class="property-group">
+                        <label class="property-label">Form Title</label>
+                        <input type="text" class="property-input" id="formTitle" value="My Form" onchange="updateFormTitle()">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Form Description</label>
+                        <textarea class="property-input" id="formDescription" rows="3" onchange="updateFormDescription()">Please fill out this form</textarea>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Canvas -->
+            <div class="canvas-container">
+                <div class="canvas-tabs">
+                    <button class="canvas-tab active" onclick="switchTab('builder', event)">🔧 Builder</button>
+                    <button class="canvas-tab" onclick="switchTab('preview', event)">👁️ Preview</button>
+                </div>
+
+                <div id="builderTab" class="tab-content">
+                    <div class="form-canvas empty" id="formCanvas"></div>
+                </div>
+
+                <div id="previewTab" class="tab-content" style="display: none;">
+                    <div class="form-preview" id="formPreview"></div>
+                </div>
+            </div>
+
+            <!-- Properties Panel -->
+            <aside class="properties-panel" id="propertiesPanel">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚙️</div>
+                    <p>Select a field to edit its properties</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Export Form HTML</h2>
+                <button class="modal-close" onclick="closeModal('exportModal')">×</button>
+            </div>
+            <div class="code-block" id="exportCode"></div>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                <button class="btn btn-primary" onclick="copyExportCode()">📋 Copy to Clipboard</button>
+                <button class="btn" onclick="downloadHTML()">⬇️ Download HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="jsonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Form JSON Schema</h2>
+                <button class="modal-close" onclick="closeModal('jsonModal')">×</button>
+            </div>
+            <div class="code-block" id="jsonCode"></div>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                <button class="btn btn-primary" onclick="copyJSONCode()">📋 Copy to Clipboard</button>
+                <button class="btn" onclick="downloadJSON()">⬇️ Download JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Choose Template</h2>
+                <button class="modal-close" onclick="closeModal('templateModal')">×</button>
+            </div>
+            <div class="btn-group" style="flex-direction: column;">
+                <button class="template-btn" onclick="loadTemplate('contact')">
+                    <strong>📞 Contact Form</strong><br>
+                    <small>Name, email, phone, message fields</small>
+                </button>
+                <button class="template-btn" onclick="loadTemplate('survey')">
+                    <strong>📊 Survey Form</strong><br>
+                    <small>Rating, multiple choice, and feedback</small>
+                </button>
+                <button class="template-btn" onclick="loadTemplate('registration')">
+                    <strong>✍️ Registration Form</strong><br>
+                    <small>User signup with validation</small>
+                </button>
+                <button class="template-btn" onclick="loadTemplate('order')">
+                    <strong>🛒 Order Form</strong><br>
+                    <small>Product selection and checkout</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Import Form</h2>
+                <button class="modal-close" onclick="closeModal('importModal')">×</button>
+            </div>
+            <div class="property-group">
+                <label class="property-label">Paste JSON Form Definition</label>
+                <textarea class="property-input" id="importJSON" rows="10" placeholder='{"title": "My Form", "fields": [...]}' style="font-family: monospace; font-size: 0.75rem;"></textarea>
+            </div>
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="doImport()">📥 Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Global State
+        let formData = {
+            title: 'My Form',
+            description: 'Please fill out this form',
+            fields: [],
+            pages: []
+        };
+
+        let selectedField = null;
+        let draggedElement = null;
+        let fieldCounter = 0;
+        let currentTab = 'builder';
+
+        // Initialize
+        function init() {
+            setupDragAndDrop();
+            loadFromLocalStorage();
+        }
+
+        // Drag and Drop
+        function setupDragAndDrop() {
+            const canvas = document.getElementById('formCanvas');
+
+            // Field items from sidebar
+            document.querySelectorAll('.field-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Canvas drop zone
+            canvas.addEventListener('dragover', handleDragOver);
+            canvas.addEventListener('drop', handleDrop);
+            canvas.addEventListener('dragleave', handleDragLeave);
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+
+            if (e.target.classList.contains('field-item')) {
+                e.dataTransfer.setData('fieldType', e.target.dataset.fieldType);
+            } else if (e.target.classList.contains('form-field')) {
+                e.dataTransfer.setData('fieldId', e.target.dataset.fieldId);
+                e.target.classList.add('dragging');
+            }
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            const fieldType = e.dataTransfer.getData('fieldType');
+            const fieldId = e.dataTransfer.getData('fieldId');
+
+            if (fieldType) {
+                // Adding new field
+                addField(fieldType);
+            } else if (fieldId) {
+                // Reordering existing field
+                reorderField(fieldId, e);
+            }
+        }
+
+        // Add Field
+        function addField(type) {
+            const field = createFieldObject(type);
+            formData.fields.push(field);
+            renderCanvas();
+            saveToLocalStorage();
+            showToast('Field added successfully', 'success');
+        }
+
+        function createFieldObject(type) {
+            const id = 'field_' + (++fieldCounter);
+            const baseField = {
+                id,
+                type,
+                label: getFieldLabel(type),
+                placeholder: '',
+                required: false,
+                validation: {},
+                conditional: null,
+                options: []
+            };
+
+            if (type === 'select' || type === 'radio' || type === 'checkbox') {
+                baseField.options = ['Option 1', 'Option 2', 'Option 3'];
+            }
+
+            return baseField;
+        }
+
+        function getFieldLabel(type) {
+            const labels = {
+                text: 'Text Input',
+                email: 'Email Address',
+                number: 'Number',
+                date: 'Date',
+                textarea: 'Text Area',
+                select: 'Select Option',
+                checkbox: 'Checkbox Options',
+                radio: 'Radio Selection',
+                file: 'File Upload'
+            };
+            return labels[type] || 'Field';
+        }
+
+        // Render Canvas
+        function renderCanvas() {
+            const canvas = document.getElementById('formCanvas');
+
+            if (formData.fields.length === 0) {
+                canvas.innerHTML = '';
+                canvas.classList.add('empty');
+                return;
+            }
+
+            canvas.classList.remove('empty');
+            canvas.innerHTML = formData.fields.map(field => renderField(field)).join('');
+
+            // Make fields draggable
+            canvas.querySelectorAll('.form-field').forEach(fieldEl => {
+                fieldEl.draggable = true;
+                fieldEl.addEventListener('dragstart', handleDragStart);
+                fieldEl.addEventListener('dragend', handleDragEnd);
+                fieldEl.addEventListener('click', () => selectField(fieldEl.dataset.fieldId));
+            });
+        }
+
+        function renderField(field) {
+            let inputHTML = '';
+
+            switch (field.type) {
+                case 'text':
+                case 'email':
+                case 'number':
+                case 'date':
+                    inputHTML = `<input type="${field.type}" class="field-input" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`;
+                    break;
+                case 'textarea':
+                    inputHTML = `<textarea class="field-input" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}></textarea>`;
+                    break;
+                case 'select':
+                    inputHTML = `<select class="field-input" ${field.required ? 'required' : ''}>
+                        <option value="">Select an option</option>
+                        ${field.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>`;
+                    break;
+                case 'checkbox':
+                    inputHTML = field.options.map(opt => `
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${field.id}_${opt}" value="${opt}">
+                            <label for="${field.id}_${opt}">${opt}</label>
+                        </div>
+                    `).join('');
+                    break;
+                case 'radio':
+                    inputHTML = field.options.map(opt => `
+                        <div class="radio-group">
+                            <input type="radio" name="${field.id}" id="${field.id}_${opt}" value="${opt}">
+                            <label for="${field.id}_${opt}">${opt}</label>
+                        </div>
+                    `).join('');
+                    break;
+                case 'file':
+                    inputHTML = `<input type="file" class="field-input">`;
+                    break;
+            }
+
+            const conditionalBadge = field.conditional ? '<span style="background: var(--warning); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 0.5rem;">Conditional</span>' : '';
+
+            return `
+                <div class="form-field ${field.type === 'page-break' ? 'page-break' : ''}" data-field-id="${field.id}">
+                    ${field.type !== 'page-break' ? `
+                        <div class="field-header">
+                            <div class="field-label">
+                                ${field.label}
+                                ${field.required ? '<span class="required-mark">*</span>' : ''}
+                                ${conditionalBadge}
+                            </div>
+                            <div class="field-actions">
+                                <button class="field-action-btn" onclick="editField('${field.id}')" title="Edit">⚙️</button>
+                                <button class="field-action-btn" onclick="duplicateField('${field.id}')" title="Duplicate">📋</button>
+                                <button class="field-action-btn" onclick="deleteField('${field.id}')" title="Delete">🗑️</button>
+                            </div>
+                        </div>
+                        ${inputHTML}
+                        ${field.placeholder && field.type !== 'select' && field.type !== 'checkbox' && field.type !== 'radio' ? `<div class="field-hint">${field.placeholder}</div>` : ''}
+                    ` : `<div style="text-align: center;">📄 Page Break - Step ${formData.fields.filter(f => f.type === 'page-break').indexOf(field) + 2}</div>`}
+                </div>
+            `;
+        }
+
+        // Field Actions
+        function selectField(fieldId) {
+            selectedField = formData.fields.find(f => f.id === fieldId);
+
+            document.querySelectorAll('.form-field').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            const fieldEl = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (fieldEl) {
+                fieldEl.classList.add('selected');
+            }
+
+            renderProperties();
+        }
+
+        function editField(fieldId) {
+            selectField(fieldId);
+        }
+
+        function duplicateField(fieldId) {
+            const field = formData.fields.find(f => f.id === fieldId);
+            if (field) {
+                const newField = JSON.parse(JSON.stringify(field));
+                newField.id = 'field_' + (++fieldCounter);
+                newField.label += ' (Copy)';
+                formData.fields.push(newField);
+                renderCanvas();
+                saveToLocalStorage();
+                showToast('Field duplicated', 'success');
+            }
+        }
+
+        function deleteField(fieldId) {
+            formData.fields = formData.fields.filter(f => f.id !== fieldId);
+            if (selectedField && selectedField.id === fieldId) {
+                selectedField = null;
+                renderProperties();
+            }
+            renderCanvas();
+            saveToLocalStorage();
+            showToast('Field deleted', 'success');
+        }
+
+        function reorderField(fieldId, dropEvent) {
+            const field = formData.fields.find(f => f.id === fieldId);
+            if (!field) return;
+
+            const fieldIndex = formData.fields.indexOf(field);
+            formData.fields.splice(fieldIndex, 1);
+
+            // Find drop position
+            const canvas = document.getElementById('formCanvas');
+            const allFields = Array.from(canvas.querySelectorAll('.form-field'));
+            let dropIndex = formData.fields.length;
+
+            for (let i = 0; i < allFields.length; i++) {
+                const rect = allFields[i].getBoundingClientRect();
+                if (dropEvent.clientY < rect.top + rect.height / 2) {
+                    dropIndex = i;
+                    break;
+                }
+            }
+
+            formData.fields.splice(dropIndex, 0, field);
+            renderCanvas();
+            saveToLocalStorage();
+        }
+
+        // Properties Panel
+        function renderProperties() {
+            const panel = document.getElementById('propertiesPanel');
+
+            if (!selectedField) {
+                panel.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚙️</div>
+                        <p>Select a field to edit its properties</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const field = selectedField;
+            const hasOptions = ['select', 'checkbox', 'radio'].includes(field.type);
+
+            panel.innerHTML = `
+                <h2 class="properties-title">Field Properties</h2>
+
+                <div class="property-group">
+                    <label class="property-label">Field Type</label>
+                    <input type="text" class="property-input" value="${field.type}" disabled>
+                </div>
+
+                <div class="property-group">
+                    <label class="property-label">Label</label>
+                    <input type="text" class="property-input" value="${field.label}" onchange="updateFieldProperty('label', this.value)">
+                </div>
+
+                ${!hasOptions ? `
+                <div class="property-group">
+                    <label class="property-label">Placeholder</label>
+                    <input type="text" class="property-input" value="${field.placeholder || ''}" onchange="updateFieldProperty('placeholder', this.value)">
+                </div>
+                ` : ''}
+
+                <div class="property-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="required" ${field.required ? 'checked' : ''} onchange="updateFieldProperty('required', this.checked)">
+                        <label for="required">Required Field</label>
+                    </div>
+                </div>
+
+                ${hasOptions ? `
+                <div class="property-group">
+                    <label class="property-label">Options</label>
+                    <div class="options-list" id="optionsList">
+                        ${field.options.map((opt, idx) => `
+                            <div class="option-item">
+                                <input type="text" class="property-input" value="${opt}" onchange="updateOption(${idx}, this.value)">
+                                <button class="btn btn-small btn-danger" onclick="removeOption(${idx})">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-small" onclick="addOption()" style="margin-top: 0.5rem;">+ Add Option</button>
+                </div>
+                ` : ''}
+
+                <div class="property-group">
+                    <label class="property-label">Validation Rules</label>
+                    <div class="validation-rules">
+                        ${field.type === 'text' || field.type === 'textarea' ? `
+                            <div class="property-group">
+                                <label class="property-label">Min Length</label>
+                                <input type="number" class="property-input" value="${field.validation.minLength || ''}" onchange="updateValidation('minLength', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">Max Length</label>
+                                <input type="number" class="property-input" value="${field.validation.maxLength || ''}" onchange="updateValidation('maxLength', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">Pattern (Regex)</label>
+                                <input type="text" class="property-input" value="${field.validation.pattern || ''}" placeholder="^[A-Za-z]+$" onchange="updateValidation('pattern', this.value)">
+                            </div>
+                        ` : ''}
+                        ${field.type === 'number' ? `
+                            <div class="property-group">
+                                <label class="property-label">Minimum Value</label>
+                                <input type="number" class="property-input" value="${field.validation.min || ''}" onchange="updateValidation('min', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">Maximum Value</label>
+                                <input type="number" class="property-input" value="${field.validation.max || ''}" onchange="updateValidation('max', this.value)">
+                            </div>
+                        ` : ''}
+                        ${field.type === 'file' ? `
+                            <div class="property-group">
+                                <label class="property-label">Accepted Types</label>
+                                <input type="text" class="property-input" value="${field.validation.accept || ''}" placeholder=".pdf,.doc,.docx" onchange="updateValidation('accept', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">Max Size (MB)</label>
+                                <input type="number" class="property-input" value="${field.validation.maxSize || ''}" onchange="updateValidation('maxSize', this.value)">
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="property-group">
+                    <label class="property-label">Conditional Logic</label>
+                    <div class="conditional-rules">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enableConditional" ${field.conditional ? 'checked' : ''} onchange="toggleConditional(this.checked)">
+                            <label for="enableConditional">Enable Conditional Display</label>
+                        </div>
+                        ${field.conditional ? `
+                            <div class="rule-item" style="margin-top: 1rem;">
+                                <label style="width: 100%; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Show this field when:</label>
+                                <select class="property-input" onchange="updateConditional('field', this.value)">
+                                    <option value="">Select field</option>
+                                    ${formData.fields.filter(f => f.id !== field.id && f.type !== 'page-break').map(f => `
+                                        <option value="${f.id}" ${field.conditional.field === f.id ? 'selected' : ''}>${f.label}</option>
+                                    `).join('')}
+                                </select>
+                                <select class="property-input" onchange="updateConditional('operator', this.value)">
+                                    <option value="equals" ${field.conditional.operator === 'equals' ? 'selected' : ''}>Equals</option>
+                                    <option value="notEquals" ${field.conditional.operator === 'notEquals' ? 'selected' : ''}>Not Equals</option>
+                                    <option value="contains" ${field.conditional.operator === 'contains' ? 'selected' : ''}>Contains</option>
+                                </select>
+                                <input type="text" class="property-input" value="${field.conditional.value || ''}" placeholder="Value" onchange="updateConditional('value', this.value)">
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateFieldProperty(property, value) {
+            if (selectedField) {
+                selectedField[property] = value;
+                renderCanvas();
+                saveToLocalStorage();
+            }
+        }
+
+        function updateValidation(rule, value) {
+            if (selectedField) {
+                if (value) {
+                    selectedField.validation[rule] = value;
+                } else {
+                    delete selectedField.validation[rule];
+                }
+                saveToLocalStorage();
+            }
+        }
+
+        function updateOption(index, value) {
+            if (selectedField) {
+                selectedField.options[index] = value;
+                renderCanvas();
+                saveToLocalStorage();
+            }
+        }
+
+        function addOption() {
+            if (selectedField) {
+                selectedField.options.push('New Option');
+                renderProperties();
+                renderCanvas();
+                saveToLocalStorage();
+            }
+        }
+
+        function removeOption(index) {
+            if (selectedField) {
+                selectedField.options.splice(index, 1);
+                renderProperties();
+                renderCanvas();
+                saveToLocalStorage();
+            }
+        }
+
+        function toggleConditional(enabled) {
+            if (selectedField) {
+                if (enabled) {
+                    selectedField.conditional = {
+                        field: '',
+                        operator: 'equals',
+                        value: ''
+                    };
+                } else {
+                    selectedField.conditional = null;
+                }
+                renderProperties();
+                renderCanvas();
+                saveToLocalStorage();
+            }
+        }
+
+        function updateConditional(property, value) {
+            if (selectedField && selectedField.conditional) {
+                selectedField.conditional[property] = value;
+                saveToLocalStorage();
+            }
+        }
+
+        // Page Break
+        function addPageBreak() {
+            const pageBreak = {
+                id: 'field_' + (++fieldCounter),
+                type: 'page-break'
+            };
+            formData.fields.push(pageBreak);
+            renderCanvas();
+            saveToLocalStorage();
+            showToast('Page break added', 'success');
+        }
+
+        // Templates
+        function showTemplates() {
+            document.getElementById('templateModal').classList.add('active');
+        }
+
+        function loadTemplate(templateName) {
+            const templates = {
+                contact: {
+                    title: 'Contact Form',
+                    description: 'Get in touch with us',
+                    fields: [
+                        { type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true },
+                        { type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+                        { type: 'text', label: 'Phone Number', placeholder: '+1 (555) 123-4567', required: false },
+                        { type: 'select', label: 'Subject', options: ['General Inquiry', 'Support', 'Sales', 'Other'], required: true },
+                        { type: 'textarea', label: 'Message', placeholder: 'How can we help you?', required: true }
+                    ]
+                },
+                survey: {
+                    title: 'Customer Survey',
+                    description: 'Help us improve our service',
+                    fields: [
+                        { type: 'radio', label: 'How satisfied are you?', options: ['Very Satisfied', 'Satisfied', 'Neutral', 'Unsatisfied', 'Very Unsatisfied'], required: true },
+                        { type: 'checkbox', label: 'Which features do you use?', options: ['Feature A', 'Feature B', 'Feature C', 'Feature D'], required: false },
+                        { type: 'number', label: 'How likely are you to recommend us? (1-10)', required: true, validation: { min: 1, max: 10 } },
+                        { type: 'textarea', label: 'Additional Comments', placeholder: 'Share your thoughts...', required: false }
+                    ]
+                },
+                registration: {
+                    title: 'User Registration',
+                    description: 'Create your account',
+                    fields: [
+                        { type: 'text', label: 'Username', placeholder: 'username', required: true, validation: { minLength: 3, maxLength: 20 } },
+                        { type: 'email', label: 'Email', placeholder: 'you@example.com', required: true },
+                        { type: 'date', label: 'Date of Birth', required: true },
+                        { type: 'select', label: 'Country', options: ['United States', 'United Kingdom', 'Canada', 'Australia', 'Other'], required: true },
+                        { type: 'checkbox', label: 'Preferences', options: ['Subscribe to newsletter', 'Accept terms and conditions'], required: false }
+                    ]
+                },
+                order: {
+                    title: 'Order Form',
+                    description: 'Complete your purchase',
+                    fields: [
+                        { type: 'text', label: 'Full Name', required: true },
+                        { type: 'email', label: 'Email', required: true },
+                        { type: 'select', label: 'Product', options: ['Product A - $29', 'Product B - $49', 'Product C - $99'], required: true },
+                        { type: 'number', label: 'Quantity', required: true, validation: { min: 1, max: 100 } },
+                        { type: 'page-break' },
+                        { type: 'text', label: 'Shipping Address', required: true },
+                        { type: 'text', label: 'City', required: true },
+                        { type: 'text', label: 'Postal Code', required: true },
+                        { type: 'radio', label: 'Shipping Method', options: ['Standard (5-7 days)', 'Express (2-3 days)', 'Overnight'], required: true }
+                    ]
+                }
+            };
+
+            const template = templates[templateName];
+            if (template) {
+                formData.title = template.title;
+                formData.description = template.description;
+                formData.fields = template.fields.map(f => ({
+                    ...f,
+                    id: 'field_' + (++fieldCounter),
+                    placeholder: f.placeholder || '',
+                    validation: f.validation || {},
+                    conditional: null,
+                    options: f.options || []
+                }));
+
+                document.getElementById('formTitle').value = formData.title;
+                document.getElementById('formDescription').value = formData.description;
+
+                renderCanvas();
+                saveToLocalStorage();
+                closeModal('templateModal');
+                showToast(`${template.title} template loaded`, 'success');
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tab, evt) {
+            currentTab = tab;
+            document.querySelectorAll('.canvas-tab').forEach(t => t.classList.remove('active'));
+            evt.target.classList.add('active');
+
+            if (tab === 'builder') {
+                document.getElementById('builderTab').style.display = 'block';
+                document.getElementById('previewTab').style.display = 'none';
+            } else if (tab === 'preview') {
+                document.getElementById('builderTab').style.display = 'none';
+                document.getElementById('previewTab').style.display = 'block';
+                renderPreview();
+            }
+        }
+
+        // Preview
+        function renderPreview() {
+            const preview = document.getElementById('formPreview');
+
+            // Split fields into pages
+            const pages = [];
+            let currentPage = [];
+
+            formData.fields.forEach(field => {
+                if (field.type === 'page-break') {
+                    if (currentPage.length > 0) {
+                        pages.push(currentPage);
+                        currentPage = [];
+                    }
+                } else {
+                    currentPage.push(field);
+                }
+            });
+
+            if (currentPage.length > 0) {
+                pages.push(currentPage);
+            }
+
+            if (pages.length === 0) {
+                preview.innerHTML = '<div class="empty-state"><p>No fields to preview</p></div>';
+                return;
+            }
+
+            const hasMultiplePages = pages.length > 1;
+            let html = `
+                <h2>${formData.title}</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">${formData.description}</p>
+                ${hasMultiplePages ? `
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: ${(1 / pages.length) * 100}%"></div>
+                    </div>
+                ` : ''}
+                <form id="previewForm" onsubmit="handlePreviewSubmit(event)">
+            `;
+
+            pages.forEach((page, pageIdx) => {
+                html += `<div class="form-step ${pageIdx === 0 ? 'active' : ''}" data-step="${pageIdx}">`;
+
+                page.forEach(field => {
+                    // Check conditional logic
+                    let conditionalHTML = '';
+                    if (field.conditional && field.conditional.field) {
+                        conditionalHTML = ` data-conditional-field="${field.conditional.field}" data-conditional-operator="${field.conditional.operator}" data-conditional-value="${field.conditional.value}" style="display: none;"`;
+                    }
+
+                    html += `<div class="property-group"${conditionalHTML}>`;
+                    html += `<label class="property-label">${field.label}${field.required ? ' <span class="required-mark">*</span>' : ''}</label>`;
+
+                    switch (field.type) {
+                        case 'text':
+                        case 'email':
+                        case 'number':
+                        case 'date':
+                            const validationAttrs = [];
+                            if (field.required) validationAttrs.push('required');
+                            if (field.validation.minLength) validationAttrs.push(`minlength="${field.validation.minLength}"`);
+                            if (field.validation.maxLength) validationAttrs.push(`maxlength="${field.validation.maxLength}"`);
+                            if (field.validation.min) validationAttrs.push(`min="${field.validation.min}"`);
+                            if (field.validation.max) validationAttrs.push(`max="${field.validation.max}"`);
+                            if (field.validation.pattern) validationAttrs.push(`pattern="${field.validation.pattern}"`);
+                            html += `<input type="${field.type}" class="field-input" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}" ${validationAttrs.join(' ')} onchange="checkConditionals()">`;
+                            break;
+                        case 'textarea':
+                            html += `<textarea class="field-input" id="${field.id}" name="${field.id}" rows="4" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>`;
+                            break;
+                        case 'select':
+                            html += `<select class="field-input" id="${field.id}" name="${field.id}" ${field.required ? 'required' : ''} onchange="checkConditionals()">`;
+                            html += '<option value="">Select an option</option>';
+                            field.options.forEach(opt => {
+                                html += `<option value="${opt}">${opt}</option>`;
+                            });
+                            html += '</select>';
+                            break;
+                        case 'checkbox':
+                            field.options.forEach(opt => {
+                                html += `<div class="checkbox-group">`;
+                                html += `<input type="checkbox" id="${field.id}_${opt}" name="${field.id}" value="${opt}" onchange="checkConditionals()">`;
+                                html += `<label for="${field.id}_${opt}">${opt}</label>`;
+                                html += `</div>`;
+                            });
+                            break;
+                        case 'radio':
+                            field.options.forEach(opt => {
+                                html += `<div class="radio-group">`;
+                                html += `<input type="radio" id="${field.id}_${opt}" name="${field.id}" value="${opt}" ${field.required ? 'required' : ''} onchange="checkConditionals()">`;
+                                html += `<label for="${field.id}_${opt}">${opt}</label>`;
+                                html += `</div>`;
+                            });
+                            break;
+                        case 'file':
+                            const accept = field.validation.accept || '';
+                            html += `<input type="file" class="field-input" id="${field.id}" name="${field.id}" ${accept ? `accept="${accept}"` : ''} ${field.required ? 'required' : ''}>`;
+                            break;
+                    }
+
+                    html += '</div>';
+                });
+
+                html += '</div>';
+            });
+
+            if (hasMultiplePages) {
+                html += `
+                    <div class="form-navigation">
+                        <button type="button" class="btn" id="prevBtn" onclick="changeStep(-1)" style="display: none;">← Previous</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Next →</button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">Submit Form</button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="form-navigation">
+                        <button type="submit" class="btn btn-success">Submit Form</button>
+                    </div>
+                `;
+            }
+
+            html += '</form>';
+            preview.innerHTML = html;
+
+            // Initialize conditionals
+            setTimeout(checkConditionals, 100);
+        }
+
+        let currentStep = 0;
+
+        function changeStep(direction) {
+            const steps = document.querySelectorAll('.form-step');
+            const totalSteps = steps.length;
+
+            // Validate current step before moving forward
+            if (direction === 1) {
+                const currentStepEl = steps[currentStep];
+                const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+                let valid = true;
+
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        valid = false;
+                    }
+                });
+
+                if (!valid) return;
+            }
+
+            steps[currentStep].classList.remove('active');
+            currentStep += direction;
+
+            if (currentStep >= totalSteps) currentStep = totalSteps - 1;
+            if (currentStep < 0) currentStep = 0;
+
+            steps[currentStep].classList.add('active');
+
+            // Update navigation
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressFill = document.getElementById('progressFill');
+
+            if (prevBtn) prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
+            if (nextBtn) nextBtn.style.display = currentStep === totalSteps - 1 ? 'none' : 'block';
+            if (submitBtn) submitBtn.style.display = currentStep === totalSteps - 1 ? 'block' : 'none';
+            if (progressFill) progressFill.style.width = ((currentStep + 1) / totalSteps * 100) + '%';
+        }
+
+        function checkConditionals() {
+            document.querySelectorAll('[data-conditional-field]').forEach(fieldGroup => {
+                const targetFieldId = fieldGroup.dataset.conditionalField;
+                const operator = fieldGroup.dataset.conditionalOperator;
+                const expectedValue = fieldGroup.dataset.conditionalValue;
+
+                const targetField = document.getElementById(targetFieldId);
+                if (!targetField) return;
+
+                let actualValue = '';
+                if (targetField.type === 'checkbox') {
+                    const checked = document.querySelectorAll(`input[name="${targetFieldId}"]:checked`);
+                    actualValue = Array.from(checked).map(cb => cb.value).join(',');
+                } else if (targetField.type === 'radio') {
+                    const checked = document.querySelector(`input[name="${targetFieldId}"]:checked`);
+                    actualValue = checked ? checked.value : '';
+                } else {
+                    actualValue = targetField.value;
+                }
+
+                let shouldShow = false;
+                switch (operator) {
+                    case 'equals':
+                        shouldShow = actualValue === expectedValue;
+                        break;
+                    case 'notEquals':
+                        shouldShow = actualValue !== expectedValue;
+                        break;
+                    case 'contains':
+                        shouldShow = actualValue.includes(expectedValue);
+                        break;
+                }
+
+                fieldGroup.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+
+        function handlePreviewSubmit(e) {
+            e.preventDefault();
+            const formElement = e.target;
+            const formDataObj = new FormData(formElement);
+            const data = {};
+
+            for (let [key, value] of formDataObj.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+
+            console.log('Form submitted:', data);
+            showToast('Form submitted successfully! Check console for data.', 'success');
+
+            // Reset form
+            formElement.reset();
+            currentStep = 0;
+            document.querySelectorAll('.form-step').forEach((step, idx) => {
+                step.classList.toggle('active', idx === 0);
+            });
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) progressFill.style.width = (1 / document.querySelectorAll('.form-step').length * 100) + '%';
+        }
+
+        // Export
+        function exportHTML() {
+            const html = generateStandaloneHTML();
+            document.getElementById('exportCode').textContent = html;
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function generateStandaloneHTML() {
+            // Generate a complete standalone HTML file
+            const pages = [];
+            let currentPage = [];
+
+            formData.fields.forEach(field => {
+                if (field.type === 'page-break') {
+                    if (currentPage.length > 0) {
+                        pages.push(currentPage);
+                        currentPage = [];
+                    }
+                } else {
+                    currentPage.push(field);
+                }
+            });
+
+            if (currentPage.length > 0) {
+                pages.push(currentPage);
+            }
+
+            const hasMultiplePages = pages.length > 1;
+
+            let formHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${formData.title}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .form-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { color: #1f2937; margin-bottom: 0.5rem; }
+        .description { color: #6b7280; margin-bottom: 2rem; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.3s;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .required { color: #ef4444; }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .checkbox-group, .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .checkbox-group input, .radio-group input { width: auto; }
+        .form-step { display: none; }
+        .form-step.active { display: block; }
+        .form-navigation {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .success-message.show { display: block; }
+        .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div id="formContent">
+            <h1>${formData.title}</h1>
+            <p class="description">${formData.description}</p>
+            ${hasMultiplePages ? `
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: ${(1 / pages.length) * 100}%"></div>
+            </div>
+            ` : ''}
+            <form id="mainForm">`;
+
+            pages.forEach((page, pageIdx) => {
+                formHTML += `<div class="form-step ${pageIdx === 0 ? 'active' : ''}" data-step="${pageIdx}">`;
+
+                page.forEach(field => {
+                    let conditionalAttr = '';
+                    if (field.conditional && field.conditional.field) {
+                        conditionalAttr = ` data-conditional-field="${field.conditional.field}" data-conditional-operator="${field.conditional.operator}" data-conditional-value="${field.conditional.value}" style="display: none;"`;
+                    }
+
+                    formHTML += `<div class="form-group"${conditionalAttr}>`;
+                    formHTML += `<label>${field.label}${field.required ? ' <span class="required">*</span>' : ''}</label>`;
+
+                    switch (field.type) {
+                        case 'text':
+                        case 'email':
+                        case 'number':
+                        case 'date':
+                            const attrs = [];
+                            if (field.required) attrs.push('required');
+                            if (field.validation.minLength) attrs.push(`minlength="${field.validation.minLength}"`);
+                            if (field.validation.maxLength) attrs.push(`maxlength="${field.validation.maxLength}"`);
+                            if (field.validation.min) attrs.push(`min="${field.validation.min}"`);
+                            if (field.validation.max) attrs.push(`max="${field.validation.max}"`);
+                            if (field.validation.pattern) attrs.push(`pattern="${field.validation.pattern}"`);
+                            formHTML += `<input type="${field.type}" name="${field.id}" id="${field.id}" placeholder="${field.placeholder}" ${attrs.join(' ')} onchange="checkConditionals()">`;
+                            break;
+                        case 'textarea':
+                            formHTML += `<textarea name="${field.id}" id="${field.id}" rows="4" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>`;
+                            break;
+                        case 'select':
+                            formHTML += `<select name="${field.id}" id="${field.id}" ${field.required ? 'required' : ''} onchange="checkConditionals()">`;
+                            formHTML += '<option value="">Select an option</option>';
+                            field.options.forEach(opt => {
+                                formHTML += `<option value="${opt}">${opt}</option>`;
+                            });
+                            formHTML += '</select>';
+                            break;
+                        case 'checkbox':
+                            field.options.forEach(opt => {
+                                formHTML += `<div class="checkbox-group"><input type="checkbox" name="${field.id}" id="${field.id}_${opt}" value="${opt}" onchange="checkConditionals()"><label for="${field.id}_${opt}">${opt}</label></div>`;
+                            });
+                            break;
+                        case 'radio':
+                            field.options.forEach(opt => {
+                                formHTML += `<div class="radio-group"><input type="radio" name="${field.id}" id="${field.id}_${opt}" value="${opt}" ${field.required ? 'required' : ''} onchange="checkConditionals()"><label for="${field.id}_${opt}">${opt}</label></div>`;
+                            });
+                            break;
+                        case 'file':
+                            const accept = field.validation.accept || '';
+                            formHTML += `<input type="file" name="${field.id}" id="${field.id}" ${accept ? `accept="${accept}"` : ''} ${field.required ? 'required' : ''}>`;
+                            break;
+                    }
+
+                    formHTML += '</div>';
+                });
+
+                formHTML += '</div>';
+            });
+
+            if (hasMultiplePages) {
+                formHTML += `
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">← Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Next →</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit</button>
+                </div>`;
+            } else {
+                formHTML += `
+                <div class="form-navigation">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>`;
+            }
+
+            formHTML += `
+            </form>
+        </div>
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✓</div>
+            <h2>Form Submitted Successfully!</h2>
+            <p style="color: #6b7280; margin-top: 1rem;">Thank you for your submission.</p>
+        </div>
+    </div>
+    <script>
+        let currentStep = 0;
+
+        function changeStep(direction) {
+            const steps = document.querySelectorAll('.form-step');
+            const totalSteps = steps.length;
+
+            if (direction === 1) {
+                const currentStepEl = steps[currentStep];
+                const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+                for (let input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        return;
+                    }
+                }
+            }
+
+            steps[currentStep].classList.remove('active');
+            currentStep += direction;
+            if (currentStep >= totalSteps) currentStep = totalSteps - 1;
+            if (currentStep < 0) currentStep = 0;
+            steps[currentStep].classList.add('active');
+
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressFill = document.getElementById('progressFill');
+
+            if (prevBtn) prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
+            if (nextBtn) nextBtn.style.display = currentStep === totalSteps - 1 ? 'none' : 'block';
+            if (submitBtn) submitBtn.style.display = currentStep === totalSteps - 1 ? 'block' : 'none';
+            if (progressFill) progressFill.style.width = ((currentStep + 1) / totalSteps * 100) + '%';
+        }
+
+        function checkConditionals() {
+            document.querySelectorAll('[data-conditional-field]').forEach(group => {
+                const targetId = group.dataset.conditionalField;
+                const operator = group.dataset.conditionalOperator;
+                const expected = group.dataset.conditionalValue;
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                let actual = '';
+                if (target.type === 'checkbox') {
+                    const checked = document.querySelectorAll(\`input[name="\${targetId}"]:checked\`);
+                    actual = Array.from(checked).map(cb => cb.value).join(',');
+                } else if (target.type === 'radio') {
+                    const checked = document.querySelector(\`input[name="\${targetId}"]:checked\`);
+                    actual = checked ? checked.value : '';
+                } else {
+                    actual = target.value;
+                }
+
+                let show = false;
+                if (operator === 'equals') show = actual === expected;
+                else if (operator === 'notEquals') show = actual !== expected;
+                else if (operator === 'contains') show = actual.includes(expected);
+
+                group.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        document.getElementById('mainForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) data[key].push(value);
+                    else data[key] = [data[key], value];
+                } else {
+                    data[key] = value;
+                }
+            }
+            console.log('Form submitted:', data);
+            document.getElementById('formContent').style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+        });
+
+        setTimeout(checkConditionals, 100);
+    </script>
+</body>
+</html>`;
+
+            return formHTML;
+        }
+
+        function copyExportCode() {
+            const code = document.getElementById('exportCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('HTML copied to clipboard', 'success');
+            });
+        }
+
+        function downloadHTML() {
+            const code = document.getElementById('exportCode').textContent;
+            const blob = new Blob([code], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${formData.title.replace(/\s+/g, '-').toLowerCase()}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('HTML file downloaded', 'success');
+        }
+
+        function exportJSON() {
+            const json = JSON.stringify(formData, null, 2);
+            document.getElementById('jsonCode').textContent = json;
+            document.getElementById('jsonModal').classList.add('active');
+        }
+
+        function copyJSONCode() {
+            const code = document.getElementById('jsonCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('JSON copied to clipboard', 'success');
+            });
+        }
+
+        function downloadJSON() {
+            const code = document.getElementById('jsonCode').textContent;
+            const blob = new Blob([code], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${formData.title.replace(/\s+/g, '-').toLowerCase()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('JSON file downloaded', 'success');
+        }
+
+        // Import
+        function importForm() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function doImport() {
+            try {
+                const json = document.getElementById('importJSON').value;
+                const imported = JSON.parse(json);
+
+                if (imported.title) formData.title = imported.title;
+                if (imported.description) formData.description = imported.description;
+                if (imported.fields) {
+                    formData.fields = imported.fields;
+                    fieldCounter = Math.max(...formData.fields.map(f => {
+                        const match = f.id.match(/\d+/);
+                        return match ? parseInt(match[0]) : 0;
+                    }), 0);
+                }
+
+                document.getElementById('formTitle').value = formData.title;
+                document.getElementById('formDescription').value = formData.description;
+
+                renderCanvas();
+                saveToLocalStorage();
+                closeModal('importModal');
+                showToast('Form imported successfully', 'success');
+            } catch (error) {
+                showToast('Invalid JSON format', 'error');
+            }
+        }
+
+        // Form Settings
+        function updateFormTitle() {
+            formData.title = document.getElementById('formTitle').value;
+            saveToLocalStorage();
+        }
+
+        function updateFormDescription() {
+            formData.description = document.getElementById('formDescription').value;
+            saveToLocalStorage();
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear the entire form? This cannot be undone.')) {
+                formData.fields = [];
+                selectedField = null;
+                renderCanvas();
+                renderProperties();
+                saveToLocalStorage();
+                showToast('Form cleared', 'success');
+            }
+        }
+
+        // Dark Mode
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            showToast(`${newTheme === 'dark' ? 'Dark' : 'Light'} mode enabled`, 'success');
+        }
+
+        // Modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Click outside to close modal
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toastMessage');
+            messageEl.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Local Storage
+        function saveToLocalStorage() {
+            localStorage.setItem('formBuilderData', JSON.stringify(formData));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('formBuilderData');
+            if (saved) {
+                try {
+                    formData = JSON.parse(saved);
+                    document.getElementById('formTitle').value = formData.title;
+                    document.getElementById('formDescription').value = formData.description;
+
+                    // Recalculate field counter
+                    if (formData.fields && formData.fields.length > 0) {
+                        fieldCounter = Math.max(...formData.fields.map(f => {
+                            const match = f.id.match(/\d+/);
+                            return match ? parseInt(match[0]) : 0;
+                        }), 0);
+                    }
+
+                    renderCanvas();
+                } catch (error) {
+                    console.error('Error loading from localStorage:', error);
+                }
+            }
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recipe Generator - Smart Cooking Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --text-muted: #95a5a6;
+            --border-color: #e1e8ed;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --gradient-6: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            --gradient-food: linear-gradient(135deg, #ff9a56 0%, #ff6a88 50%, #ff99ac 100%);
+            --shadow: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --accent-color: #ff6a88;
+            --success-color: #43e97b;
+            --warning-color: #fee140;
+            --info-color: #4facfe;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eee;
+            --text-secondary: #cbd5e0;
+            --text-muted: #718096;
+            --border-color: #2d3748;
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: var(--gradient-food);
+            color: white;
+            padding: 30px 0;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .emoji-icon {
+            font-size: 2.5em;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .theme-toggle, .view-favorites-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover, .view-favorites-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .input-section {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+            transition: background 0.3s ease;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="text"], select {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1em;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(255, 106, 136, 0.1);
+        }
+
+        .ingredient-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ingredient-input-group input {
+            flex: 1;
+        }
+
+        .add-btn {
+            background: var(--gradient-4);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ingredients-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            min-height: 40px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 2px dashed var(--border-color);
+        }
+
+        .ingredient-tag {
+            background: var(--gradient-3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .ingredient-tag button {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .ingredient-tag button:hover {
+            background: rgba(255,255,255,0.5);
+            transform: scale(1.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+        }
+
+        .generate-btn {
+            background: var(--gradient-food);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 106, 136, 0.3);
+        }
+
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .filters-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 1em;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-btn.active {
+            background: var(--gradient-2);
+            color: white;
+            border-color: transparent;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            min-height: 400px;
+            transition: background 0.3s ease;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .results-count {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+        }
+
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .recipe-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .recipe-image {
+            width: 100%;
+            height: 200px;
+            background: var(--gradient-5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            position: relative;
+        }
+
+        .recipe-difficulty {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .recipe-difficulty.easy { background: #43e97b; color: white; }
+        .recipe-difficulty.medium { background: #fee140; color: #333; }
+        .recipe-difficulty.hard { background: #f5576c; color: white; }
+
+        .recipe-content {
+            padding: 20px;
+        }
+
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .recipe-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            flex: 1;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            padding: 5px;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .recipe-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: var(--gradient-1);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .recipe-description {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .recipe-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: var(--gradient-food);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .recipe-detail-image {
+            width: 100%;
+            height: 300px;
+            background: var(--gradient-5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8em;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+        }
+
+        .detail-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ingredients-list-detail {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ingredients-list-detail li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ingredients-list-detail li::before {
+            content: '✓';
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .instructions-list {
+            list-style: none;
+            counter-reset: step-counter;
+            padding: 0;
+        }
+
+        .instructions-list li {
+            counter-increment: step-counter;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .instructions-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--gradient-2);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .nutrition-item {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .nutrition-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .nutrition-label {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .modal-actions .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-subtext {
+            font-size: 1em;
+            color: var(--text-secondary);
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .modal-content, .modal-content * {
+                visibility: visible;
+            }
+            .modal-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .modal-header, .modal-actions, .close-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-title h1 {
+                font-size: 1.8em;
+            }
+
+            .emoji-icon {
+                font-size: 2em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recipe-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-new {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            font-size: 0.85em;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <span class="emoji-icon">👨‍🍳</span>
+                <div>
+                    <h1>AI Recipe Generator</h1>
+                    <p>Smart cooking with intelligent recipe matching</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="view-favorites-btn" onclick="showFavorites()">
+                    <span>❤️</span>
+                    <span>Favorites (<span id="favorites-count">0</span>)</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="input-section">
+            <h2 class="section-title">
+                <span>🥗</span>
+                What's in your kitchen?
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>
+                        <span>🥕</span>
+                        Add Ingredients
+                    </label>
+                    <div class="ingredient-input-group">
+                        <input type="text" id="ingredient-input" placeholder="e.g., chicken, tomatoes, rice..." onkeypress="handleIngredientEnter(event)">
+                        <button class="add-btn" onclick="addIngredient()">+ Add</button>
+                    </div>
+                    <div class="ingredients-list" id="ingredients-list">
+                        <span style="color: var(--text-muted); font-style: italic;">Add ingredients to get started...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>
+                        <span>🍽️</span>
+                        Meal Type
+                    </label>
+                    <select id="meal-type">
+                        <option value="">All Meals</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                        <option value="dessert">Dessert</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span>🌍</span>
+                        Cuisine Type
+                    </label>
+                    <select id="cuisine-type">
+                        <option value="">All Cuisines</option>
+                        <option value="italian">Italian</option>
+                        <option value="mexican">Mexican</option>
+                        <option value="chinese">Chinese</option>
+                        <option value="indian">Indian</option>
+                        <option value="japanese">Japanese</option>
+                        <option value="thai">Thai</option>
+                        <option value="american">American</option>
+                        <option value="mediterranean">Mediterranean</option>
+                        <option value="french">French</option>
+                        <option value="korean">Korean</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span>🥬</span>
+                    Dietary Restrictions
+                </label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="vegetarian" value="vegetarian">
+                        <span>Vegetarian</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="vegan" value="vegan">
+                        <span>Vegan</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="gluten-free" value="gluten-free">
+                        <span>Gluten-Free</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="dairy-free" value="dairy-free">
+                        <span>Dairy-Free</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="nut-free" value="nut-free">
+                        <span>Nut-Free</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="low-carb" value="low-carb">
+                        <span>Low-Carb</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="generate-btn" onclick="generateRecipes()">
+                    <span>✨</span>
+                    <span>Generate Recipes</span>
+                    <span>✨</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <h2 class="section-title">
+                    <span>📖</span>
+                    Recipe Results
+                </h2>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search recipes..." oninput="filterRecipes()">
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <button class="filter-btn active" onclick="filterByDifficulty('')">All</button>
+                <button class="filter-btn" onclick="filterByDifficulty('easy')">Easy</button>
+                <button class="filter-btn" onclick="filterByDifficulty('medium')">Medium</button>
+                <button class="filter-btn" onclick="filterByDifficulty('hard')">Hard</button>
+            </div>
+
+            <div class="results-count" id="results-count"></div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cooking up some delicious recipes...</p>
+            </div>
+
+            <div id="recipe-results">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🍳</div>
+                    <div class="empty-state-text">No recipes yet</div>
+                    <div class="empty-state-subtext">Add some ingredients and generate recipes to get started!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="recipe-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-recipe-title"></h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-recipe-body">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Recipe Database
+        const recipeDatabase = [
+            // Italian
+            {
+                id: 1,
+                name: "Classic Margherita Pizza",
+                cuisine: "italian",
+                mealType: "lunch",
+                difficulty: "medium",
+                cookTime: 30,
+                servings: 4,
+                emoji: "🍕",
+                ingredients: ["flour", "tomato", "mozzarella", "basil", "olive oil", "yeast", "salt"],
+                instructions: [
+                    "Prepare pizza dough by mixing flour, yeast, water, and salt. Let it rise for 1 hour.",
+                    "Roll out the dough into a thin circle on a floured surface.",
+                    "Spread crushed tomatoes over the dough, leaving a border for the crust.",
+                    "Add sliced mozzarella cheese and fresh basil leaves.",
+                    "Drizzle with olive oil and bake at 475°F for 12-15 minutes until crust is golden.",
+                    "Remove from oven, let cool for 2 minutes, slice and serve hot."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 285, protein: 12, carbs: 36, fat: 11, fiber: 2 },
+                description: "Traditional Italian pizza with fresh tomatoes, mozzarella, and basil"
+            },
+            {
+                id: 2,
+                name: "Creamy Carbonara",
+                cuisine: "italian",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 25,
+                servings: 4,
+                emoji: "🍝",
+                ingredients: ["pasta", "eggs", "bacon", "parmesan", "black pepper", "garlic"],
+                instructions: [
+                    "Cook pasta in salted boiling water until al dente.",
+                    "Meanwhile, cook diced bacon until crispy in a large pan.",
+                    "Beat eggs with grated parmesan cheese and black pepper in a bowl.",
+                    "Drain pasta, reserving 1 cup of pasta water.",
+                    "Add hot pasta to the bacon pan, remove from heat.",
+                    "Quickly mix in egg mixture, adding pasta water to create a creamy sauce.",
+                    "Serve immediately with extra parmesan and black pepper."
+                ],
+                dietary: [],
+                nutrition: { calories: 520, protein: 22, carbs: 58, fat: 21, fiber: 3 },
+                description: "Rich and creamy pasta with eggs, bacon, and parmesan cheese"
+            },
+            {
+                id: 3,
+                name: "Caprese Salad",
+                cuisine: "italian",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 4,
+                emoji: "🥗",
+                ingredients: ["tomato", "mozzarella", "basil", "olive oil", "balsamic vinegar", "salt"],
+                instructions: [
+                    "Slice tomatoes and fresh mozzarella into 1/4 inch thick rounds.",
+                    "Arrange alternating slices of tomato and mozzarella on a serving plate.",
+                    "Tuck fresh basil leaves between the slices.",
+                    "Drizzle generously with high-quality olive oil.",
+                    "Add a splash of balsamic vinegar and sprinkle with salt and pepper.",
+                    "Let sit for 5 minutes before serving to allow flavors to meld."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 210, protein: 11, carbs: 8, fat: 16, fiber: 2 },
+                description: "Fresh and simple Italian salad with tomatoes, mozzarella, and basil"
+            },
+
+            // Mexican
+            {
+                id: 4,
+                name: "Chicken Tacos",
+                cuisine: "mexican",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🌮",
+                ingredients: ["chicken", "tortilla", "lettuce", "tomato", "cheese", "sour cream", "lime", "cilantro"],
+                instructions: [
+                    "Season chicken breasts with cumin, paprika, garlic powder, salt, and pepper.",
+                    "Cook chicken in a skillet over medium-high heat for 6-7 minutes per side.",
+                    "Let chicken rest for 5 minutes, then dice into small pieces.",
+                    "Warm tortillas in a dry skillet or microwave.",
+                    "Assemble tacos with chicken, shredded lettuce, diced tomatoes, and cheese.",
+                    "Top with sour cream, fresh cilantro, and a squeeze of lime juice."
+                ],
+                dietary: [],
+                nutrition: { calories: 380, protein: 28, carbs: 32, fat: 15, fiber: 4 },
+                description: "Flavorful Mexican tacos with seasoned chicken and fresh toppings"
+            },
+            {
+                id: 5,
+                name: "Vegetarian Burrito Bowl",
+                cuisine: "mexican",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 25,
+                servings: 4,
+                emoji: "🥙",
+                ingredients: ["rice", "black beans", "corn", "avocado", "tomato", "lettuce", "lime", "cilantro", "cheese"],
+                instructions: [
+                    "Cook rice according to package directions, then fluff with a fork.",
+                    "Heat black beans with cumin and garlic in a small pot.",
+                    "Char corn in a hot skillet until slightly blackened.",
+                    "Dice tomatoes and slice avocado.",
+                    "In bowls, layer rice, black beans, corn, lettuce, and tomatoes.",
+                    "Top with avocado, shredded cheese, cilantro, and fresh lime juice."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 420, protein: 14, carbs: 62, fat: 14, fiber: 12 },
+                description: "Hearty vegetarian bowl with rice, beans, and fresh vegetables"
+            },
+            {
+                id: 6,
+                name: "Guacamole",
+                cuisine: "mexican",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 6,
+                emoji: "🥑",
+                ingredients: ["avocado", "lime", "tomato", "onion", "cilantro", "salt", "jalapeño"],
+                instructions: [
+                    "Cut avocados in half, remove pits, and scoop flesh into a bowl.",
+                    "Mash avocados with a fork to desired consistency.",
+                    "Add finely diced onion, tomato, and jalapeño.",
+                    "Stir in fresh lime juice and chopped cilantro.",
+                    "Season with salt to taste and mix well.",
+                    "Serve immediately with tortilla chips or as a topping."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 120, protein: 2, carbs: 9, fat: 10, fiber: 5 },
+                description: "Fresh and creamy Mexican avocado dip"
+            },
+
+            // Chinese
+            {
+                id: 7,
+                name: "Fried Rice",
+                cuisine: "chinese",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🍚",
+                ingredients: ["rice", "eggs", "peas", "carrot", "soy sauce", "garlic", "ginger", "green onion"],
+                instructions: [
+                    "Use day-old cold rice for best results. Break up any clumps.",
+                    "Beat eggs and scramble them in a hot wok, then set aside.",
+                    "In the same wok, stir-fry diced carrots and peas until tender.",
+                    "Add minced garlic and ginger, cook for 30 seconds.",
+                    "Add rice and stir-fry on high heat, breaking up any clumps.",
+                    "Add soy sauce, eggs, and sliced green onions. Toss everything together and serve hot."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 310, protein: 10, carbs: 52, fat: 7, fiber: 3 },
+                description: "Classic Chinese stir-fried rice with vegetables and eggs"
+            },
+            {
+                id: 8,
+                name: "Sweet and Sour Chicken",
+                cuisine: "chinese",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 35,
+                servings: 4,
+                emoji: "🍗",
+                ingredients: ["chicken", "pineapple", "bell pepper", "onion", "vinegar", "sugar", "soy sauce", "cornstarch"],
+                instructions: [
+                    "Cut chicken into bite-sized pieces and coat with cornstarch.",
+                    "Deep fry chicken pieces until golden and crispy, then drain.",
+                    "In a wok, sauté diced bell peppers and onions until tender-crisp.",
+                    "Add pineapple chunks and cook for 2 minutes.",
+                    "Mix sauce: combine vinegar, sugar, soy sauce, ketchup, and cornstarch with water.",
+                    "Pour sauce into wok, bring to a boil until thickened.",
+                    "Add fried chicken, toss to coat, and serve over rice."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 420, protein: 32, carbs: 48, fat: 12, fiber: 3 },
+                description: "Popular Chinese dish with crispy chicken in tangy sweet sauce"
+            },
+            {
+                id: 9,
+                name: "Vegetable Stir Fry",
+                cuisine: "chinese",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🥦",
+                ingredients: ["broccoli", "carrot", "bell pepper", "mushroom", "soy sauce", "garlic", "ginger", "sesame oil"],
+                instructions: [
+                    "Cut all vegetables into bite-sized pieces.",
+                    "Heat wok or large pan over high heat with oil.",
+                    "Add minced garlic and ginger, stir-fry for 30 seconds.",
+                    "Add harder vegetables (carrots, broccoli) first, stir-fry for 3 minutes.",
+                    "Add remaining vegetables and continue stir-frying for 2-3 minutes.",
+                    "Season with soy sauce and sesame oil, toss well and serve immediately."
+                ],
+                dietary: ["vegan", "dairy-free"],
+                nutrition: { calories: 125, protein: 5, carbs: 18, fat: 5, fiber: 5 },
+                description: "Quick and healthy Chinese vegetable stir-fry"
+            },
+
+            // Indian
+            {
+                id: 10,
+                name: "Chicken Tikka Masala",
+                cuisine: "indian",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 45,
+                servings: 6,
+                emoji: "🍛",
+                ingredients: ["chicken", "yogurt", "tomato", "cream", "onion", "garlic", "ginger", "garam masala", "cumin", "turmeric"],
+                instructions: [
+                    "Marinate chicken pieces in yogurt, lemon juice, and spices for at least 1 hour.",
+                    "Grill or broil marinated chicken until cooked and slightly charred.",
+                    "In a large pan, sauté diced onions until golden brown.",
+                    "Add garlic, ginger, and spices, cook until fragrant.",
+                    "Add crushed tomatoes and simmer for 15 minutes.",
+                    "Stir in cream and cooked chicken, simmer for 10 more minutes.",
+                    "Garnish with cilantro and serve with rice or naan."
+                ],
+                dietary: ["gluten-free"],
+                nutrition: { calories: 385, protein: 28, carbs: 18, fat: 22, fiber: 3 },
+                description: "Creamy Indian curry with spiced chicken in tomato sauce"
+            },
+            {
+                id: 11,
+                name: "Vegetable Samosas",
+                cuisine: "indian",
+                mealType: "snack",
+                difficulty: "hard",
+                cookTime: 60,
+                servings: 12,
+                emoji: "🥟",
+                ingredients: ["potato", "peas", "flour", "onion", "cumin", "turmeric", "garam masala", "cilantro"],
+                instructions: [
+                    "Make dough: mix flour with oil and water, knead until smooth, let rest.",
+                    "Boil and mash potatoes, mix with peas, onions, and spices.",
+                    "Roll dough thin, cut into circles, then halve each circle.",
+                    "Form cones with half-circles, fill with potato mixture, seal edges.",
+                    "Deep fry samosas in hot oil until golden and crispy.",
+                    "Drain on paper towels and serve hot with chutney."
+                ],
+                dietary: ["vegan", "dairy-free"],
+                nutrition: { calories: 180, protein: 4, carbs: 28, fat: 6, fiber: 3 },
+                description: "Crispy Indian pastries filled with spiced potatoes and peas"
+            },
+            {
+                id: 12,
+                name: "Dal Tadka",
+                cuisine: "indian",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 35,
+                servings: 6,
+                emoji: "🍲",
+                ingredients: ["lentils", "onion", "tomato", "garlic", "ginger", "cumin", "turmeric", "cilantro"],
+                instructions: [
+                    "Rinse lentils thoroughly and cook with water and turmeric until soft.",
+                    "In a separate pan, heat oil and add cumin seeds until they crackle.",
+                    "Add chopped onions and cook until golden brown.",
+                    "Add garlic, ginger, and tomatoes, cook until tomatoes soften.",
+                    "Pour this tempering (tadka) over cooked lentils and mix well.",
+                    "Garnish with fresh cilantro and serve with rice or roti."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 195, protein: 12, carbs: 32, fat: 3, fiber: 8 },
+                description: "Comforting Indian lentil dish with aromatic spices"
+            },
+
+            // Japanese
+            {
+                id: 13,
+                name: "Chicken Teriyaki",
+                cuisine: "japanese",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 25,
+                servings: 4,
+                emoji: "🍱",
+                ingredients: ["chicken", "soy sauce", "sugar", "garlic", "ginger", "rice vinegar", "sesame seeds"],
+                instructions: [
+                    "Mix soy sauce, sugar, rice vinegar, minced garlic, and grated ginger for sauce.",
+                    "Cut chicken thighs into bite-sized pieces.",
+                    "Heat oil in a pan and cook chicken until golden brown on all sides.",
+                    "Pour teriyaki sauce over chicken and simmer until sauce thickens.",
+                    "The sauce should coat the chicken with a glossy finish.",
+                    "Garnish with sesame seeds and sliced green onions, serve over rice."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 340, protein: 32, carbs: 26, fat: 12, fiber: 1 },
+                description: "Sweet and savory Japanese chicken with teriyaki glaze"
+            },
+            {
+                id: 14,
+                name: "Miso Soup",
+                cuisine: "japanese",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🍜",
+                ingredients: ["miso paste", "tofu", "seaweed", "green onion", "mushroom"],
+                instructions: [
+                    "Bring water or dashi stock to a gentle simmer in a pot.",
+                    "Add sliced mushrooms and cook for 3-4 minutes.",
+                    "Cut tofu into small cubes and add to the pot.",
+                    "In a small bowl, dissolve miso paste with a bit of the hot broth.",
+                    "Turn off heat and stir dissolved miso into the soup.",
+                    "Add seaweed and sliced green onions, serve immediately."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 85, protein: 6, carbs: 9, fat: 3, fiber: 2 },
+                description: "Traditional Japanese soup with miso, tofu, and seaweed"
+            },
+            {
+                id: 15,
+                name: "Vegetable Tempura",
+                cuisine: "japanese",
+                mealType: "snack",
+                difficulty: "medium",
+                cookTime: 30,
+                servings: 4,
+                emoji: "🍤",
+                ingredients: ["flour", "egg", "sweet potato", "broccoli", "bell pepper", "mushroom"],
+                instructions: [
+                    "Cut vegetables into bite-sized pieces, keep them dry.",
+                    "Make batter: mix ice-cold water with egg, then lightly mix in flour (lumpy is okay).",
+                    "Heat oil to 350°F in a deep pot or fryer.",
+                    "Dip vegetables in batter, allowing excess to drip off.",
+                    "Carefully fry vegetables until light golden and crispy (2-3 minutes).",
+                    "Drain on paper towels and serve immediately with dipping sauce."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 245, protein: 6, carbs: 38, fat: 8, fiber: 4 },
+                description: "Light and crispy Japanese vegetable fritters"
+            },
+
+            // Thai
+            {
+                id: 16,
+                name: "Pad Thai",
+                cuisine: "thai",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 30,
+                servings: 4,
+                emoji: "🍝",
+                ingredients: ["rice noodles", "shrimp", "eggs", "peanuts", "bean sprouts", "lime", "fish sauce", "tamarind"],
+                instructions: [
+                    "Soak rice noodles in warm water for 20 minutes until pliable.",
+                    "Make sauce: mix fish sauce, tamarind paste, sugar, and lime juice.",
+                    "Heat wok with oil, scramble eggs and set aside.",
+                    "Stir-fry shrimp until pink, then add drained noodles.",
+                    "Pour sauce over noodles, toss constantly until noodles absorb sauce.",
+                    "Add eggs and bean sprouts, toss briefly.",
+                    "Serve topped with crushed peanuts, lime wedges, and cilantro."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 480, protein: 24, carbs: 58, fat: 16, fiber: 3 },
+                description: "Classic Thai stir-fried noodles with shrimp and peanuts"
+            },
+            {
+                id: 17,
+                name: "Green Curry",
+                cuisine: "thai",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 35,
+                servings: 4,
+                emoji: "🍛",
+                ingredients: ["chicken", "coconut milk", "green curry paste", "bamboo shoots", "basil", "bell pepper", "fish sauce"],
+                instructions: [
+                    "Heat coconut cream (thick part) in a pot until oil separates.",
+                    "Add green curry paste and fry until fragrant (2 minutes).",
+                    "Add chicken pieces and cook until no longer pink.",
+                    "Pour in remaining coconut milk and bring to a gentle simmer.",
+                    "Add vegetables (bell peppers, bamboo shoots) and cook for 10 minutes.",
+                    "Season with fish sauce and sugar, add fresh basil leaves.",
+                    "Serve hot over jasmine rice."
+                ],
+                dietary: ["gluten-free", "dairy-free"],
+                nutrition: { calories: 420, protein: 28, carbs: 18, fat: 28, fiber: 4 },
+                description: "Aromatic Thai curry with coconut milk and herbs"
+            },
+            {
+                id: 18,
+                name: "Tom Yum Soup",
+                cuisine: "thai",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 25,
+                servings: 4,
+                emoji: "🍲",
+                ingredients: ["shrimp", "mushroom", "lemongrass", "lime", "fish sauce", "chili", "cilantro", "tomato"],
+                instructions: [
+                    "Bring water or broth to a boil in a pot.",
+                    "Add crushed lemongrass, galangal, and torn kaffir lime leaves.",
+                    "Simmer for 10 minutes to infuse flavors.",
+                    "Add sliced mushrooms and tomatoes, cook for 5 minutes.",
+                    "Add shrimp and cook until pink (3-4 minutes).",
+                    "Season with fish sauce, lime juice, and chili paste.",
+                    "Garnish with cilantro and serve hot."
+                ],
+                dietary: ["gluten-free", "dairy-free"],
+                nutrition: { calories: 145, protein: 18, carbs: 12, fat: 3, fiber: 2 },
+                description: "Spicy and sour Thai soup with shrimp"
+            },
+
+            // American
+            {
+                id: 19,
+                name: "Classic Burger",
+                cuisine: "american",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🍔",
+                ingredients: ["ground beef", "burger buns", "lettuce", "tomato", "onion", "cheese", "pickles"],
+                instructions: [
+                    "Form ground beef into 4 equal patties, season generously with salt and pepper.",
+                    "Heat grill or skillet over high heat.",
+                    "Cook patties for 4-5 minutes per side for medium doneness.",
+                    "Add cheese in the last minute of cooking if desired.",
+                    "Toast burger buns lightly on the grill.",
+                    "Assemble burgers with lettuce, tomato, onion, pickles, and condiments of choice."
+                ],
+                dietary: [],
+                nutrition: { calories: 520, protein: 32, carbs: 35, fat: 26, fiber: 2 },
+                description: "Juicy American-style beef burger with classic toppings"
+            },
+            {
+                id: 20,
+                name: "Mac and Cheese",
+                cuisine: "american",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 30,
+                servings: 6,
+                emoji: "🧀",
+                ingredients: ["pasta", "cheddar cheese", "milk", "butter", "flour"],
+                instructions: [
+                    "Cook pasta in salted boiling water until al dente, drain.",
+                    "In a saucepan, melt butter and whisk in flour to make a roux.",
+                    "Gradually add milk, whisking constantly until smooth and thickened.",
+                    "Remove from heat and stir in shredded cheddar cheese until melted.",
+                    "Add cooked pasta to cheese sauce and mix well.",
+                    "Optional: Transfer to baking dish, top with breadcrumbs, and bake at 350°F for 15 minutes."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 445, protein: 18, carbs: 42, fat: 22, fiber: 2 },
+                description: "Creamy comfort food with pasta and cheese sauce"
+            },
+            {
+                id: 21,
+                name: "BBQ Ribs",
+                cuisine: "american",
+                mealType: "dinner",
+                difficulty: "hard",
+                cookTime: 180,
+                servings: 6,
+                emoji: "🍖",
+                ingredients: ["pork ribs", "bbq sauce", "brown sugar", "paprika", "garlic powder", "black pepper"],
+                instructions: [
+                    "Remove membrane from back of ribs.",
+                    "Mix dry rub with brown sugar, paprika, garlic powder, salt, and pepper.",
+                    "Apply rub generously to both sides of ribs, let sit for 30 minutes.",
+                    "Wrap ribs in foil and bake at 275°F for 2.5 hours.",
+                    "Unwrap, brush with BBQ sauce, and grill or broil for 10 minutes.",
+                    "Apply another coat of sauce, cook 5 more minutes until caramelized.",
+                    "Let rest for 10 minutes before cutting and serving."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 620, protein: 42, carbs: 28, fat: 38, fiber: 1 },
+                description: "Tender slow-cooked pork ribs with BBQ sauce"
+            },
+
+            // Mediterranean
+            {
+                id: 22,
+                name: "Greek Salad",
+                cuisine: "mediterranean",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🥗",
+                ingredients: ["cucumber", "tomato", "onion", "feta cheese", "olives", "olive oil", "lemon"],
+                instructions: [
+                    "Chop cucumbers, tomatoes, and red onion into bite-sized pieces.",
+                    "Combine vegetables in a large bowl.",
+                    "Add kalamata olives and crumbled feta cheese.",
+                    "Drizzle with olive oil and fresh lemon juice.",
+                    "Season with oregano, salt, and pepper.",
+                    "Toss gently and serve immediately or chill for 30 minutes."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 185, protein: 6, carbs: 12, fat: 14, fiber: 3 },
+                description: "Fresh Mediterranean salad with feta and olives"
+            },
+            {
+                id: 23,
+                name: "Falafel",
+                cuisine: "mediterranean",
+                mealType: "lunch",
+                difficulty: "medium",
+                cookTime: 40,
+                servings: 6,
+                emoji: "🧆",
+                ingredients: ["chickpeas", "onion", "garlic", "parsley", "cumin", "coriander", "flour"],
+                instructions: [
+                    "Soak dried chickpeas overnight, drain well (do not use canned).",
+                    "In food processor, blend chickpeas, onion, garlic, parsley, and spices.",
+                    "Process until mixture is finely ground but not pureed.",
+                    "Add flour and baking powder, pulse to combine.",
+                    "Refrigerate mixture for 1 hour.",
+                    "Form into small balls or patties.",
+                    "Deep fry in hot oil (350°F) until golden brown (3-4 minutes).",
+                    "Serve in pita with tahini sauce and vegetables."
+                ],
+                dietary: ["vegan", "dairy-free"],
+                nutrition: { calories: 285, protein: 11, carbs: 38, fat: 10, fiber: 9 },
+                description: "Crispy Middle Eastern chickpea fritters"
+            },
+            {
+                id: 24,
+                name: "Hummus",
+                cuisine: "mediterranean",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 8,
+                emoji: "🫘",
+                ingredients: ["chickpeas", "tahini", "lemon", "garlic", "olive oil", "cumin"],
+                instructions: [
+                    "Drain canned chickpeas, reserving the liquid.",
+                    "In food processor, blend chickpeas with tahini, lemon juice, and garlic.",
+                    "Add cumin, salt, and a bit of reserved liquid for desired consistency.",
+                    "Blend until smooth and creamy (3-5 minutes).",
+                    "Transfer to serving bowl, create a well in center.",
+                    "Drizzle with olive oil and sprinkle with paprika.",
+                    "Serve with pita bread or vegetables."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 165, protein: 6, carbs: 16, fat: 9, fiber: 5 },
+                description: "Creamy chickpea dip with tahini and lemon"
+            },
+
+            // French
+            {
+                id: 25,
+                name: "Ratatouille",
+                cuisine: "french",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 60,
+                servings: 6,
+                emoji: "🍆",
+                ingredients: ["eggplant", "zucchini", "tomato", "bell pepper", "onion", "garlic", "olive oil", "basil"],
+                instructions: [
+                    "Slice eggplant, zucchini, tomatoes, and bell peppers thinly.",
+                    "Sauté diced onions and garlic in olive oil until softened.",
+                    "Add tomato sauce to bottom of baking dish.",
+                    "Arrange vegetable slices in alternating pattern, standing upright.",
+                    "Drizzle with olive oil, season with herbs, salt, and pepper.",
+                    "Cover with foil and bake at 375°F for 40 minutes.",
+                    "Uncover and bake 20 more minutes until vegetables are tender.",
+                    "Garnish with fresh basil before serving."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 145, protein: 4, carbs: 22, fat: 6, fiber: 7 },
+                description: "Classic French vegetable stew from Provence"
+            },
+            {
+                id: 26,
+                name: "Croque Monsieur",
+                cuisine: "french",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🥪",
+                ingredients: ["bread", "ham", "cheese", "butter", "flour", "milk"],
+                instructions: [
+                    "Make béchamel: melt butter, whisk in flour, gradually add milk until thick.",
+                    "Butter bread slices on one side.",
+                    "Layer ham and cheese between bread slices (butter side out).",
+                    "Spread béchamel on top of each sandwich.",
+                    "Sprinkle with more grated cheese.",
+                    "Bake at 400°F for 10-15 minutes until golden and bubbly.",
+                    "Broil for 2 minutes for extra crispy top."
+                ],
+                dietary: [],
+                nutrition: { calories: 485, protein: 26, carbs: 38, fat: 24, fiber: 2 },
+                description: "French grilled ham and cheese sandwich with béchamel"
+            },
+            {
+                id: 27,
+                name: "French Onion Soup",
+                cuisine: "french",
+                mealType: "lunch",
+                difficulty: "medium",
+                cookTime: 90,
+                servings: 6,
+                emoji: "🍲",
+                ingredients: ["onion", "beef broth", "bread", "cheese", "butter", "thyme", "wine"],
+                instructions: [
+                    "Thinly slice a large amount of onions (about 6 large onions).",
+                    "Melt butter in large pot, add onions and cook slowly for 45 minutes until caramelized.",
+                    "Add wine and deglaze the pot, scraping up brown bits.",
+                    "Add beef broth, thyme, bay leaf, and simmer for 30 minutes.",
+                    "Toast bread slices until crispy.",
+                    "Ladle soup into oven-safe bowls, top with bread and grated cheese.",
+                    "Broil until cheese is melted and bubbly."
+                ],
+                dietary: [],
+                nutrition: { calories: 285, protein: 12, carbs: 32, fat: 12, fiber: 4 },
+                description: "Rich French soup with caramelized onions and melted cheese"
+            },
+
+            // Korean
+            {
+                id: 28,
+                name: "Bibimbap",
+                cuisine: "korean",
+                mealType: "dinner",
+                difficulty: "medium",
+                cookTime: 40,
+                servings: 4,
+                emoji: "🍲",
+                ingredients: ["rice", "beef", "spinach", "carrot", "mushroom", "eggs", "soy sauce", "sesame oil", "gochujang"],
+                instructions: [
+                    "Cook rice and keep warm.",
+                    "Marinate thinly sliced beef in soy sauce, sugar, garlic, and sesame oil.",
+                    "Blanch spinach, squeeze out water, season with sesame oil.",
+                    "Sauté julienned carrots and sliced mushrooms separately.",
+                    "Cook beef until browned.",
+                    "Fry eggs sunny-side up.",
+                    "Assemble: rice in bowl, arrange vegetables and beef on top, add egg.",
+                    "Serve with gochujang (Korean chili paste) to mix in."
+                ],
+                dietary: ["gluten-free", "dairy-free"],
+                nutrition: { calories: 520, protein: 28, carbs: 64, fat: 16, fiber: 5 },
+                description: "Korean rice bowl with vegetables, meat, and egg"
+            },
+            {
+                id: 29,
+                name: "Kimchi Fried Rice",
+                cuisine: "korean",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🍚",
+                ingredients: ["rice", "kimchi", "eggs", "green onion", "soy sauce", "sesame oil", "pork"],
+                instructions: [
+                    "Chop kimchi into small pieces, reserve some kimchi juice.",
+                    "Heat oil in wok or large pan over high heat.",
+                    "Add diced pork (if using) and cook until browned.",
+                    "Add kimchi and stir-fry for 3-4 minutes.",
+                    "Add cold rice, breaking up clumps, stir-fry for 5 minutes.",
+                    "Add soy sauce, kimchi juice, and sesame oil.",
+                    "Fry eggs separately and place on top of fried rice.",
+                    "Garnish with sliced green onions and sesame seeds."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 380, protein: 16, carbs: 52, fat: 12, fiber: 3 },
+                description: "Spicy Korean fried rice with fermented kimchi"
+            },
+            {
+                id: 30,
+                name: "Korean BBQ Chicken",
+                cuisine: "korean",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 35,
+                servings: 4,
+                emoji: "🍗",
+                ingredients: ["chicken", "soy sauce", "garlic", "ginger", "sesame oil", "sugar", "green onion"],
+                instructions: [
+                    "Cut chicken thighs into bite-sized pieces.",
+                    "Make marinade: mix soy sauce, minced garlic, grated ginger, sugar, sesame oil.",
+                    "Marinate chicken for at least 30 minutes (or overnight).",
+                    "Heat grill or grill pan over medium-high heat.",
+                    "Grill chicken pieces, turning occasionally, until fully cooked (12-15 minutes).",
+                    "Brush with remaining marinade while grilling.",
+                    "Garnish with sliced green onions and sesame seeds.",
+                    "Serve with rice and lettuce wraps."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 320, protein: 34, carbs: 12, fat: 14, fiber: 1 },
+                description: "Savory Korean grilled chicken with soy-sesame marinade"
+            },
+
+            // Breakfast
+            {
+                id: 31,
+                name: "Pancakes",
+                cuisine: "american",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🥞",
+                ingredients: ["flour", "eggs", "milk", "butter", "sugar", "baking powder"],
+                instructions: [
+                    "Mix flour, sugar, baking powder, and salt in a bowl.",
+                    "In another bowl, whisk eggs, milk, and melted butter.",
+                    "Pour wet ingredients into dry ingredients, mix until just combined (lumps are okay).",
+                    "Heat griddle or pan over medium heat, lightly grease.",
+                    "Pour 1/4 cup batter for each pancake.",
+                    "Cook until bubbles form on surface, then flip and cook until golden.",
+                    "Serve hot with butter, syrup, and fresh berries."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 320, protein: 9, carbs: 48, fat: 10, fiber: 2 },
+                description: "Fluffy American-style breakfast pancakes"
+            },
+            {
+                id: 32,
+                name: "Avocado Toast",
+                cuisine: "american",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 2,
+                emoji: "🥑",
+                ingredients: ["bread", "avocado", "eggs", "lemon", "salt", "chili flakes"],
+                instructions: [
+                    "Toast bread slices until golden and crispy.",
+                    "Mash ripe avocado with lemon juice, salt, and pepper.",
+                    "Spread mashed avocado generously on toast.",
+                    "Optional: fry or poach eggs.",
+                    "Top toast with egg if using.",
+                    "Sprinkle with chili flakes, salt, and pepper.",
+                    "Garnish with fresh herbs or microgreens."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 285, protein: 10, carbs: 32, fat: 14, fiber: 8 },
+                description: "Trendy breakfast toast with creamy avocado"
+            },
+            {
+                id: 33,
+                name: "French Toast",
+                cuisine: "french",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🍞",
+                ingredients: ["bread", "eggs", "milk", "cinnamon", "vanilla", "butter", "sugar"],
+                instructions: [
+                    "Whisk together eggs, milk, cinnamon, vanilla, and a pinch of sugar.",
+                    "Heat butter in a pan over medium heat.",
+                    "Dip bread slices in egg mixture, coating both sides.",
+                    "Cook in pan until golden brown on both sides (3-4 minutes per side).",
+                    "Keep cooked toast warm in oven while making remaining slices.",
+                    "Serve hot with powdered sugar, syrup, and fresh fruit."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 295, protein: 11, carbs: 42, fat: 9, fiber: 2 },
+                description: "Sweet breakfast with egg-soaked bread"
+            },
+            {
+                id: 34,
+                name: "Breakfast Burrito",
+                cuisine: "mexican",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🌯",
+                ingredients: ["tortilla", "eggs", "cheese", "bacon", "bell pepper", "onion", "salsa"],
+                instructions: [
+                    "Cook diced bacon until crispy, drain on paper towels.",
+                    "In same pan, sauté diced peppers and onions until soft.",
+                    "Scramble eggs in the pan with vegetables.",
+                    "Warm tortillas in microwave or on griddle.",
+                    "Divide scrambled eggs, bacon, and cheese among tortillas.",
+                    "Add salsa and any other desired toppings.",
+                    "Fold burrito-style and serve immediately or wrap in foil."
+                ],
+                dietary: [],
+                nutrition: { calories: 420, protein: 22, carbs: 38, fat: 20, fiber: 3 },
+                description: "Hearty Mexican breakfast wrap with eggs and bacon"
+            },
+            {
+                id: 35,
+                name: "Smoothie Bowl",
+                cuisine: "american",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 2,
+                emoji: "🥣",
+                ingredients: ["banana", "berries", "yogurt", "honey", "granola", "coconut"],
+                instructions: [
+                    "Blend frozen banana, berries, and yogurt until thick and smooth.",
+                    "Add a splash of milk if needed for consistency.",
+                    "Pour smoothie into bowls.",
+                    "Top with sliced fresh fruit, granola, coconut flakes.",
+                    "Drizzle with honey.",
+                    "Add chia seeds, nuts, or other toppings as desired.",
+                    "Serve immediately while cold."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 285, protein: 8, carbs: 52, fat: 6, fiber: 7 },
+                description: "Healthy breakfast bowl with blended fruit and toppings"
+            },
+
+            // Desserts
+            {
+                id: 36,
+                name: "Chocolate Chip Cookies",
+                cuisine: "american",
+                mealType: "dessert",
+                difficulty: "easy",
+                cookTime: 25,
+                servings: 24,
+                emoji: "🍪",
+                ingredients: ["flour", "butter", "sugar", "brown sugar", "eggs", "chocolate chips", "vanilla"],
+                instructions: [
+                    "Cream softened butter with white and brown sugar until fluffy.",
+                    "Beat in eggs and vanilla extract.",
+                    "In separate bowl, mix flour, baking soda, and salt.",
+                    "Gradually mix dry ingredients into wet ingredients.",
+                    "Fold in chocolate chips.",
+                    "Drop spoonfuls of dough onto baking sheet, spacing 2 inches apart.",
+                    "Bake at 375°F for 10-12 minutes until edges are golden.",
+                    "Cool on baking sheet for 5 minutes, then transfer to wire rack."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 180, protein: 2, carbs: 24, fat: 9, fiber: 1 },
+                description: "Classic homemade cookies with chocolate chips"
+            },
+            {
+                id: 37,
+                name: "Brownies",
+                cuisine: "american",
+                mealType: "dessert",
+                difficulty: "easy",
+                cookTime: 35,
+                servings: 16,
+                emoji: "🍫",
+                ingredients: ["chocolate", "butter", "sugar", "eggs", "flour", "cocoa powder", "vanilla"],
+                instructions: [
+                    "Melt butter and chocolate together, let cool slightly.",
+                    "Beat in sugar, then add eggs one at a time.",
+                    "Stir in vanilla extract.",
+                    "Sift in flour and cocoa powder, fold until just combined.",
+                    "Pour batter into greased 9x13 inch pan.",
+                    "Bake at 350°F for 25-30 minutes (center should be slightly underdone).",
+                    "Cool completely before cutting into squares."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 245, protein: 3, carbs: 32, fat: 13, fiber: 2 },
+                description: "Rich, fudgy chocolate brownies"
+            },
+            {
+                id: 38,
+                name: "Tiramisu",
+                cuisine: "italian",
+                mealType: "dessert",
+                difficulty: "medium",
+                cookTime: 30,
+                servings: 8,
+                emoji: "🍰",
+                ingredients: ["mascarpone", "eggs", "sugar", "coffee", "ladyfingers", "cocoa powder"],
+                instructions: [
+                    "Brew strong espresso and let it cool.",
+                    "Separate eggs. Beat yolks with sugar until pale and thick.",
+                    "Fold mascarpone cheese into egg yolk mixture.",
+                    "Beat egg whites until stiff peaks form, fold into mascarpone mixture.",
+                    "Quickly dip ladyfingers in coffee (don't soak) and layer in dish.",
+                    "Spread half the mascarpone mixture over ladyfingers.",
+                    "Repeat with another layer of coffee-dipped ladyfingers and mascarpone.",
+                    "Dust generously with cocoa powder and refrigerate for 4+ hours."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 340, protein: 7, carbs: 38, fat: 18, fiber: 1 },
+                description: "Classic Italian coffee-flavored dessert"
+            },
+            {
+                id: 39,
+                name: "Cheesecake",
+                cuisine: "american",
+                mealType: "dessert",
+                difficulty: "medium",
+                cookTime: 90,
+                servings: 12,
+                emoji: "🍰",
+                ingredients: ["cream cheese", "sugar", "eggs", "sour cream", "vanilla", "graham crackers", "butter"],
+                instructions: [
+                    "Make crust: mix crushed graham crackers with melted butter, press into pan bottom.",
+                    "Bake crust at 325°F for 10 minutes.",
+                    "Beat cream cheese and sugar until smooth.",
+                    "Add eggs one at a time, beating after each addition.",
+                    "Mix in sour cream and vanilla.",
+                    "Pour filling over crust.",
+                    "Bake at 325°F for 55-60 minutes (center should jiggle slightly).",
+                    "Cool completely, then refrigerate for at least 4 hours before serving."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 385, protein: 6, carbs: 34, fat: 25, fiber: 0 },
+                description: "Creamy New York-style cheesecake"
+            },
+            {
+                id: 40,
+                name: "Apple Pie",
+                cuisine: "american",
+                mealType: "dessert",
+                difficulty: "hard",
+                cookTime: 75,
+                servings: 8,
+                emoji: "🥧",
+                ingredients: ["apples", "flour", "butter", "sugar", "cinnamon", "lemon"],
+                instructions: [
+                    "Make pie dough: mix flour, salt, cold butter until crumbly, add ice water.",
+                    "Divide dough, chill for 30 minutes.",
+                    "Peel and slice apples, toss with sugar, cinnamon, lemon juice, and flour.",
+                    "Roll out bottom crust and place in pie pan.",
+                    "Fill with apple mixture, dot with butter.",
+                    "Roll out top crust, place over filling, seal and crimp edges.",
+                    "Cut slits in top for steam to escape.",
+                    "Bake at 425°F for 45-50 minutes until golden and bubbly.",
+                    "Cool for at least 2 hours before slicing."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 420, protein: 4, carbs: 62, fat: 18, fiber: 4 },
+                description: "Classic American pie with spiced apples"
+            },
+
+            // More Snacks
+            {
+                id: 41,
+                name: "Nachos",
+                cuisine: "mexican",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 6,
+                emoji: "🧀",
+                ingredients: ["tortilla chips", "cheese", "beans", "jalapeño", "sour cream", "salsa", "avocado"],
+                instructions: [
+                    "Spread tortilla chips on a large baking sheet.",
+                    "Warm refried beans and drop spoonfuls over chips.",
+                    "Sprinkle generously with shredded cheese.",
+                    "Add sliced jalapeños.",
+                    "Bake at 400°F for 10 minutes until cheese melts.",
+                    "Top with dollops of sour cream, salsa, and diced avocado.",
+                    "Garnish with cilantro and lime wedges, serve immediately."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 385, protein: 12, carbs: 38, fat: 21, fiber: 7 },
+                description: "Loaded Mexican tortilla chips with cheese and toppings"
+            },
+            {
+                id: 42,
+                name: "Spring Rolls",
+                cuisine: "chinese",
+                mealType: "snack",
+                difficulty: "medium",
+                cookTime: 30,
+                servings: 12,
+                emoji: "🥢",
+                ingredients: ["rice paper", "lettuce", "carrot", "cucumber", "shrimp", "rice noodles", "mint", "cilantro"],
+                instructions: [
+                    "Cook rice noodles according to package, rinse with cold water.",
+                    "Cook shrimp if using, let cool and slice in half lengthwise.",
+                    "Prepare all vegetables: julienne carrots, slice cucumbers, separate lettuce.",
+                    "Dip rice paper in warm water for 5 seconds until pliable.",
+                    "Place on damp towel, add lettuce, noodles, vegetables, shrimp, herbs.",
+                    "Fold sides in and roll tightly like a burrito.",
+                    "Serve with peanut sauce or sweet chili sauce for dipping."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 95, protein: 6, carbs: 16, fat: 1, fiber: 2 },
+                description: "Fresh Vietnamese rice paper rolls with vegetables"
+            },
+            {
+                id: 43,
+                name: "Bruschetta",
+                cuisine: "italian",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 8,
+                emoji: "🍞",
+                ingredients: ["bread", "tomato", "basil", "garlic", "olive oil", "balsamic vinegar"],
+                instructions: [
+                    "Dice fresh tomatoes and drain excess liquid.",
+                    "Mix tomatoes with minced garlic, chopped basil, olive oil, and balsamic.",
+                    "Season with salt and pepper, let marinate for 15 minutes.",
+                    "Slice baguette diagonally into 1/2 inch slices.",
+                    "Brush bread with olive oil and toast until golden.",
+                    "Optionally rub toasted bread with cut garlic clove.",
+                    "Top each slice with tomato mixture just before serving."
+                ],
+                dietary: ["vegan", "dairy-free"],
+                nutrition: { calories: 125, protein: 3, carbs: 20, fat: 4, fiber: 2 },
+                description: "Italian toasted bread with fresh tomato topping"
+            },
+            {
+                id: 44,
+                name: "Deviled Eggs",
+                cuisine: "american",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 12,
+                emoji: "🥚",
+                ingredients: ["eggs", "mayonnaise", "mustard", "vinegar", "paprika"],
+                instructions: [
+                    "Hard boil eggs: place in pot, cover with water, bring to boil.",
+                    "Remove from heat, cover, let sit 12 minutes.",
+                    "Transfer to ice bath to cool completely.",
+                    "Peel eggs, cut in half lengthwise, remove yolks.",
+                    "Mash yolks with mayonnaise, mustard, vinegar, salt, and pepper.",
+                    "Pipe or spoon yolk mixture back into egg white halves.",
+                    "Sprinkle with paprika and garnish with chives."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 75, protein: 6, carbs: 1, fat: 5, fiber: 0 },
+                description: "Classic creamy stuffed eggs appetizer"
+            },
+            {
+                id: 45,
+                name: "Popcorn",
+                cuisine: "american",
+                mealType: "snack",
+                difficulty: "easy",
+                cookTime: 10,
+                servings: 4,
+                emoji: "🍿",
+                ingredients: ["popcorn kernels", "butter", "salt"],
+                instructions: [
+                    "Heat oil in large pot with 3-4 test kernels over medium-high heat.",
+                    "When test kernels pop, add remaining kernels in single layer.",
+                    "Cover pot and shake occasionally to prevent burning.",
+                    "When popping slows to 2-3 seconds between pops, remove from heat.",
+                    "Immediately transfer to large bowl.",
+                    "Drizzle with melted butter and sprinkle with salt.",
+                    "Optional: add other seasonings like parmesan, nutritional yeast, or spices."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 165, protein: 3, carbs: 20, fat: 9, fiber: 4 },
+                description: "Fresh homemade buttered popcorn"
+            },
+
+            // Additional Recipes
+            {
+                id: 46,
+                name: "Shakshuka",
+                cuisine: "mediterranean",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 30,
+                servings: 4,
+                emoji: "🍳",
+                ingredients: ["eggs", "tomato", "bell pepper", "onion", "garlic", "cumin", "paprika", "feta cheese"],
+                instructions: [
+                    "Sauté diced onions and bell peppers in olive oil until soft.",
+                    "Add minced garlic, cumin, and paprika, cook for 1 minute.",
+                    "Add crushed tomatoes and simmer for 15 minutes until thickened.",
+                    "Season sauce with salt, pepper, and optional chili flakes.",
+                    "Make wells in sauce and crack eggs into each well.",
+                    "Cover and cook until eggs are set but yolks still runny (5-7 minutes).",
+                    "Crumble feta on top and garnish with cilantro or parsley.",
+                    "Serve with crusty bread for dipping."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 245, protein: 13, carbs: 18, fat: 14, fiber: 4 },
+                description: "Middle Eastern eggs poached in spiced tomato sauce"
+            },
+            {
+                id: 47,
+                name: "Chicken Noodle Soup",
+                cuisine: "american",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 40,
+                servings: 6,
+                emoji: "🍜",
+                ingredients: ["chicken", "noodles", "carrot", "celery", "onion", "garlic", "chicken broth", "bay leaf"],
+                instructions: [
+                    "In large pot, sauté diced onions, carrots, and celery until softened.",
+                    "Add minced garlic and cook for 1 minute.",
+                    "Add chicken broth, bay leaves, and thyme.",
+                    "Add chicken breasts, bring to boil, then simmer for 20 minutes.",
+                    "Remove chicken, shred it, and return to pot.",
+                    "Add noodles and cook until tender (8-10 minutes).",
+                    "Season with salt and pepper, garnish with fresh parsley.",
+                    "Serve hot with crackers or bread."
+                ],
+                dietary: ["dairy-free"],
+                nutrition: { calories: 245, protein: 22, carbs: 28, fat: 5, fiber: 3 },
+                description: "Comforting classic soup with chicken and vegetables"
+            },
+            {
+                id: 48,
+                name: "Beef Tacos",
+                cuisine: "mexican",
+                mealType: "dinner",
+                difficulty: "easy",
+                cookTime: 25,
+                servings: 4,
+                emoji: "🌮",
+                ingredients: ["ground beef", "taco seasoning", "tortilla", "lettuce", "tomato", "cheese", "sour cream", "salsa"],
+                instructions: [
+                    "Brown ground beef in a skillet over medium-high heat.",
+                    "Drain excess fat, add taco seasoning and water according to package.",
+                    "Simmer for 5-7 minutes until sauce thickens.",
+                    "Warm taco shells in oven or microwave.",
+                    "Shred lettuce, dice tomatoes, and grate cheese.",
+                    "Fill taco shells with seasoned beef.",
+                    "Top with lettuce, tomatoes, cheese, sour cream, and salsa.",
+                    "Serve immediately with lime wedges."
+                ],
+                dietary: ["gluten-free"],
+                nutrition: { calories: 425, protein: 26, carbs: 34, fat: 20, fiber: 5 },
+                description: "Classic Mexican beef tacos with fresh toppings"
+            },
+            {
+                id: 49,
+                name: "Caesar Salad",
+                cuisine: "american",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 15,
+                servings: 4,
+                emoji: "🥗",
+                ingredients: ["romaine lettuce", "parmesan", "croutons", "lemon", "garlic", "anchovy", "olive oil", "eggs"],
+                instructions: [
+                    "Wash and chop romaine lettuce into bite-sized pieces.",
+                    "Make dressing: blend garlic, anchovies, lemon juice, egg yolk, and Dijon mustard.",
+                    "Slowly drizzle in olive oil while blending until emulsified.",
+                    "Stir in grated parmesan cheese.",
+                    "Toss lettuce with dressing until well coated.",
+                    "Top with croutons and shaved parmesan.",
+                    "Add grilled chicken for a heartier meal.",
+                    "Serve immediately while lettuce is crisp."
+                ],
+                dietary: [],
+                nutrition: { calories: 285, protein: 9, carbs: 18, fat: 20, fiber: 3 },
+                description: "Classic salad with romaine, parmesan, and Caesar dressing"
+            },
+            {
+                id: 50,
+                name: "Chicken Wings",
+                cuisine: "american",
+                mealType: "snack",
+                difficulty: "medium",
+                cookTime: 50,
+                servings: 6,
+                emoji: "🍗",
+                ingredients: ["chicken wings", "hot sauce", "butter", "garlic powder", "paprika", "ranch dressing"],
+                instructions: [
+                    "Pat chicken wings dry and season with salt, pepper, garlic powder, and paprika.",
+                    "Arrange wings on baking rack over sheet pan.",
+                    "Bake at 425°F for 45-50 minutes, flipping halfway, until crispy.",
+                    "While wings bake, make sauce: melt butter and mix with hot sauce.",
+                    "Toss cooked wings in sauce to coat evenly.",
+                    "Return to oven for 5 more minutes to set sauce.",
+                    "Serve hot with ranch or blue cheese dressing and celery sticks."
+                ],
+                dietary: ["gluten-free"],
+                nutrition: { calories: 385, protein: 28, carbs: 2, fat: 30, fiber: 0 },
+                description: "Crispy baked chicken wings with spicy sauce"
+            },
+            {
+                id: 51,
+                name: "Margherita Flatbread",
+                cuisine: "italian",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🍕",
+                ingredients: ["flatbread", "tomato sauce", "mozzarella", "basil", "olive oil", "garlic"],
+                instructions: [
+                    "Preheat oven to 450°F.",
+                    "Brush flatbreads with olive oil mixed with minced garlic.",
+                    "Spread thin layer of tomato sauce on each flatbread.",
+                    "Top with sliced fresh mozzarella.",
+                    "Bake for 12-15 minutes until cheese is melted and bubbly.",
+                    "Remove from oven and immediately top with fresh basil leaves.",
+                    "Drizzle with more olive oil if desired.",
+                    "Cut into slices and serve hot."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 295, protein: 13, carbs: 34, fat: 12, fiber: 2 },
+                description: "Quick Italian-style flatbread pizza"
+            },
+            {
+                id: 52,
+                name: "Chicken Quesadilla",
+                cuisine: "mexican",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 20,
+                servings: 4,
+                emoji: "🌮",
+                ingredients: ["tortilla", "chicken", "cheese", "bell pepper", "onion", "sour cream", "salsa"],
+                instructions: [
+                    "Cook diced chicken with fajita seasoning until done.",
+                    "Sauté sliced bell peppers and onions until tender.",
+                    "Place tortilla in dry skillet over medium heat.",
+                    "On half the tortilla, layer cheese, chicken, and vegetables.",
+                    "Fold tortilla in half and cook until bottom is golden (2-3 minutes).",
+                    "Flip and cook other side until cheese melts completely.",
+                    "Remove from heat and cut into wedges.",
+                    "Serve with sour cream, salsa, and guacamole."
+                ],
+                dietary: [],
+                nutrition: { calories: 420, protein: 28, carbs: 36, fat: 18, fiber: 3 },
+                description: "Grilled tortilla filled with chicken and melted cheese"
+            },
+            {
+                id: 53,
+                name: "Greek Yogurt Parfait",
+                cuisine: "american",
+                mealType: "breakfast",
+                difficulty: "easy",
+                cookTime: 5,
+                servings: 2,
+                emoji: "🥣",
+                ingredients: ["greek yogurt", "granola", "berries", "honey", "banana"],
+                instructions: [
+                    "In a glass or bowl, layer Greek yogurt at the bottom.",
+                    "Add a layer of granola.",
+                    "Top with mixed fresh berries (blueberries, strawberries, raspberries).",
+                    "Add sliced banana.",
+                    "Repeat layers if desired.",
+                    "Drizzle honey on top.",
+                    "Optionally add chia seeds, nuts, or coconut flakes.",
+                    "Serve immediately for best texture."
+                ],
+                dietary: ["vegetarian", "gluten-free"],
+                nutrition: { calories: 320, protein: 18, carbs: 48, fat: 7, fiber: 6 },
+                description: "Healthy layered breakfast with yogurt and fruit"
+            },
+            {
+                id: 54,
+                name: "Vegetable Soup",
+                cuisine: "american",
+                mealType: "lunch",
+                difficulty: "easy",
+                cookTime: 40,
+                servings: 6,
+                emoji: "🥣",
+                ingredients: ["carrot", "celery", "tomato", "potato", "green beans", "onion", "garlic", "vegetable broth"],
+                instructions: [
+                    "Dice all vegetables into bite-sized pieces.",
+                    "In large pot, sauté onions and garlic in olive oil until soft.",
+                    "Add carrots, celery, and potatoes, cook for 5 minutes.",
+                    "Add vegetable broth, diced tomatoes, and herbs (thyme, bay leaf).",
+                    "Bring to boil, then reduce heat and simmer for 20 minutes.",
+                    "Add green beans and any quick-cooking vegetables.",
+                    "Simmer 10 more minutes until all vegetables are tender.",
+                    "Season with salt and pepper, serve hot with bread."
+                ],
+                dietary: ["vegan", "gluten-free", "dairy-free"],
+                nutrition: { calories: 145, protein: 4, carbs: 28, fat: 2, fiber: 6 },
+                description: "Hearty vegetable soup loaded with fresh vegetables"
+            },
+            {
+                id: 55,
+                name: "Banana Bread",
+                cuisine: "american",
+                mealType: "dessert",
+                difficulty: "easy",
+                cookTime: 65,
+                servings: 12,
+                emoji: "🍌",
+                ingredients: ["banana", "flour", "sugar", "eggs", "butter", "baking soda", "vanilla"],
+                instructions: [
+                    "Preheat oven to 350°F, grease a loaf pan.",
+                    "Mash ripe bananas in a large bowl (3-4 bananas).",
+                    "Mix in melted butter, sugar, beaten egg, and vanilla.",
+                    "Sprinkle baking soda and salt over mixture, stir.",
+                    "Add flour and mix until just combined (don't overmix).",
+                    "Optional: fold in chocolate chips or walnuts.",
+                    "Pour batter into prepared loaf pan.",
+                    "Bake for 60-65 minutes until toothpick comes out clean.",
+                    "Cool in pan for 10 minutes, then transfer to wire rack."
+                ],
+                dietary: ["vegetarian"],
+                nutrition: { calories: 195, protein: 3, carbs: 34, fat: 6, fiber: 2 },
+                description: "Moist sweet bread made with ripe bananas"
+            }
+        ];
+
+        // State Management
+        let currentIngredients = [];
+        let allRecipes = [];
+        let displayedRecipes = [];
+        let favorites = JSON.parse(localStorage.getItem('favoriteRecipes')) || [];
+        let currentDifficultyFilter = '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFavoritesCount();
+            loadTheme();
+        });
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (newTheme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light Mode';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark Mode';
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (savedTheme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light Mode';
+            }
+        }
+
+        // Ingredient Management
+        function addIngredient() {
+            const input = document.getElementById('ingredient-input');
+            const ingredient = input.value.trim().toLowerCase();
+
+            if (ingredient && !currentIngredients.includes(ingredient)) {
+                currentIngredients.push(ingredient);
+                updateIngredientsDisplay();
+                input.value = '';
+            }
+        }
+
+        function handleIngredientEnter(event) {
+            if (event.key === 'Enter') {
+                addIngredient();
+            }
+        }
+
+        function removeIngredient(ingredient) {
+            currentIngredients = currentIngredients.filter(i => i !== ingredient);
+            updateIngredientsDisplay();
+        }
+
+        function updateIngredientsDisplay() {
+            const container = document.getElementById('ingredients-list');
+
+            if (currentIngredients.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Add ingredients to get started...</span>';
+                return;
+            }
+
+            container.innerHTML = currentIngredients.map(ingredient => `
+                <div class="ingredient-tag">
+                    <span>${ingredient}</span>
+                    <button onclick="removeIngredient('${ingredient}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Recipe Generation and Matching
+        function generateRecipes() {
+            const mealType = document.getElementById('meal-type').value;
+            const cuisineType = document.getElementById('cuisine-type').value;
+
+            const dietaryRestrictions = [];
+            ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free', 'low-carb'].forEach(id => {
+                if (document.getElementById(id).checked) {
+                    dietaryRestrictions.push(id);
+                }
+            });
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('recipe-results').innerHTML = '';
+
+            // Simulate AI processing delay
+            setTimeout(() => {
+                allRecipes = matchRecipes(currentIngredients, mealType, cuisineType, dietaryRestrictions);
+                displayedRecipes = allRecipes;
+                displayRecipes(allRecipes);
+                document.getElementById('loading').classList.remove('active');
+            }, 800);
+        }
+
+        function matchRecipes(ingredients, mealType, cuisine, dietary) {
+            let scored = recipeDatabase.map(recipe => {
+                let score = 0;
+
+                // Check dietary restrictions
+                if (dietary.length > 0) {
+                    const matchesDietary = dietary.every(restriction =>
+                        recipe.dietary.includes(restriction)
+                    );
+                    if (!matchesDietary) return null;
+                }
+
+                // Check meal type
+                if (mealType && recipe.mealType !== mealType) {
+                    return null;
+                }
+
+                // Check cuisine
+                if (cuisine && recipe.cuisine !== cuisine) {
+                    return null;
+                }
+
+                // Score based on ingredient matching
+                if (ingredients.length > 0) {
+                    const matchingIngredients = ingredients.filter(ing =>
+                        recipe.ingredients.some(recipeIng =>
+                            recipeIng.toLowerCase().includes(ing) || ing.includes(recipeIng.toLowerCase())
+                        )
+                    );
+
+                    score = matchingIngredients.length;
+
+                    // Boost score for recipes with more ingredient matches
+                    const matchPercentage = matchingIngredients.length / ingredients.length;
+                    score += matchPercentage * 10;
+                } else {
+                    // If no ingredients specified, give all matching recipes a base score
+                    score = 5;
+                }
+
+                return { recipe, score };
+            }).filter(item => item !== null && item.score > 0);
+
+            // Sort by score (highest first)
+            scored.sort((a, b) => b.score - a.score);
+
+            return scored.map(item => item.recipe);
+        }
+
+        function displayRecipes(recipes) {
+            const container = document.getElementById('recipe-results');
+            const countElement = document.getElementById('results-count');
+
+            if (recipes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No recipes found</div>
+                        <div class="empty-state-subtext">Try adjusting your filters or ingredients</div>
+                    </div>
+                `;
+                countElement.textContent = '';
+                return;
+            }
+
+            countElement.textContent = `Found ${recipes.length} recipe${recipes.length !== 1 ? 's' : ''}`;
+
+            const gradient = ['var(--gradient-1)', 'var(--gradient-2)', 'var(--gradient-3)',
+                             'var(--gradient-4)', 'var(--gradient-5)', 'var(--gradient-6)'];
+
+            container.innerHTML = `
+                <div class="recipe-grid">
+                    ${recipes.map((recipe, index) => {
+                        const isFavorite = favorites.includes(recipe.id);
+                        const bgGradient = gradient[index % gradient.length];
+                        return `
+                            <div class="recipe-card" onclick="showRecipeDetail(${recipe.id})">
+                                <div class="recipe-image" style="background: ${bgGradient}">
+                                    ${recipe.emoji}
+                                    <span class="recipe-difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
+                                </div>
+                                <div class="recipe-content">
+                                    <div class="recipe-header">
+                                        <div class="recipe-title">${recipe.name}</div>
+                                        <button class="favorite-btn" onclick="toggleFavorite(event, ${recipe.id})">
+                                            ${isFavorite ? '❤️' : '🤍'}
+                                        </button>
+                                    </div>
+                                    <div class="recipe-meta">
+                                        <div class="meta-item">⏱️ ${recipe.cookTime} min</div>
+                                        <div class="meta-item">🍽️ ${recipe.servings} servings</div>
+                                    </div>
+                                    <div class="recipe-tags">
+                                        <span class="tag">${recipe.cuisine}</span>
+                                        <span class="tag">${recipe.mealType}</span>
+                                        ${recipe.dietary.slice(0, 2).map(d => `<span class="tag">${d}</span>`).join('')}
+                                    </div>
+                                    <div class="recipe-description">${recipe.description}</div>
+                                    <div class="recipe-actions">
+                                        <button class="btn btn-primary" onclick="event.stopPropagation(); showRecipeDetail(${recipe.id})">
+                                            View Recipe
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Recipe Detail Modal
+        function showRecipeDetail(recipeId) {
+            const recipe = recipeDatabase.find(r => r.id === recipeId);
+            if (!recipe) return;
+
+            const modal = document.getElementById('recipe-modal');
+            const title = document.getElementById('modal-recipe-title');
+            const body = document.getElementById('modal-recipe-body');
+
+            title.textContent = recipe.name;
+
+            const gradient = ['var(--gradient-1)', 'var(--gradient-2)', 'var(--gradient-3)',
+                             'var(--gradient-4)', 'var(--gradient-5)', 'var(--gradient-6)'];
+            const bgGradient = gradient[recipe.id % gradient.length];
+
+            body.innerHTML = `
+                <div class="recipe-detail-image" style="background: ${bgGradient}">
+                    ${recipe.emoji}
+                </div>
+
+                <div class="recipe-meta" style="justify-content: center; margin-bottom: 20px;">
+                    <div class="meta-item">⏱️ ${recipe.cookTime} minutes</div>
+                    <div class="meta-item">🍽️ ${recipe.servings} servings</div>
+                    <div class="meta-item">📊 ${recipe.difficulty}</div>
+                </div>
+
+                <div class="recipe-tags" style="justify-content: center; margin-bottom: 25px;">
+                    <span class="tag">${recipe.cuisine}</span>
+                    <span class="tag">${recipe.mealType}</span>
+                    ${recipe.dietary.map(d => `<span class="tag">${d}</span>`).join('')}
+                </div>
+
+                <p style="color: var(--text-secondary); font-size: 1.1em; text-align: center; margin-bottom: 30px;">
+                    ${recipe.description}
+                </p>
+
+                <div class="detail-section">
+                    <h3>🥘 Ingredients</h3>
+                    <ul class="ingredients-list-detail">
+                        ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="detail-section">
+                    <h3>👨‍🍳 Instructions</h3>
+                    <ol class="instructions-list">
+                        ${recipe.instructions.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+
+                <div class="detail-section">
+                    <h3>📊 Nutrition Information (per serving)</h3>
+                    <div class="nutrition-grid">
+                        <div class="nutrition-item">
+                            <div class="nutrition-value">${recipe.nutrition.calories}</div>
+                            <div class="nutrition-label">Calories</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value">${recipe.nutrition.protein}g</div>
+                            <div class="nutrition-label">Protein</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value">${recipe.nutrition.carbs}g</div>
+                            <div class="nutrition-label">Carbs</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value">${recipe.nutrition.fat}g</div>
+                            <div class="nutrition-label">Fat</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value">${recipe.nutrition.fiber}g</div>
+                            <div class="nutrition-label">Fiber</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="generateShoppingList(${recipe.id})">
+                        🛒 Shopping List
+                    </button>
+                    <button class="btn btn-secondary" onclick="printRecipe()">
+                        🖨️ Print Recipe
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleFavorite(event, ${recipe.id}); showRecipeDetail(${recipe.id})">
+                        ${favorites.includes(recipe.id) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('recipe-modal').classList.remove('active');
+            // Refresh the recipe display to update favorite icons
+            if (displayedRecipes.length > 0) {
+                displayRecipes(displayedRecipes);
+            }
+        }
+
+        // Click outside modal to close
+        document.getElementById('recipe-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Favorites
+        function toggleFavorite(event, recipeId) {
+            event.stopPropagation();
+
+            const index = favorites.indexOf(recipeId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(recipeId);
+            }
+
+            localStorage.setItem('favoriteRecipes', JSON.stringify(favorites));
+            updateFavoritesCount();
+
+            // Refresh display
+            if (displayedRecipes.length > 0) {
+                displayRecipes(displayedRecipes);
+            }
+        }
+
+        function updateFavoritesCount() {
+            document.getElementById('favorites-count').textContent = favorites.length;
+        }
+
+        function showFavorites() {
+            if (favorites.length === 0) {
+                alert('You haven\'t added any favorite recipes yet!');
+                return;
+            }
+
+            const favoriteRecipes = recipeDatabase.filter(r => favorites.includes(r.id));
+            allRecipes = favoriteRecipes;
+            displayedRecipes = favoriteRecipes;
+            displayRecipes(favoriteRecipes);
+
+            // Scroll to results
+            document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Filtering
+        function filterRecipes() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = allRecipes.filter(recipe => {
+                const matchesSearch = recipe.name.toLowerCase().includes(searchTerm) ||
+                                    recipe.description.toLowerCase().includes(searchTerm) ||
+                                    recipe.ingredients.some(ing => ing.toLowerCase().includes(searchTerm));
+
+                const matchesDifficulty = currentDifficultyFilter === '' || recipe.difficulty === currentDifficultyFilter;
+
+                return matchesSearch && matchesDifficulty;
+            });
+
+            displayedRecipes = filtered;
+            displayRecipes(filtered);
+        }
+
+        function filterByDifficulty(difficulty) {
+            currentDifficultyFilter = difficulty;
+
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            filterRecipes();
+        }
+
+        // Shopping List
+        function generateShoppingList(recipeId) {
+            const recipe = recipeDatabase.find(r => r.id === recipeId);
+            if (!recipe) return;
+
+            const list = recipe.ingredients.join('\n• ');
+            const message = `Shopping List for ${recipe.name}\n\n• ${list}\n\nServings: ${recipe.servings}`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(message).then(() => {
+                alert('Shopping list copied to clipboard!');
+            }).catch(() => {
+                alert(message);
+            });
+        }
+
+        // Print Recipe
+        function printRecipe() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
