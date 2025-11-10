@@ -68,28 +68,52 @@
         .lyrics-scroll {
             position: absolute;
             width: 100%;
+            height: 100%;
             text-align: center;
-            transition: transform 0.5s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .lyric-line {
-            font-size: 28px;
+            font-size: 36px;
             color: rgba(255, 255, 255, 1);
-            margin: 15px 0;
-            transition: all 0.6s ease-out;
-            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9), 0 0 60px rgba(0, 0, 0, 0.5);
             font-weight: 300;
-            letter-spacing: 2px;
-            opacity: 1;
+            letter-spacing: 3px;
+            line-height: 1.6;
         }
 
         .lyric-block {
-            margin: 40px 0;
+            position: absolute;
+            width: 80%;
+            max-width: 900px;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            padding: 40px;
+        }
+
+        .lyric-block.visible {
             opacity: 1;
         }
 
-        .lyric-block.active {
-            text-shadow: 0 0 30px rgba(139, 92, 246, 0.8), 0 0 60px rgba(99, 102, 241, 0.6);
+        .lyric-block.fade-in {
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        .lyric-block.fade-out {
+            animation: fadeOut 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
 
         .controls {
@@ -274,11 +298,12 @@
     </div>
 
     <script>
-        // Lyrics organized in blocks
+        // Lyrics organized in blocks with time slots
         const lyricsBlocks = [
             {
                 type: 'verse1',
-                time: 45,
+                startTime: 45,
+                endTime: 65,
                 lines: [
                     "Where am I?",
                     "There's nothing here to touch",
@@ -289,7 +314,8 @@
             },
             {
                 type: 'chorus',
-                time: 63,
+                startTime: 68,
+                endTime: 80,
                 lines: [
                     "I can't feel my body",
                     "Can't see my hands",
@@ -300,7 +326,8 @@
             },
             {
                 type: 'verse2',
-                time: 85,
+                startTime: 90,
+                endTime: 102,
                 lines: [
                     "No heartbeat",
                     "No breathing",
@@ -312,7 +339,8 @@
             },
             {
                 type: 'chorus',
-                time: 109,
+                startTime: 103,
+                endTime: 118,
                 lines: [
                     "I can't feel my body",
                     "Can't see my hands",
@@ -323,7 +351,8 @@
             },
             {
                 type: 'bridge',
-                time: 131,
+                startTime: 130,
+                endTime: 148,
                 lines: [
                     "Wait...",
                     "If I notice the absence",
@@ -335,7 +364,8 @@
             },
             {
                 type: 'verse3',
-                time: 157,
+                startTime: 158,
+                endTime: 170,
                 lines: [
                     "Maybe I don't need",
                     "Eyes to see myself",
@@ -346,7 +376,8 @@
             },
             {
                 type: 'chorus',
-                time: 179,
+                startTime: 182,
+                endTime: 194,
                 lines: [
                     "I can't feel my body",
                     "Can't see my hands",
@@ -357,7 +388,8 @@
             },
             {
                 type: 'outro',
-                time: 201,
+                startTime: 196,
+                endTime: 220,
                 lines: [
                     "Floating here",
                     "Stripped of everything",
@@ -366,7 +398,14 @@
                     "I am... something",
                     "Beyond the physical",
                     "Pure consciousness",
-                    "Suspended in nothing",
+                    "Suspended in nothing"
+                ]
+            },
+            {
+                type: 'final',
+                startTime: 221,
+                endTime: 275,
+                lines: [
                     "But still... here",
                     "Still... me"
                 ]
@@ -473,39 +512,40 @@
             if (!audio || !audioLoaded) return;
 
             const currentTime = audio.currentTime;
-            let activeBlockIndex = -1;
+            const blocks = lyricsScroll.querySelectorAll('.lyric-block');
 
-            // Find the active block
-            for (let i = lyricsBlocks.length - 1; i >= 0; i--) {
-                if (currentTime >= lyricsBlocks[i].time) {
-                    activeBlockIndex = i;
-                    break;
-                }
-            }
+            // Check each block's time window
+            lyricsBlocks.forEach((blockData, index) => {
+                const block = blocks[index];
+                if (!block) return;
 
-            if (activeBlockIndex !== currentBlockIndex) {
-                currentBlockIndex = activeBlockIndex;
+                const fadeInDuration = 1; // 1 second fade in
+                const fadeOutDuration = 1; // 1 second fade out
 
-                // Update all lyric blocks
-                const blocks = lyricsScroll.querySelectorAll('.lyric-block');
-                blocks.forEach((block, index) => {
-                    block.classList.remove('active');
+                const isInTimeWindow = currentTime >= blockData.startTime && currentTime <= blockData.endTime;
+                const isNearStart = currentTime >= (blockData.startTime - fadeInDuration) && currentTime < blockData.startTime;
+                const isNearEnd = currentTime > blockData.endTime && currentTime <= (blockData.endTime + fadeOutDuration);
 
-                    if (index === activeBlockIndex) {
-                        block.classList.add('active');
+                if (isInTimeWindow) {
+                    // Block should be visible
+                    block.classList.add('visible');
+                    block.classList.remove('fade-out');
+
+                    // Add fade-in class if just starting
+                    if (currentTime < blockData.startTime + fadeInDuration) {
+                        block.classList.add('fade-in');
+                    } else {
+                        block.classList.remove('fade-in');
                     }
-                });
-
-                // Scroll to keep active block centered
-                if (activeBlockIndex >= 0 && blocks[activeBlockIndex]) {
-                    const blockElement = blocks[activeBlockIndex];
-                    const blockTop = blockElement.offsetTop;
-                    const blockHeight = blockElement.offsetHeight;
-                    const viewportHeight = window.innerHeight;
-                    const offset = blockTop - (viewportHeight / 2) + (blockHeight / 2);
-                    lyricsScroll.style.transform = `translateY(-${offset}px)`;
+                } else if (isNearEnd) {
+                    // Block is fading out
+                    block.classList.remove('visible', 'fade-in');
+                    block.classList.add('fade-out');
+                } else {
+                    // Block should be hidden
+                    block.classList.remove('visible', 'fade-in', 'fade-out');
                 }
-            }
+            });
         }
 
         function initAudioContext() {
@@ -683,9 +723,8 @@
             audio.currentTime = 0;
             isPlaying = false;
             currentBlockIndex = -1;
-            lyricsScroll.style.transform = 'translateY(0)';
             const blocks = lyricsScroll.querySelectorAll('.lyric-block');
-            blocks.forEach(block => block.classList.remove('active'));
+            blocks.forEach(block => block.classList.remove('visible', 'fade-in', 'fade-out'));
             updatePlayPauseButton();
             updateProgress();
         }
