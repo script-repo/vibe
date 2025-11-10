@@ -1548,13 +1548,26 @@
             }
 
             const url = existingUrl || URL.createObjectURL(file);
+
+            // Clean up old audio
             if (audio) {
                 audio.pause();
-                audio = null;
+                audio.src = '';
+                audio.load();
+            }
+
+            if (audioSource) {
+                try {
+                    audioSource.disconnect();
+                } catch (e) {
+                    // Ignore disconnect errors
+                }
+                audioSource = null;
             }
 
             audio = new Audio(url);
             audio.volume = 0.7;
+            audio.crossOrigin = 'anonymous'; // Allow CORS for external URLs
 
             audio.addEventListener('loadedmetadata', () => {
                 document.getElementById('duration').textContent = formatTime(audio.duration);
@@ -1570,24 +1583,40 @@
                 }
             });
 
+            audio.addEventListener('error', (e) => {
+                console.error('Audio error:', e, audio.error);
+                alert('Error loading audio file. Please try another file.');
+            });
+
             initAudioContext();
 
-            if (audioSource) {
-                audioSource.disconnect();
+            // Create new media element source
+            try {
+                audioSource = audioContext.createMediaElementSource(audio);
+                audioSource.connect(analyser);
+            } catch (err) {
+                console.error('Error creating audio source:', err);
+                alert('Error setting up audio. Please refresh the page and try again.');
+                return;
             }
-
-            audioSource = audioContext.createMediaElementSource(audio);
-            audioSource.connect(analyser);
 
             document.getElementById('uploadArea').classList.add('hidden');
 
-            audio.play();
-            isPlaying = true;
-            document.getElementById('playBtn').textContent = '⏸️ Pause';
+            // Try to play with error handling
+            audio.play().then(() => {
+                isPlaying = true;
+                document.getElementById('playBtn').textContent = '⏸️ Pause';
 
-            if (!animationId) {
-                animate();
-            }
+                if (!animationId) {
+                    animate();
+                }
+            }).catch(err => {
+                console.error('Error playing audio:', err);
+                isPlaying = false;
+                document.getElementById('playBtn').textContent = '▶️ Play';
+                // Show user they need to click play
+                alert('Click the Play button to start audio playback.');
+            });
         }
 
         async function toggleMicrophone() {
