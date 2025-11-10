@@ -106,6 +106,49 @@
             display: none;
         }
 
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .play-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        .play-button svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+            margin-left: 5px;
+        }
+
         .controls {
             background: var(--glass);
             backdrop-filter: blur(20px);
@@ -933,6 +976,13 @@
         <div class="canvas-container">
             <canvas id="visualizer"></canvas>
             <canvas id="threeCanvas"></canvas>
+            <div class="play-overlay" id="playOverlay">
+                <div class="play-button">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </div>
+            </div>
         </div>
 
         <div class="controls">
@@ -1204,24 +1254,18 @@
             // Keyboard shortcuts
             document.addEventListener('keydown', handleKeyPress);
 
-            // Detect mobile and set default visualizer mode
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-            if (isMobile) {
-                visualizerMode = 'neural';
-                // Update button states
-                document.querySelectorAll('.mode-selector .btn-small').forEach(btn => btn.classList.remove('active'));
-                const neuralBtn = Array.from(document.querySelectorAll('.mode-selector .btn-small')).find(btn => btn.textContent === 'Neural Net');
-                if (neuralBtn) neuralBtn.classList.add('active');
-            } else {
-                visualizerMode = 'particles';
-                // Update button states
-                document.querySelectorAll('.mode-selector .btn-small').forEach(btn => btn.classList.remove('active'));
-                const particlesBtn = Array.from(document.querySelectorAll('.mode-selector .btn-small')).find(btn => btn.textContent === 'Particles');
-                if (particlesBtn) particlesBtn.classList.add('active');
-            }
-
             // Preload the included MP3 file
             loadPreloadedMP3();
+
+            // Detect mobile and set default visualizer mode (after loadPreloadedMP3)
+            setTimeout(() => {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+                if (isMobile) {
+                    setVisualizerMode('neural');
+                } else {
+                    setVisualizerMode('particles');
+                }
+            }, 100);
 
             // Set up auto-hide controls
             setupAutoHideControls();
@@ -1728,38 +1772,42 @@
                     await audio.play();
                     isPlaying = true;
                     document.getElementById('playBtn').textContent = '⏸️ Pause';
+                    // Hide play overlay on successful play
+                    const playOverlay = document.getElementById('playOverlay');
+                    if (playOverlay) {
+                        playOverlay.classList.add('hidden');
+                    }
                 } catch (err) {
                     console.error('Error playing audio:', err);
                     isPlaying = false;
                     document.getElementById('playBtn').textContent = '▶️ Play';
 
-                    // Add one-time click/key listener to start playback
-                    const startOnInteraction = async () => {
-                        try {
-                            if (audioContext.state === 'suspended') {
-                                await audioContext.resume();
-                            }
-                            await audio.play();
-                            isPlaying = true;
-                            document.getElementById('playBtn').textContent = '⏸️ Pause';
-                            // Remove listeners after successful play
-                            document.removeEventListener('click', startOnInteraction);
-                            document.removeEventListener('keydown', startOnInteraction);
-                            document.removeEventListener('touchstart', startOnInteraction);
-                        } catch (e) {
-                            console.error('Still could not play:', e);
-                        }
-                    };
+                    // Show play overlay if autoplay is blocked
+                    const playOverlay = document.getElementById('playOverlay');
+                    if (playOverlay) {
+                        playOverlay.classList.remove('hidden');
 
-                    // Listen for any user interaction
-                    document.addEventListener('click', startOnInteraction, { once: true });
-                    document.addEventListener('keydown', startOnInteraction, { once: true });
-                    document.addEventListener('touchstart', startOnInteraction, { once: true });
-                    console.log('Autoplay blocked. Click, tap, or press any key to start playback.');
+                        // Add click/touch handler to play overlay
+                        const startOnOverlayClick = async () => {
+                            try {
+                                if (audioContext.state === 'suspended') {
+                                    await audioContext.resume();
+                                }
+                                await audio.play();
+                                isPlaying = true;
+                                document.getElementById('playBtn').textContent = '⏸️ Pause';
+                                playOverlay.classList.add('hidden');
+                            } catch (e) {
+                                console.error('Still could not play:', e);
+                            }
+                        };
+
+                        playOverlay.onclick = startOnOverlayClick;
+                    }
                 }
             };
 
-            // Wait for audio to load before attempting to play
+            // Try to play immediately when audio is ready
             audio.addEventListener('canplaythrough', () => {
                 playAudio();
             }, { once: true });
