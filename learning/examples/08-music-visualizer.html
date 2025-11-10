@@ -1204,10 +1204,119 @@
             // Keyboard shortcuts
             document.addEventListener('keydown', handleKeyPress);
 
+            // Detect mobile and set default visualizer mode
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            if (isMobile) {
+                visualizerMode = 'neural';
+                // Update button states
+                document.querySelectorAll('.mode-selector .btn-small').forEach(btn => btn.classList.remove('active'));
+                const neuralBtn = Array.from(document.querySelectorAll('.mode-selector .btn-small')).find(btn => btn.textContent === 'Neural Net');
+                if (neuralBtn) neuralBtn.classList.add('active');
+            } else {
+                visualizerMode = 'particles';
+                // Update button states
+                document.querySelectorAll('.mode-selector .btn-small').forEach(btn => btn.classList.remove('active'));
+                const particlesBtn = Array.from(document.querySelectorAll('.mode-selector .btn-small')).find(btn => btn.textContent === 'Particles');
+                if (particlesBtn) particlesBtn.classList.add('active');
+            }
+
             // Preload the included MP3 file
             loadPreloadedMP3();
 
+            // Set up auto-hide controls
+            setupAutoHideControls();
+
             animateBackground();
+        }
+
+        let controlsHideTimeout;
+        let controlsVisible = true;
+
+        function setupAutoHideControls() {
+            const controls = document.querySelector('.controls');
+            const statsBar = document.querySelector('.stats-bar');
+
+            // Add hide controls button
+            const hideBtn = document.createElement('button');
+            hideBtn.className = 'btn btn-small';
+            hideBtn.id = 'hideControlsBtn';
+            hideBtn.textContent = '👁️ Hide Controls';
+            hideBtn.onclick = toggleControls;
+
+            // Insert button at the beginning of the control group
+            const controlGroup = document.querySelector('.control-group');
+            controlGroup.insertBefore(hideBtn, controlGroup.firstChild);
+
+            function resetHideTimer() {
+                clearTimeout(controlsHideTimeout);
+                if (controlsVisible) {
+                    controlsHideTimeout = setTimeout(() => {
+                        if (controlsVisible && !document.querySelector('.modal.active')) {
+                            hideControls();
+                        }
+                    }, 10000); // 10 seconds
+                }
+            }
+
+            function hideControls() {
+                controls.style.opacity = '0';
+                controls.style.pointerEvents = 'none';
+                if (statsBar) {
+                    statsBar.style.opacity = '0';
+                    statsBar.style.pointerEvents = 'none';
+                }
+                controlsVisible = false;
+                hideBtn.textContent = '👁️ Show Controls';
+            }
+
+            function showControls() {
+                controls.style.opacity = '1';
+                controls.style.pointerEvents = 'auto';
+                if (statsBar) {
+                    statsBar.style.opacity = '1';
+                    statsBar.style.pointerEvents = 'auto';
+                }
+                controlsVisible = true;
+                hideBtn.textContent = '👁️ Hide Controls';
+                resetHideTimer();
+            }
+
+            window.toggleControls = function() {
+                if (controlsVisible) {
+                    hideControls();
+                    clearTimeout(controlsHideTimeout);
+                } else {
+                    showControls();
+                }
+            };
+
+            // Track mouse movement and key presses
+            document.addEventListener('mousemove', () => {
+                if (!controlsVisible) {
+                    showControls();
+                } else {
+                    resetHideTimer();
+                }
+            });
+
+            document.addEventListener('keydown', () => {
+                if (!controlsVisible) {
+                    showControls();
+                } else {
+                    resetHideTimer();
+                }
+            });
+
+            document.addEventListener('touchstart', () => {
+                if (!controlsVisible) {
+                    showControls();
+                } else {
+                    resetHideTimer();
+                }
+            });
+
+            // Start the timer
+            resetHideTimer();
         }
 
         function loadPreloadedMP3() {
@@ -1622,8 +1731,33 @@
                     console.error('Error playing audio:', err);
                     isPlaying = false;
                     document.getElementById('playBtn').textContent = '▶️ Play';
-                    // Don't show alert immediately - user might just need to click play button
-                    console.log('Autoplay blocked. User needs to click Play button.');
+
+                    // Add one-time click/key listener to start playback
+                    const startOnInteraction = async () => {
+                        try {
+                            if (audioContext.state === 'suspended') {
+                                await audioContext.resume();
+                            }
+                            await audio.play();
+                            isPlaying = true;
+                            document.getElementById('playBtn').textContent = '⏸️ Pause';
+                            if (!animationId) {
+                                animate();
+                            }
+                            // Remove listeners after successful play
+                            document.removeEventListener('click', startOnInteraction);
+                            document.removeEventListener('keydown', startOnInteraction);
+                            document.removeEventListener('touchstart', startOnInteraction);
+                        } catch (e) {
+                            console.error('Still could not play:', e);
+                        }
+                    };
+
+                    // Listen for any user interaction
+                    document.addEventListener('click', startOnInteraction, { once: true });
+                    document.addEventListener('keydown', startOnInteraction, { once: true });
+                    document.addEventListener('touchstart', startOnInteraction, { once: true });
+                    console.log('Autoplay blocked. Click, tap, or press any key to start playback.');
                 }
             };
 
