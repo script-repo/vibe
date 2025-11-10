@@ -738,10 +738,14 @@
                         return;
                     }
 
-                    const move = { from: [selectedRow, selectedCol], to: [row, col] };
+                    // Find the complete move object (includes castling, enPassant properties)
+                    const legalMoves = this.getPseudoLegalMovesForPiece(selectedRow, selectedCol);
+                    const fullMove = legalMoves.find(m =>
+                        m.to[0] === row && m.to[1] === col
+                    ) || { from: [selectedRow, selectedCol], to: [row, col] };
 
-                    if (this.isLegalMove(move)) {
-                        this.makeMove(move);
+                    if (this.isLegalMove(fullMove)) {
+                        this.makeMove(fullMove);
                         this.clearSelection();
 
                         if (!this.gameOver && this.currentPlayer === 'black') {
@@ -781,10 +785,14 @@
                 const data = e.dataTransfer.getData('text/plain');
                 const [fromRow, fromCol] = data.split(',').map(Number);
 
-                const move = { from: [fromRow, fromCol], to: [row, col] };
+                // Find the complete move object (includes castling, enPassant properties)
+                const legalMoves = this.getPseudoLegalMovesForPiece(fromRow, fromCol);
+                const fullMove = legalMoves.find(m =>
+                    m.to[0] === row && m.to[1] === col
+                ) || { from: [fromRow, fromCol], to: [row, col] };
 
-                if (this.isLegalMove(move)) {
-                    this.makeMove(move);
+                if (this.isLegalMove(fullMove)) {
+                    this.makeMove(fullMove);
 
                     if (!this.gameOver && this.currentPlayer === 'black') {
                         setTimeout(() => this.makeAIMove(), 500);

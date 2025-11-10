@@ -1210,7 +1210,44 @@
             // Keyboard shortcuts
             document.addEventListener('keydown', handleKeyPress);
 
+            // Preload the included MP3 file
+            loadPreloadedMP3();
+
             animateBackground();
+        }
+
+        function loadPreloadedMP3() {
+            // Try to load the included MP3 file
+            const mp3Path = "Avicenna's Floating Man.mp3";
+
+            fetch(mp3Path)
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error('MP3 not found');
+                })
+                .then(blob => {
+                    const file = new File([blob], "Avicenna's Floating Man.mp3", { type: 'audio/mpeg' });
+                    const url = URL.createObjectURL(blob);
+
+                    // Add to playlist
+                    playlist.push({
+                        file: file,
+                        url: url,
+                        name: "Avicenna's Floating Man"
+                    });
+
+                    updatePlaylistUI();
+
+                    // Auto-play if no other track is playing
+                    if (currentTrackIndex === -1) {
+                        playTrack(0);
+                    }
+                })
+                .catch(err => {
+                    console.log('Preloaded MP3 not found, skipping:', err);
+                });
         }
 
         function handleKeyPress(e) {
