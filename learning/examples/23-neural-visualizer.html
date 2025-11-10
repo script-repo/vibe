@@ -65,7 +65,10 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             initNeuralNodes();
+            initAudioContext();
             loadAndPlayAudio();
+            // Start animation immediately, even without audio
+            animate();
         }
 
         function resizeCanvas() {
@@ -176,9 +179,6 @@
                         }
 
                         await audio.play();
-                        if (!animationId) {
-                            animate();
-                        }
                         // Remove the click listener after starting
                         document.removeEventListener('click', startAudio);
                         document.removeEventListener('touchstart', startAudio);
@@ -196,9 +196,6 @@
                     }
 
                     await audio.play();
-                    if (!animationId) {
-                        animate();
-                    }
                 } catch (err) {
                     // Autoplay blocked - wait for user interaction
                     console.log('Autoplay blocked. Click, touch, or press any key to start.');
