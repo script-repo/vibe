@@ -21,10 +21,60 @@
             height: 100vh;
             display: block;
         }
+
+        .play-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .play-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        .play-button svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
     <canvas id="visualizer"></canvas>
+    <div class="play-overlay" id="playOverlay">
+        <div class="play-button">
+            <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </div>
+    </div>
 
     <script>
         // Audio Context and Nodes
@@ -197,12 +247,34 @@
                         }
 
                         await audio.play();
+
+                        // Hide play overlay on successful play
+                        const playOverlay = document.getElementById('playOverlay');
+                        if (playOverlay) {
+                            playOverlay.classList.add('hidden');
+                        }
                     } catch (err) {
-                        // Autoplay blocked - wait for user interaction
-                        console.log('Autoplay blocked. Click, touch, or press any key to start.');
-                        document.addEventListener('click', startAudio);
-                        document.addEventListener('touchstart', startAudio);
-                        document.addEventListener('keydown', startAudio);
+                        // Autoplay blocked - show play overlay
+                        console.log('Autoplay blocked. Click play button to start.');
+                        const playOverlay = document.getElementById('playOverlay');
+                        if (playOverlay) {
+                            playOverlay.classList.remove('hidden');
+
+                            // Add click/touch handler to play overlay
+                            const startOnOverlayClick = async () => {
+                                try {
+                                    if (audioContext.state === 'suspended') {
+                                        await audioContext.resume();
+                                    }
+                                    await audio.play();
+                                    playOverlay.classList.add('hidden');
+                                } catch (e) {
+                                    console.error('Still could not play:', e);
+                                }
+                            };
+
+                            playOverlay.onclick = startOnOverlayClick;
+                        }
                     }
                 };
 
