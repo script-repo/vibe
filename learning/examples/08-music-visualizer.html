@@ -1217,17 +1217,28 @@
         }
 
         function loadPreloadedMP3() {
-            // Try to load the included MP3 file
-            const mp3Path = "Avicenna's%20Floating%20Man.mp3";
+            // Try to load the included MP3 file from multiple sources
+            const mp3Paths = [
+                'Avicennas_Floating_Man.mp3', // GitHub Pages filename
+                'https://script-repo.github.io/vibe/learning/examples/Avicennas_Floating_Man.mp3', // Absolute URL
+                "Avicenna's%20Floating%20Man.mp3" // Local filename with spaces
+            ];
 
-            fetch(mp3Path)
-                .then(response => {
-                    if (response.ok) {
-                        return response.blob();
+            async function tryLoadMP3(paths, index = 0) {
+                if (index >= paths.length) {
+                    console.log('Could not load MP3 from any source');
+                    return;
+                }
+
+                const mp3Path = paths[index];
+
+                try {
+                    const response = await fetch(mp3Path);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
-                    throw new Error('MP3 not found');
-                })
-                .then(blob => {
+
+                    const blob = await response.blob();
                     const file = new File([blob], "Avicenna's Floating Man.mp3", { type: 'audio/mpeg' });
                     const url = URL.createObjectURL(blob);
 
@@ -1244,10 +1255,16 @@
                     if (currentTrackIndex === -1) {
                         playTrack(0);
                     }
-                })
-                .catch(err => {
-                    console.log('Preloaded MP3 not found, skipping:', err);
-                });
+
+                    console.log(`Successfully loaded MP3 from: ${mp3Path}`);
+                } catch (err) {
+                    console.log(`Failed to load from ${mp3Path}:`, err.message);
+                    // Try next path
+                    tryLoadMP3(paths, index + 1);
+                }
+            }
+
+            tryLoadMP3(mp3Paths);
         }
 
         function handleKeyPress(e) {

@@ -109,12 +109,51 @@
         }
 
         async function loadAndPlayAudio() {
-            try {
-                // Load the audio file
-                audio = new Audio('Avicenna\'s%20Floating%20Man.mp3');
-                audio.volume = 0.7;
-                audio.loop = true; // Loop the audio
+            // Try multiple MP3 file paths
+            const mp3Paths = [
+                'Avicennas_Floating_Man.mp3', // GitHub Pages filename
+                'https://script-repo.github.io/vibe/learning/examples/Avicennas_Floating_Man.mp3', // Absolute URL
+                'Avicenna\'s%20Floating%20Man.mp3' // Local filename with spaces
+            ];
 
+            let audioLoaded = false;
+
+            for (const mp3Path of mp3Paths) {
+                try {
+                    // Try to load the audio file
+                    audio = new Audio(mp3Path);
+                    audio.volume = 0.7;
+                    audio.loop = true; // Loop the audio
+
+                    // Test if the audio can load
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('Timeout')), 2000);
+                        audio.addEventListener('canplay', () => {
+                            clearTimeout(timeout);
+                            resolve();
+                        }, { once: true });
+                        audio.addEventListener('error', () => {
+                            clearTimeout(timeout);
+                            reject(new Error('Load error'));
+                        }, { once: true });
+                        audio.load();
+                    });
+
+                    console.log(`Successfully loaded MP3 from: ${mp3Path}`);
+                    audioLoaded = true;
+                    break;
+                } catch (err) {
+                    console.log(`Failed to load from ${mp3Path}:`, err.message);
+                    audio = null;
+                }
+            }
+
+            if (!audioLoaded || !audio) {
+                console.error('Could not load MP3 from any source');
+                return;
+            }
+
+            try {
                 initAudioContext();
 
                 // Create audio source and connect
@@ -151,7 +190,7 @@
                     document.addEventListener('keydown', startAudio);
                 }
             } catch (err) {
-                console.error('Error loading audio:', err);
+                console.error('Error setting up audio:', err);
             }
         }
 
