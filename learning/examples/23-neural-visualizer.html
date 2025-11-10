@@ -220,23 +220,23 @@
                 audioSource = audioContext.createMediaElementSource(audio);
                 audioSource.connect(analyser);
 
-                // Wait for user interaction to start audio (browser requirement)
-                const startAudio = async () => {
+                // Set up play overlay click handler immediately
+                const playOverlay = document.getElementById('playOverlay');
+                const startOnOverlayClick = async () => {
                     try {
-                        // Resume audio context if suspended
-                        if (audioContext && audioContext.state === 'suspended') {
+                        if (audioContext.state === 'suspended') {
                             await audioContext.resume();
                         }
-
                         await audio.play();
-                        // Remove the click listener after starting
-                        document.removeEventListener('click', startAudio);
-                        document.removeEventListener('touchstart', startAudio);
-                        document.removeEventListener('keydown', startAudio);
-                    } catch (err) {
-                        console.error('Error playing audio:', err);
+                        playOverlay.classList.add('hidden');
+                    } catch (e) {
+                        console.error('Could not play:', e);
                     }
                 };
+
+                if (playOverlay) {
+                    playOverlay.onclick = startOnOverlayClick;
+                }
 
                 // Function to attempt autoplay after audio is ready
                 const attemptAutoplay = async () => {
@@ -249,31 +249,14 @@
                         await audio.play();
 
                         // Hide play overlay on successful play
-                        const playOverlay = document.getElementById('playOverlay');
                         if (playOverlay) {
                             playOverlay.classList.add('hidden');
                         }
                     } catch (err) {
                         // Autoplay blocked - show play overlay
                         console.log('Autoplay blocked. Click play button to start.');
-                        const playOverlay = document.getElementById('playOverlay');
                         if (playOverlay) {
                             playOverlay.classList.remove('hidden');
-
-                            // Add click/touch handler to play overlay
-                            const startOnOverlayClick = async () => {
-                                try {
-                                    if (audioContext.state === 'suspended') {
-                                        await audioContext.resume();
-                                    }
-                                    await audio.play();
-                                    playOverlay.classList.add('hidden');
-                                } catch (e) {
-                                    console.error('Still could not play:', e);
-                                }
-                            };
-
-                            playOverlay.onclick = startOnOverlayClick;
                         }
                     }
                 };

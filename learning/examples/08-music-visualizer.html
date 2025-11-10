@@ -1761,6 +1761,26 @@
                 animate();
             }
 
+            // Set up play overlay click handler immediately
+            const playOverlay = document.getElementById('playOverlay');
+            const startOnOverlayClick = async () => {
+                try {
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
+                    await audio.play();
+                    isPlaying = true;
+                    document.getElementById('playBtn').textContent = '⏸️ Pause';
+                    playOverlay.classList.add('hidden');
+                } catch (e) {
+                    console.error('Could not play:', e);
+                }
+            };
+
+            if (playOverlay) {
+                playOverlay.onclick = startOnOverlayClick;
+            }
+
             // Resume audio context and try to play
             const playAudio = async () => {
                 try {
@@ -1773,7 +1793,6 @@
                     isPlaying = true;
                     document.getElementById('playBtn').textContent = '⏸️ Pause';
                     // Hide play overlay on successful play
-                    const playOverlay = document.getElementById('playOverlay');
                     if (playOverlay) {
                         playOverlay.classList.add('hidden');
                     }
@@ -1783,31 +1802,14 @@
                     document.getElementById('playBtn').textContent = '▶️ Play';
 
                     // Show play overlay if autoplay is blocked
-                    const playOverlay = document.getElementById('playOverlay');
                     if (playOverlay) {
                         playOverlay.classList.remove('hidden');
-
-                        // Add click/touch handler to play overlay
-                        const startOnOverlayClick = async () => {
-                            try {
-                                if (audioContext.state === 'suspended') {
-                                    await audioContext.resume();
-                                }
-                                await audio.play();
-                                isPlaying = true;
-                                document.getElementById('playBtn').textContent = '⏸️ Pause';
-                                playOverlay.classList.add('hidden');
-                            } catch (e) {
-                                console.error('Still could not play:', e);
-                            }
-                        };
-
-                        playOverlay.onclick = startOnOverlayClick;
                     }
                 }
             };
 
-            // Try to play immediately when audio is ready
+            // Load the audio and try to play when ready
+            audio.load();
             audio.addEventListener('canplaythrough', () => {
                 playAudio();
             }, { once: true });
