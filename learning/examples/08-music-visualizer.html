@@ -1260,7 +1260,7 @@
                 } catch (err) {
                     console.log(`Failed to load from ${mp3Path}:`, err.message);
                     // Try next path
-                    tryLoadMP3(paths, index + 1);
+                    await tryLoadMP3(paths, index + 1);
                 }
             }
 
