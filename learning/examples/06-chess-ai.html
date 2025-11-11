@@ -754,7 +754,7 @@
                         this.clearSelection();
 
                         if (!this.gameOver && this.currentPlayer === 'black') {
-                            setTimeout(() => this.makeAIMove(), 500);
+                            setTimeout(() => this.makeAIMove(), 2000);
                         }
                     } else if (piece !== '.' && this.isPlayerPiece(piece)) {
                         this.selectedSquare = [row, col];
@@ -800,7 +800,7 @@
                     this.makeMove(fullMove);
 
                     if (!this.gameOver && this.currentPlayer === 'black') {
-                        setTimeout(() => this.makeAIMove(), 500);
+                        setTimeout(() => this.makeAIMove(), 2000);
                     }
                 }
 
