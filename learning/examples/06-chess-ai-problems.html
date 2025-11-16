@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Chess Problems & Puzzles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .game-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-container {
+            flex: 0 0 auto;
+        }
+
+        .side-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 320px;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 0;
+            border: 4px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            width: min(80vw, 600px);
+            height: min(80vw, 600px);
+            max-width: 600px;
+            max-height: 600px;
+        }
+
+        .square {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .square.light {
+            background-color: #f0d9b5;
+        }
+
+        .square.dark {
+            background-color: #b58863;
+        }
+
+        .square.highlighted {
+            background-color: rgba(255, 255, 0, 0.5) !important;
+        }
+
+        .square.selected {
+            background-color: rgba(0, 255, 0, 0.4) !important;
+            box-shadow: inset 0 0 0 3px #00aa00;
+        }
+
+        .square.legal-move::after {
+            content: '';
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .square.legal-capture::after {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 0, 0, 0.5);
+        }
+
+        .square.check {
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.6), transparent) !important;
+        }
+
+        .square.last-move {
+            background-color: rgba(255, 255, 0, 0.3) !important;
+        }
+
+        .piece {
+            cursor: grab;
+            transition: transform 0.1s ease;
+        }
+
+        .piece:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .piece.dragging {
+            opacity: 0.5;
+        }
+
+        .status {
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .panel-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .panel-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .problem-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .problem-selector button {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .problem-selector button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .problem-info {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .problem-info h4 {
+            color: #667eea;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        .problem-info p {
+            margin-bottom: 10px;
+        }
+
+        .objective {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .move-history {
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .move-history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .move-history::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .move-history::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .ai-thinking {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .ai-thinking.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .solution-section {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .solution-section h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .coords {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .coord-file {
+            bottom: 2px;
+            right: 4px;
+        }
+
+        .coord-rank {
+            top: 2px;
+            left: 4px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .side-panel {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .square {
+                font-size: 2em;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            button {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-panel board-container">
+            <h1>Classic Chess Problems</h1>
+
+            <div class="controls">
+                <button onclick="game.resetProblem()">Reset Problem</button>
+                <button onclick="game.undo()">Undo</button>
+                <button onclick="game.flipBoard()">Flip Board</button>
+                <button onclick="game.showSolution()">Show Solution</button>
+            </div>
+
+            <div class="ai-thinking" id="aiThinking">
+                <div class="spinner"></div>
+                <span>AI is thinking...</span>
+            </div>
+
+            <div class="status" id="status">Select a problem to begin</div>
+
+            <div id="board" class="chess-board"></div>
+        </div>
+
+        <div class="side-panel">
+            <div class="panel-section">
+                <h3>Select a Problem</h3>
+                <div class="problem-selector" id="problemSelector"></div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Problem Information</h3>
+                <div class="problem-info" id="problemInfo">
+                    Select a problem to see its historical background and objective.
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Move History</h3>
+                <div class="move-history" id="moveHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CHESS_PROBLEMS = [
+            {
+                id: 1,
+                title: "Sam Loyd's Excelsior (1861)",
+                objective: "White to move and mate in 5",
+                difficulty: "Medium",
+                board: [
+                    ['.', '.', '.', '.', '.', 'r', 'k', '.'],
+                    ['.', '.', '.', 'n', '.', 'p', 'p', 'p'],
+                    ['.', '.', '.', 'p', '.', '.', '.', '.'],
+                    ['P', '.', '.', '.', 'p', '.', '.', '.'],
+                    ['.', 'N', '.', 'P', 'b', '.', 'b', '.'],
+                    ['.', '.', '.', '.', '.', 'q', '.', '.'],
+                    ['.', '.', '.', '.', 'Q', '.', 'P', 'P'],
+                    ['.', '.', '.', '.', '.', 'R', 'K', '.']
+                ],
+                history: `Created by the legendary American chess composer Sam Loyd in 1861, "Excelsior" is considered one of the finest chess problems ever composed. The name comes from the Latin word meaning "ever upward," referring to the remarkable journey of White's a5 pawn.`,
+                significance: `What makes this problem extraordinary is the paradoxical pawn advance - the white pawn on a5 must march forward to promotion, despite appearing to move away from the action. The problem demonstrates brilliant quiet moves and zugzwang (a position where any move worsens the position).`,
+                solution: `1. b4! (threatening Qc4#) ...axb3 e.p. 2. Qc4+ Kh5 3. Qf7+ Kh4 4. Qh7+ Kg4 5. Qh3# (or if 1...Na6 2. Qc4+ Kh5 3. Qg4#). The key is the spectacular pawn sacrifice that opens the a-file and clears b4 for the queen.`,
+                turn: 'white'
+            },
+            {
+                id: 2,
+                title: "Réti Endgame Study (1921)",
+                objective: "White to move and draw",
+                difficulty: "Hard",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', '.', 'k'],
+                    ['p', '.', '.', '.', '.', '.', 'P', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'K', '.', '.']
+                ],
+                history: `Composed by Richard Réti in 1921, this endgame study revolutionized chess thinking about king and pawn endgames. Réti was a Czechoslovakian grandmaster and one of the founders of the hypermodern school of chess.`,
+                significance: `At first glance, the position appears hopeless for White - the black pawn on a7 is too far advanced, and the white king seems too far from both pawns. However, Réti demonstrated that the king can pursue two goals simultaneously through diagonal movement, a concept that was groundbreaking at the time.`,
+                solution: `1. Kg7! (not 1. Kf6? a5! and Black wins) The key is that the white king moves diagonally, simultaneously approaching both the black pawn (via a6) and supporting the white pawn (via c6). After 1...a5 2. Kf6! a4 3. Ke7! the white king can catch the black pawn or ensure the white pawn promotes. If 1...Kb7 2. Kf7 and the white pawn cannot be stopped.`,
+                turn: 'white'
+            },
+            {
+                id: 3,
+                title: "Lasker's Immortal (1889)",
+                objective: "White to move and win",
+                difficulty: "Hard",
+                board: [
+                    ['r', '.', 'b', 'q', '.', 'r', 'k', '.'],
+                    ['p', 'p', 'p', '.', '.', 'p', 'p', 'p'],
+                    ['.', '.', 'n', '.', '.', 'n', '.', '.'],
+                    ['.', '.', 'b', 'p', 'p', '.', '.', '.'],
+                    ['.', '.', 'B', 'P', 'P', '.', '.', '.'],
+                    ['.', '.', 'N', '.', '.', 'N', '.', '.'],
+                    ['P', 'P', 'P', '.', '.', 'P', 'P', 'P'],
+                    ['R', '.', 'B', 'Q', '.', 'R', 'K', '.']
+                ],
+                history: `This spectacular combination was played by Emanuel Lasker (who would become World Champion from 1894-1921) against Johann Hermann Bauer in Amsterdam, 1889. Lasker was only 20 years old at the time.`,
+                significance: `The game features one of the most beautiful double bishop sacrifices in chess history. Lasker demonstrated extraordinary vision and calculation, sacrificing both bishops to expose the enemy king. This combination has been studied and admired for over 130 years.`,
+                solution: `11. Nxe5!! Nxe5 12. Qh5+! g6 13. Qxh7+!! Kxh7 14. Bxg6+ fxg6 (if Kg8, then Bf7#) 15. Bf7+ and Black is in a mating net. The follow-up involves Rh1+ and mate. The double bishop sacrifice (Qxh7+ and Bxg6+) strips away Black's king protection completely.`,
+                turn: 'white'
+            },
+            {
+                id: 4,
+                title: "The Opera Game (1858)",
+                objective: "White to move and mate in 3",
+                difficulty: "Medium",
+                board: [
+                    ['r', '.', '.', '.', 'k', '.', '.', 'r'],
+                    ['p', 'p', 'p', '.', '.', 'p', 'p', 'p'],
+                    ['.', '.', '.', 'p', 'b', 'p', '.', '.'],
+                    ['.', '.', '.', 'B', '.', '.', '.', '.'],
+                    ['.', '.', '.', 'P', 'q', '.', '.', '.'],
+                    ['.', '.', 'N', '.', '.', '.', '.', '.'],
+                    ['P', 'P', 'P', '.', '.', 'P', 'P', 'P'],
+                    ['R', '.', '.', '.', '.', 'R', 'K', '.']
+                ],
+                history: `Played by Paul Morphy against Duke Karl of Brunswick and Count Isouard at the Paris Opera in 1858. Morphy, only 21 years old, was watching a performance of "The Barber of Seville" when the Duke and Count requested a game during the intermission.`,
+                significance: `This game is considered one of the most instructive games in chess history. It perfectly demonstrates classic opening principles: rapid development, control of the center, and punishing premature queen moves. Morphy's brilliant tactical finish has been studied by chess students for over 160 years.`,
+                solution: `17. Rxd7!! Rxd7 18. Rd1! (pinning the rook) Qe6 (trying to defend) 19. Bxd7+ Nxd7 20. Qb8+!! Nxb8 21. Rd8# - a spectacular sacrifice leading to a pure back rank mate. This position shows the climactic finish after Morphy's beautiful play.`,
+                turn: 'white'
+            },
+            {
+                id: 5,
+                title: "Lucena Position (c. 1497)",
+                objective: "White to move and win",
+                difficulty: "Easy",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', '.', 'k'],
+                    ['.', '.', '.', '.', 'R', '.', '.', '.'],
+                    ['.', '.', '.', '.', 'K', 'P', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', 'r'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.']
+                ],
+                history: `Named after Luis Ramírez de Lucena, a Spanish chess player who published one of the earliest chess books in 1497. Though the position may predate Lucena's work, it has been named after him and his pioneering chess manual "Repetición de Amores y Arte de Ajedrez."`,
+                significance: `The Lucena position is the most important winning position in rook endgames. Every serious chess player must know this technique. It demonstrates the "building a bridge" method, where the attacking rook creates a shield for the king against checks. This is fundamental endgame knowledge that has been taught for over 500 years.`,
+                solution: `The winning plan is: 1. Re4! (building the bridge) ...Rh1+ 2. Kg7 Rg1+ 3. Kf6 Rf1+ 4. Kg5 Rg1+ 5. Rg4 (the bridge is complete, blocking checks) and the pawn will promote. The key concept is using the rook to shield the king from checks while advancing the pawn.`,
+                turn: 'white'
+            }
+        ];
+
+        class ChessGame {
+            constructor() {
+                this.currentProblem = null;
+                this.board = this.createEmptyBoard();
+                this.currentPlayer = 'white';
+                this.selectedSquare = null;
+                this.moveHistory = [];
+                this.isFlipped = false;
+                this.difficulty = 3;
+                this.enPassantTarget = null;
+                this.castlingRights = {
+                    white: { kingside: false, queenside: false },
+                    black: { kingside: false, queenside: false }
+                };
+                this.halfMoveClock = 0;
+                this.fullMoveNumber = 1;
+                this.gameOver = false;
+                this.lastMove = null;
+
+                this.pieceValues = {
+                    'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000
+                };
+
+                this.pst = this.createPieceSquareTables();
+
+                this.initBoard();
+                this.initProblemSelector();
+            }
+
+            createEmptyBoard() {
+                return Array(8).fill(null).map(() => Array(8).fill('.'));
+            }
+
+            createPieceSquareTables() {
+                const pawnTable = [
+                    [0,  0,  0,  0,  0,  0,  0,  0],
+                    [50, 50, 50, 50, 50, 50, 50, 50],
+                    [10, 10, 20, 30, 30, 20, 10, 10],
+                    [5,  5, 10, 25, 25, 10,  5,  5],
+                    [0,  0,  0, 20, 20,  0,  0,  0],
+                    [5, -5,-10,  0,  0,-10, -5,  5],
+                    [5, 10, 10,-20,-20, 10, 10,  5],
+                    [0,  0,  0,  0,  0,  0,  0,  0]
+                ];
+
+                const knightTable = [
+                    [-50,-40,-30,-30,-30,-30,-40,-50],
+                    [-40,-20,  0,  0,  0,  0,-20,-40],
+                    [-30,  0, 10, 15, 15, 10,  0,-30],
+                    [-30,  5, 15, 20, 20, 15,  5,-30],
+                    [-30,  0, 15, 20, 20, 15,  0,-30],
+                    [-30,  5, 10, 15, 15, 10,  5,-30],
+                    [-40,-20,  0,  5,  5,  0,-20,-40],
+                    [-50,-40,-30,-30,-30,-30,-40,-50]
+                ];
+
+                const bishopTable = [
+                    [-20,-10,-10,-10,-10,-10,-10,-20],
+                    [-10,  0,  0,  0,  0,  0,  0,-10],
+                    [-10,  0,  5, 10, 10,  5,  0,-10],
+                    [-10,  5,  5, 10, 10,  5,  5,-10],
+                    [-10,  0, 10, 10, 10, 10,  0,-10],
+                    [-10, 10, 10, 10, 10, 10, 10,-10],
+                    [-10,  5,  0,  0,  0,  0,  5,-10],
+                    [-20,-10,-10,-10,-10,-10,-10,-20]
+                ];
+
+                const rookTable = [
+                    [0,  0,  0,  0,  0,  0,  0,  0],
+                    [5, 10, 10, 10, 10, 10, 10,  5],
+                    [-5,  0,  0,  0,  0,  0,  0, -5],
+                    [-5,  0,  0,  0,  0,  0,  0, -5],
+                    [-5,  0,  0,  0,  0,  0,  0, -5],
+                    [-5,  0,  0,  0,  0,  0,  0, -5],
+                    [-5,  0,  0,  0,  0,  0,  0, -5],
+                    [0,  0,  0,  5,  5,  0,  0,  0]
+                ];
+
+                const queenTable = [
+                    [-20,-10,-10, -5, -5,-10,-10,-20],
+                    [-10,  0,  0,  0,  0,  0,  0,-10],
+                    [-10,  0,  5,  5,  5,  5,  0,-10],
+                    [-5,  0,  5,  5,  5,  5,  0, -5],
+                    [0,  0,  5,  5,  5,  5,  0, -5],
+                    [-10,  5,  5,  5,  5,  5,  0,-10],
+                    [-10,  0,  5,  0,  0,  0,  0,-10],
+                    [-20,-10,-10, -5, -5,-10,-10,-20]
+                ];
+
+                const kingMiddleTable = [
+                    [-30,-40,-40,-50,-50,-40,-40,-30],
+                    [-30,-40,-40,-50,-50,-40,-40,-30],
+                    [-30,-40,-40,-50,-50,-40,-40,-30],
+                    [-30,-40,-40,-50,-50,-40,-40,-30],
+                    [-20,-30,-30,-40,-40,-30,-30,-20],
+                    [-10,-20,-20,-20,-20,-20,-20,-10],
+                    [20, 20,  0,  0,  0,  0, 20, 20],
+                    [20, 30, 10,  0,  0, 10, 30, 20]
+                ];
+
+                return {
+                    'p': pawnTable,
+                    'n': knightTable,
+                    'b': bishopTable,
+                    'r': rookTable,
+                    'q': queenTable,
+                    'k': kingMiddleTable
+                };
+            }
+
+            initProblemSelector() {
+                const selector = document.getElementById('problemSelector');
+                selector.innerHTML = '';
+
+                CHESS_PROBLEMS.forEach(problem => {
+                    const button = document.createElement('button');
+                    button.textContent = `${problem.id}. ${problem.title}`;
+                    button.onclick = () => this.loadProblem(problem.id);
+                    selector.appendChild(button);
+                });
+            }
+
+            loadProblem(problemId) {
+                const problem = CHESS_PROBLEMS.find(p => p.id === problemId);
+                if (!problem) return;
+
+                this.currentProblem = problem;
+                this.board = problem.board.map(row => [...row]);
+                this.currentPlayer = problem.turn;
+                this.moveHistory = [];
+                this.selectedSquare = null;
+                this.gameOver = false;
+                this.lastMove = null;
+
+                // Update UI
+                document.querySelectorAll('.problem-selector button').forEach((btn, index) => {
+                    btn.classList.toggle('active', index === problemId - 1);
+                });
+
+                this.displayProblemInfo();
+                this.updateDisplay();
+            }
+
+            displayProblemInfo() {
+                const infoEl = document.getElementById('problemInfo');
+                const problem = this.currentProblem;
+
+                let html = `
+                    <div class="objective">${problem.objective}</div>
+                    <h4>Historical Background</h4>
+                    <p>${problem.history}</p>
+                    <h4>Significance</h4>
+                    <p>${problem.significance}</p>
+                `;
+
+                infoEl.innerHTML = html;
+            }
+
+            showSolution() {
+                if (!this.currentProblem) {
+                    alert('Please select a problem first!');
+                    return;
+                }
+
+                const infoEl = document.getElementById('problemInfo');
+                const currentHtml = infoEl.innerHTML;
+
+                if (currentHtml.includes('solution-section')) {
+                    // Already showing, hide it
+                    this.displayProblemInfo();
+                } else {
+                    // Show solution
+                    infoEl.innerHTML = currentHtml + `
+                        <div class="solution-section">
+                            <h4>Solution</h4>
+                            <p>${this.currentProblem.solution}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resetProblem() {
+                if (this.currentProblem) {
+                    this.loadProblem(this.currentProblem.id);
+                } else {
+                    alert('Please select a problem first!');
+                }
+            }
+
+            initBoard() {
+                const boardEl = document.getElementById('board');
+                boardEl.innerHTML = '';
+
+                for (let displayRow = 0; displayRow < 8; displayRow++) {
+                    for (let displayCol = 0; displayCol < 8; displayCol++) {
+                        const row = this.isFlipped ? 7 - displayRow : displayRow;
+                        const col = this.isFlipped ? 7 - displayCol : displayCol;
+
+                        const square = document.createElement('div');
+                        square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+
+                        if ((this.isFlipped && displayCol === 0) || (!this.isFlipped && displayCol === 7)) {
+                            const rankCoord = document.createElement('span');
+                            rankCoord.className = 'coords coord-rank';
+                            rankCoord.textContent = 8 - row;
+                            square.appendChild(rankCoord);
+                        }
+                        if ((this.isFlipped && displayRow === 0) || (!this.isFlipped && displayRow === 7)) {
+                            const fileCoord = document.createElement('span');
+                            fileCoord.className = 'coords coord-file';
+                            fileCoord.textContent = String.fromCharCode(97 + col);
+                            square.appendChild(fileCoord);
+                        }
+
+                        square.addEventListener('click', () => this.handleSquareClick(row, col));
+                        square.addEventListener('dragover', (e) => e.preventDefault());
+                        square.addEventListener('drop', (e) => this.handleDrop(e, row, col));
+
+                        boardEl.appendChild(square);
+                    }
+                }
+
+                this.renderPieces();
+            }
+
+            renderPieces() {
+                const squares = document.querySelectorAll('.square');
+
+                squares.forEach(square => {
+                    const row = parseInt(square.dataset.row);
+                    const col = parseInt(square.dataset.col);
+                    const piece = this.board[row][col];
+
+                    const existingPiece = square.querySelector('.piece');
+                    if (existingPiece) {
+                        existingPiece.remove();
+                    }
+
+                    if (piece !== '.') {
+                        const pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        pieceEl.textContent = this.getPieceUnicode(piece);
+                        pieceEl.draggable = !this.gameOver && this.isPlayerPiece(piece);
+
+                        pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, row, col));
+                        pieceEl.addEventListener('dragend', () => this.handleDragEnd());
+
+                        square.appendChild(pieceEl);
+                    }
+                });
+            }
+
+            getPieceUnicode(piece) {
+                const pieces = {
+                    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+                    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+                };
+                return pieces[piece] || '';
+            }
+
+            isPlayerPiece(piece) {
+                if (this.currentPlayer === 'white') {
+                    return piece === piece.toUpperCase();
+                } else {
+                    return piece === piece.toLowerCase();
+                }
+            }
+
+            handleSquareClick(row, col) {
+                if (this.gameOver || !this.currentProblem) return;
+
+                const piece = this.board[row][col];
+
+                if (this.selectedSquare) {
+                    const [selectedRow, selectedCol] = this.selectedSquare;
+
+                    if (row === selectedRow && col === selectedCol) {
+                        this.clearSelection();
+                        return;
+                    }
+
+                    const legalMoves = this.getPseudoLegalMovesForPiece(selectedRow, selectedCol);
+                    const fullMove = legalMoves.find(m =>
+                        m.to[0] === row && m.to[1] === col
+                    ) || { from: [selectedRow, selectedCol], to: [row, col] };
+
+                    if (this.isLegalMove(fullMove)) {
+                        this.makeMove(fullMove);
+                        this.clearSelection();
+
+                        if (!this.gameOver && this.currentPlayer === 'black') {
+                            setTimeout(() => this.makeAIMove(), 1500);
+                        }
+                    } else if (piece !== '.' && this.isPlayerPiece(piece)) {
+                        this.selectedSquare = [row, col];
+                        this.highlightLegalMoves(row, col);
+                    } else {
+                        this.clearSelection();
+                    }
+                } else if (piece !== '.' && this.isPlayerPiece(piece)) {
+                    this.selectedSquare = [row, col];
+                    this.highlightLegalMoves(row, col);
+                }
+            }
+
+            handleDragStart(e, row, col) {
+                if (!this.isPlayerPiece(this.board[row][col])) {
+                    e.preventDefault();
+                    return;
+                }
+
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', `${row},${col}`);
+                this.selectedSquare = [row, col];
+                e.target.classList.add('dragging');
+                this.highlightLegalMoves(row, col);
+            }
+
+            handleDragEnd() {
+                document.querySelectorAll('.piece').forEach(p => p.classList.remove('dragging'));
+            }
+
+            handleDrop(e, row, col) {
+                e.preventDefault();
+                const data = e.dataTransfer.getData('text/plain');
+                const [fromRow, fromCol] = data.split(',').map(Number);
+
+                const legalMoves = this.getPseudoLegalMovesForPiece(fromRow, fromCol);
+                const fullMove = legalMoves.find(m =>
+                    m.to[0] === row && m.to[1] === col
+                ) || { from: [fromRow, fromCol], to: [row, col] };
+
+                if (this.isLegalMove(fullMove)) {
+                    this.makeMove(fullMove);
+
+                    if (!this.gameOver && this.currentPlayer === 'black') {
+                        setTimeout(() => this.makeAIMove(), 1500);
+                    }
+                }
+
+                this.clearSelection();
+            }
+
+            highlightLegalMoves(row, col) {
+                this.clearHighlights();
+
+                const squares = document.querySelectorAll('.square');
+                squares[row * 8 + col].classList.add('selected');
+
+                const legalMoves = this.getLegalMovesForPiece(row, col);
+
+                legalMoves.forEach(move => {
+                    const [toRow, toCol] = move.to;
+                    const square = squares[toRow * 8 + toCol];
+
+                    if (this.board[toRow][toCol] !== '.') {
+                        square.classList.add('legal-capture');
+                    } else {
+                        square.classList.add('legal-move');
+                    }
+                });
+            }
+
+            clearSelection() {
+                this.selectedSquare = null;
+                this.clearHighlights();
+            }
+
+            clearHighlights() {
+                document.querySelectorAll('.square').forEach(square => {
+                    square.classList.remove('selected', 'legal-move', 'legal-capture', 'highlighted', 'last-move');
+                });
+
+                if (this.lastMove) {
+                    const squares = document.querySelectorAll('.square');
+                    const [fromRow, fromCol] = this.lastMove.from;
+                    const [toRow, toCol] = this.lastMove.to;
+                    squares[fromRow * 8 + fromCol].classList.add('last-move');
+                    squares[toRow * 8 + toCol].classList.add('last-move');
+                }
+
+                if (this.isInCheck(this.currentPlayer)) {
+                    const kingPos = this.findKing(this.currentPlayer);
+                    if (kingPos) {
+                        const [row, col] = kingPos;
+                        const squares = document.querySelectorAll('.square');
+                        squares[row * 8 + col].classList.add('check');
+                    }
+                }
+            }
+
+            getPseudoLegalMovesForPiece(row, col) {
+                const moves = [];
+                const piece = this.board[row][col].toLowerCase();
+
+                if (piece === 'p') {
+                    this.addPawnMoves(moves, row, col);
+                } else if (piece === 'n') {
+                    this.addKnightMoves(moves, row, col);
+                } else if (piece === 'b') {
+                    this.addSlidingMoves(moves, row, col, [[1,1],[1,-1],[-1,1],[-1,-1]]);
+                } else if (piece === 'r') {
+                    this.addSlidingMoves(moves, row, col, [[1,0],[-1,0],[0,1],[0,-1]]);
+                } else if (piece === 'q') {
+                    this.addSlidingMoves(moves, row, col, [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
+                } else if (piece === 'k') {
+                    this.addSingleStepMoves(moves, row, col, [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
+                }
+
+                return moves;
+            }
+
+            getLegalMovesForPiece(row, col) {
+                const pseudoLegalMoves = this.getPseudoLegalMovesForPiece(row, col);
+
+                return pseudoLegalMoves.filter(move => {
+                    const testBoard = this.copyBoard();
+                    this.applyMoveToBoard(testBoard, move);
+                    return !this.isBoardInCheck(testBoard, this.currentPlayer);
+                });
+            }
+
+            addPawnMoves(moves, row, col) {
+                const piece = this.board[row][col];
+                const direction = piece === piece.toUpperCase() ? -1 : 1;
+                const startRow = piece === piece.toUpperCase() ? 6 : 1;
+
+                if (this.isValidSquare(row + direction, col) && this.board[row + direction][col] === '.') {
+                    moves.push({ from: [row, col], to: [row + direction, col] });
+
+                    if (row === startRow && this.board[row + 2 * direction][col] === '.') {
+                        moves.push({ from: [row, col], to: [row + 2 * direction, col] });
+                    }
+                }
+
+                for (const dcol of [-1, 1]) {
+                    const newRow = row + direction;
+                    const newCol = col + dcol;
+
+                    if (this.isValidSquare(newRow, newCol)) {
+                        const target = this.board[newRow][newCol];
+
+                        if (target !== '.' && this.isOpponentPiece(target, piece)) {
+                            moves.push({ from: [row, col], to: [newRow, newCol] });
+                        }
+
+                        if (this.enPassantTarget && this.enPassantTarget[0] === newRow && this.enPassantTarget[1] === newCol) {
+                            moves.push({ from: [row, col], to: [newRow, newCol], enPassant: true });
+                        }
+                    }
+                }
+            }
+
+            addKnightMoves(moves, row, col) {
+                const offsets = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+
+                for (const [dr, dc] of offsets) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+
+                    if (this.isValidSquare(newRow, newCol)) {
+                        const target = this.board[newRow][newCol];
+                        if (target === '.' || this.isOpponentPiece(target, this.board[row][col])) {
+                            moves.push({ from: [row, col], to: [newRow, newCol] });
+                        }
+                    }
+                }
+            }
+
+            addSlidingMoves(moves, row, col, directions) {
+                for (const [dr, dc] of directions) {
+                    let newRow = row + dr;
+                    let newCol = col + dc;
+
+                    while (this.isValidSquare(newRow, newCol)) {
+                        const target = this.board[newRow][newCol];
+
+                        if (target === '.') {
+                            moves.push({ from: [row, col], to: [newRow, newCol] });
+                        } else {
+                            if (this.isOpponentPiece(target, this.board[row][col])) {
+                                moves.push({ from: [row, col], to: [newRow, newCol] });
+                            }
+                            break;
+                        }
+
+                        newRow += dr;
+                        newCol += dc;
+                    }
+                }
+            }
+
+            addSingleStepMoves(moves, row, col, directions) {
+                for (const [dr, dc] of directions) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+
+                    if (this.isValidSquare(newRow, newCol)) {
+                        const target = this.board[newRow][newCol];
+                        if (target === '.' || this.isOpponentPiece(target, this.board[row][col])) {
+                            moves.push({ from: [row, col], to: [newRow, newCol] });
+                        }
+                    }
+                }
+            }
+
+            isValidSquare(row, col) {
+                return row >= 0 && row < 8 && col >= 0 && col < 8;
+            }
+
+            isOpponentPiece(piece1, piece2) {
+                return (piece1 === piece1.toUpperCase()) !== (piece2 === piece2.toUpperCase());
+            }
+
+            isLegalMove(move) {
+                const [fromRow, fromCol] = move.from;
+                const [toRow, toCol] = move.to;
+
+                if (!this.isValidSquare(toRow, toCol)) return false;
+
+                const piece = this.board[fromRow][fromCol];
+                if (piece === '.') return false;
+                if (!this.isPlayerPiece(piece)) return false;
+
+                const possibleMoves = this.getPseudoLegalMovesForPiece(fromRow, fromCol);
+                const moveExists = possibleMoves.some(m =>
+                    m.to[0] === toRow && m.to[1] === toCol
+                );
+
+                if (!moveExists) return false;
+
+                const testBoard = this.copyBoard();
+                this.applyMoveToBoard(testBoard, move);
+
+                return !this.isBoardInCheck(testBoard, this.currentPlayer);
+            }
+
+            makeMove(move, isRedo = false) {
+                const [fromRow, fromCol] = move.from;
+                const [toRow, toCol] = move.to;
+                const piece = this.board[fromRow][fromCol];
+                const capturedPiece = this.board[toRow][toCol];
+
+                const moveData = {
+                    from: move.from,
+                    to: move.to,
+                    piece: piece,
+                    captured: capturedPiece,
+                    enPassantTarget: this.enPassantTarget,
+                    halfMoveClock: this.halfMoveClock
+                };
+
+                if (move.enPassant) {
+                    const captureRow = this.currentPlayer === 'white' ? toRow + 1 : toRow - 1;
+                    moveData.captured = this.board[captureRow][toCol];
+                    this.board[captureRow][toCol] = '.';
+                    moveData.enPassant = true;
+                }
+
+                this.board[toRow][toCol] = piece;
+                this.board[fromRow][fromCol] = '.';
+
+                this.enPassantTarget = null;
+                if (piece.toLowerCase() === 'p' && Math.abs(toRow - fromRow) === 2) {
+                    this.enPassantTarget = [fromRow + (toRow - fromRow) / 2, toCol];
+                }
+
+                if (piece.toLowerCase() === 'p' && (toRow === 0 || toRow === 7)) {
+                    this.board[toRow][toCol] = this.currentPlayer === 'white' ? 'Q' : 'q';
+                    moveData.promotion = true;
+                }
+
+                if (piece.toLowerCase() === 'p' || capturedPiece !== '.') {
+                    this.halfMoveClock = 0;
+                } else {
+                    this.halfMoveClock++;
+                }
+
+                this.moveHistory.push(moveData);
+                this.lastMove = move;
+
+                this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white';
+
+                if (this.currentPlayer === 'white') {
+                    this.fullMoveNumber++;
+                }
+
+                this.updateDisplay();
+                this.checkGameEnd();
+            }
+
+            applyMoveToBoard(board, move) {
+                const [fromRow, fromCol] = move.from;
+                const [toRow, toCol] = move.to;
+
+                board[toRow][toCol] = board[fromRow][fromCol];
+                board[fromRow][fromCol] = '.';
+
+                if (move.enPassant) {
+                    const captureRow = board[toRow][toCol] === board[toRow][toCol].toUpperCase() ? toRow + 1 : toRow - 1;
+                    board[captureRow][toCol] = '.';
+                }
+            }
+
+            copyBoard() {
+                return this.board.map(row => [...row]);
+            }
+
+            isInCheck(color) {
+                return this.isBoardInCheck(this.board, color);
+            }
+
+            isBoardInCheck(board, color) {
+                const kingPos = this.findKingOnBoard(board, color);
+                if (!kingPos) return false;
+
+                const [kingRow, kingCol] = kingPos;
+                return this.isSquareUnderAttackOnBoard(board, kingRow, kingCol, color);
+            }
+
+            findKing(color) {
+                return this.findKingOnBoard(this.board, color);
+            }
+
+            findKingOnBoard(board, color) {
+                const king = color === 'white' ? 'K' : 'k';
+
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (board[row][col] === king) {
+                            return [row, col];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            isSquareUnderAttackOnBoard(board, row, col, defendingColor) {
+                const attackingColor = defendingColor === 'white' ? 'black' : 'white';
+
+                const pawnDir = attackingColor === 'white' ? -1 : 1;
+                const attackingPawn = attackingColor === 'white' ? 'P' : 'p';
+
+                for (const dcol of [-1, 1]) {
+                    const newRow = row + pawnDir;
+                    const newCol = col + dcol;
+                    if (this.isValidSquare(newRow, newCol) && board[newRow][newCol] === attackingPawn) {
+                        return true;
+                    }
+                }
+
+                const knightOffsets = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+                const attackingKnight = attackingColor === 'white' ? 'N' : 'n';
+
+                for (const [dr, dc] of knightOffsets) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (this.isValidSquare(newRow, newCol) && board[newRow][newCol] === attackingKnight) {
+                        return true;
+                    }
+                }
+
+                const directions = {
+                    bishop: [[1,1],[1,-1],[-1,1],[-1,-1]],
+                    rook: [[1,0],[-1,0],[0,1],[0,-1]]
+                };
+
+                const attackingBishop = attackingColor === 'white' ? 'B' : 'b';
+                const attackingRook = attackingColor === 'white' ? 'R' : 'r';
+                const attackingQueen = attackingColor === 'white' ? 'Q' : 'q';
+
+                for (const [dr, dc] of directions.bishop) {
+                    let newRow = row + dr;
+                    let newCol = col + dc;
+
+                    while (this.isValidSquare(newRow, newCol)) {
+                        const piece = board[newRow][newCol];
+                        if (piece !== '.') {
+                            if (piece === attackingBishop || piece === attackingQueen) {
+                                return true;
+                            }
+                            break;
+                        }
+                        newRow += dr;
+                        newCol += dc;
+                    }
+                }
+
+                for (const [dr, dc] of directions.rook) {
+                    let newRow = row + dr;
+                    let newCol = col + dc;
+
+                    while (this.isValidSquare(newRow, newCol)) {
+                        const piece = board[newRow][newCol];
+                        if (piece !== '.') {
+                            if (piece === attackingRook || piece === attackingQueen) {
+                                return true;
+                            }
+                            break;
+                        }
+                        newRow += dr;
+                        newCol += dc;
+                    }
+                }
+
+                const attackingKing = attackingColor === 'white' ? 'K' : 'k';
+                const kingOffsets = [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+
+                for (const [dr, dc] of kingOffsets) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (this.isValidSquare(newRow, newCol) && board[newRow][newCol] === attackingKing) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            getAllLegalMoves(color) {
+                const moves = [];
+
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        if (piece !== '.') {
+                            const pieceColor = piece === piece.toUpperCase() ? 'white' : 'black';
+                            if (pieceColor === color) {
+                                const pieceMoves = this.getLegalMovesForPiece(row, col);
+                                moves.push(...pieceMoves);
+                            }
+                        }
+                    }
+                }
+
+                return moves;
+            }
+
+            checkGameEnd() {
+                const legalMoves = this.getAllLegalMoves(this.currentPlayer);
+
+                if (legalMoves.length === 0) {
+                    if (this.isInCheck(this.currentPlayer)) {
+                        this.gameOver = true;
+                        const winner = this.currentPlayer === 'white' ? 'Black' : 'White';
+                        this.updateStatus(`Checkmate! ${winner} wins!`);
+                    } else {
+                        this.gameOver = true;
+                        this.updateStatus('Stalemate! Game is a draw.');
+                    }
+                }
+            }
+
+            makeAIMove() {
+                if (this.gameOver || this.currentPlayer !== 'black') return;
+
+                document.getElementById('aiThinking').classList.add('active');
+
+                setTimeout(() => {
+                    const bestMove = this.findBestMove(this.difficulty);
+
+                    if (bestMove) {
+                        this.makeMove(bestMove);
+                    }
+
+                    document.getElementById('aiThinking').classList.remove('active');
+                }, 500);
+            }
+
+            findBestMove(depth) {
+                let bestMove = null;
+                let bestScore = -Infinity;
+                const moves = this.getAllLegalMoves('black');
+
+                for (let i = moves.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [moves[i], moves[j]] = [moves[j], moves[i]];
+                }
+
+                for (const move of moves) {
+                    const boardCopy = this.copyBoard();
+                    const savedState = this.saveState();
+
+                    this.applyMoveToBoard(this.board, move);
+                    const score = this.minimax(depth - 1, -Infinity, Infinity, false);
+
+                    this.restoreState(savedState);
+                    this.board = boardCopy;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = move;
+                    }
+                }
+
+                return bestMove;
+            }
+
+            minimax(depth, alpha, beta, isMaximizing) {
+                if (depth === 0) {
+                    return this.evaluatePosition();
+                }
+
+                const color = isMaximizing ? 'black' : 'white';
+                const moves = this.getAllLegalMoves(color);
+
+                if (moves.length === 0) {
+                    if (this.isInCheck(color)) {
+                        return isMaximizing ? -10000 : 10000;
+                    }
+                    return 0;
+                }
+
+                if (isMaximizing) {
+                    let maxScore = -Infinity;
+
+                    for (const move of moves) {
+                        const boardCopy = this.copyBoard();
+                        const savedState = this.saveState();
+
+                        this.applyMoveToBoard(this.board, move);
+                        const score = this.minimax(depth - 1, alpha, beta, false);
+
+                        this.restoreState(savedState);
+                        this.board = boardCopy;
+
+                        maxScore = Math.max(maxScore, score);
+                        alpha = Math.max(alpha, score);
+
+                        if (beta <= alpha) break;
+                    }
+
+                    return maxScore;
+                } else {
+                    let minScore = Infinity;
+
+                    for (const move of moves) {
+                        const boardCopy = this.copyBoard();
+                        const savedState = this.saveState();
+
+                        this.applyMoveToBoard(this.board, move);
+                        const score = this.minimax(depth - 1, alpha, beta, true);
+
+                        this.restoreState(savedState);
+                        this.board = boardCopy;
+
+                        minScore = Math.min(minScore, score);
+                        beta = Math.min(beta, score);
+
+                        if (beta <= alpha) break;
+                    }
+
+                    return minScore;
+                }
+            }
+
+            evaluatePosition() {
+                let score = 0;
+
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        if (piece !== '.') {
+                            const pieceValue = this.getPieceValue(piece, row, col);
+                            score += piece === piece.toUpperCase() ? -pieceValue : pieceValue;
+                        }
+                    }
+                }
+
+                return score;
+            }
+
+            getPieceValue(piece, row, col) {
+                const pieceLower = piece.toLowerCase();
+                const baseValue = this.pieceValues[pieceLower];
+
+                if (!this.pst[pieceLower]) return baseValue;
+
+                const tableRow = piece === piece.toUpperCase() ? 7 - row : row;
+                const positionValue = this.pst[pieceLower][tableRow][col];
+
+                return baseValue + positionValue;
+            }
+
+            saveState() {
+                return {
+                    currentPlayer: this.currentPlayer,
+                    enPassantTarget: this.enPassantTarget,
+                    halfMoveClock: this.halfMoveClock,
+                    fullMoveNumber: this.fullMoveNumber
+                };
+            }
+
+            restoreState(state) {
+                this.currentPlayer = state.currentPlayer;
+                this.enPassantTarget = state.enPassantTarget;
+                this.halfMoveClock = state.halfMoveClock;
+                this.fullMoveNumber = state.fullMoveNumber;
+            }
+
+            updateDisplay() {
+                this.renderPieces();
+                this.updateStatus();
+                this.updateMoveHistory();
+                this.clearHighlights();
+            }
+
+            updateStatus(message = null) {
+                const statusEl = document.getElementById('status');
+
+                if (message) {
+                    statusEl.textContent = message;
+                    return;
+                }
+
+                if (!this.currentProblem) {
+                    statusEl.textContent = 'Select a problem to begin';
+                    return;
+                }
+
+                if (this.isInCheck(this.currentPlayer)) {
+                    statusEl.textContent = `${this.currentPlayer === 'white' ? 'White' : 'Black'} is in check!`;
+                } else {
+                    statusEl.textContent = `${this.currentPlayer === 'white' ? 'White' : 'Black'} to move`;
+                }
+            }
+
+            updateMoveHistory() {
+                const historyEl = document.getElementById('moveHistory');
+                let html = '';
+
+                for (let i = 0; i < this.moveHistory.length; i += 2) {
+                    const moveNum = Math.floor(i / 2) + 1;
+                    const whiteMove = this.moveToAlgebraic(this.moveHistory[i]);
+                    const blackMove = i + 1 < this.moveHistory.length ? this.moveToAlgebraic(this.moveHistory[i + 1]) : '';
+
+                    html += `${moveNum}. ${whiteMove} ${blackMove}<br>`;
+                }
+
+                historyEl.innerHTML = html;
+                historyEl.scrollTop = historyEl.scrollHeight;
+            }
+
+            moveToAlgebraic(moveData) {
+                if (!moveData) return '';
+
+                const piece = moveData.piece.toUpperCase();
+                const [toRow, toCol] = moveData.to;
+                const file = String.fromCharCode(97 + toCol);
+                const rank = 8 - toRow;
+
+                let notation = '';
+
+                if (piece !== 'P') {
+                    notation += piece;
+                }
+
+                if (moveData.captured !== '.') {
+                    if (piece === 'P') {
+                        notation += String.fromCharCode(97 + moveData.from[1]);
+                    }
+                    notation += 'x';
+                }
+
+                notation += file + rank;
+
+                if (moveData.promotion) {
+                    notation += '=Q';
+                }
+
+                return notation;
+            }
+
+            undo() {
+                if (this.moveHistory.length === 0) return;
+
+                const lastMove = this.moveHistory.pop();
+
+                const [fromRow, fromCol] = lastMove.from;
+                const [toRow, toCol] = lastMove.to;
+
+                this.board[fromRow][fromCol] = lastMove.piece;
+                this.board[toRow][toCol] = lastMove.captured;
+
+                if (lastMove.enPassant) {
+                    const captureRow = this.currentPlayer === 'black' ? toRow + 1 : toRow - 1;
+                    this.board[captureRow][toCol] = lastMove.captured;
+                    this.board[toRow][toCol] = '.';
+                }
+
+                if (lastMove.promotion) {
+                    this.board[fromRow][fromCol] = lastMove.piece;
+                }
+
+                this.enPassantTarget = lastMove.enPassantTarget;
+                this.halfMoveClock = lastMove.halfMoveClock;
+
+                this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white';
+
+                if (this.currentPlayer === 'black') {
+                    this.fullMoveNumber--;
+                }
+
+                this.gameOver = false;
+                this.lastMove = this.moveHistory.length > 0 ? this.moveHistory[this.moveHistory.length - 1] : null;
+
+                this.updateDisplay();
+            }
+
+            flipBoard() {
+                this.isFlipped = !this.isFlipped;
+                this.initBoard();
+            }
+        }
+
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new ChessGame();
+        });
+    </script>
+</body>
+</html>
