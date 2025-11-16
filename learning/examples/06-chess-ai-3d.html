@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Chess with AI Opponent</title>
+    <title>True 3D Chess with AI Opponent</title>
     <style>
         * {
             margin: 0;
@@ -41,7 +41,7 @@
             gap: 30px;
             max-width: 1600px;
             width: 100%;
-            align-items: center;
+            align-items: flex-start;
             position: relative;
             z-index: 1;
         }
@@ -77,6 +77,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 20px;
             text-align: center;
             text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
@@ -118,565 +119,19 @@
             transform: none;
         }
 
-        .scene {
+        #canvas-container {
             width: 700px;
             height: 700px;
-            perspective: 1200px;
             margin: 20px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
 
-        .board-3d {
+        canvas {
+            display: block;
             width: 100%;
             height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(60deg) rotateZ(45deg);
-            transition: transform 0.6s ease;
-        }
-
-        .board-3d.flipped {
-            transform: rotateX(60deg) rotateZ(225deg);
-        }
-
-        .square-3d {
-            position: absolute;
-            width: 12.5%;
-            height: 12.5%;
-            transform-style: preserve-3d;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .square-3d:hover {
-            transform: translateZ(5px);
-        }
-
-        .square-top {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            transform: translateZ(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(0, 0, 0, 0.3);
-            box-shadow:
-                0 -2px 5px rgba(0, 0, 0, 0.3),
-                inset 0 0 20px rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .square-3d.light .square-top {
-            background: linear-gradient(135deg, #f0d9b5 0%, #e8d1ad 100%);
-        }
-
-        .square-3d.dark .square-top {
-            background: linear-gradient(135deg, #b58863 0%, #a77a5b 100%);
-        }
-
-        .square-bottom {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            background: rgba(0, 0, 0, 0.3);
-            transform: translateZ(0px);
-        }
-
-        .square-front {
-            width: 100%;
-            height: 10px;
-            position: absolute;
-            bottom: 0;
-            transform-origin: bottom;
-            transform: rotateX(90deg);
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-        }
-
-        .square-back {
-            width: 100%;
-            height: 10px;
-            position: absolute;
-            top: 0;
-            transform-origin: top;
-            transform: rotateX(-90deg);
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-        }
-
-        .square-left {
-            width: 10px;
-            height: 100%;
-            position: absolute;
-            left: 0;
-            transform-origin: left;
-            transform: rotateY(-90deg);
-            background: linear-gradient(to left, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-        }
-
-        .square-right {
-            width: 10px;
-            height: 100%;
-            position: absolute;
-            right: 0;
-            transform-origin: right;
-            transform: rotateY(90deg);
-            background: linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-        }
-
-        .piece-3d {
-            cursor: grab;
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
-            position: relative;
-            z-index: 10;
-            width: 50px;
-            height: 60px;
-            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
-            animation: floatIn 0.5s ease;
-        }
-
-        @keyframes floatIn {
-            from {
-                transform: translateZ(100px) scale(0);
-                opacity: 0;
-            }
-            to {
-                transform: translateZ(0) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .piece-3d:active {
-            cursor: grabbing;
-            transform: scale(1.2) translateZ(20px);
-        }
-
-        .piece-3d.dragging {
-            opacity: 0.5;
-        }
-
-        /* 3D Piece Components */
-        .piece-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 8px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
-            border-radius: 50%;
-            transform-style: preserve-3d;
-        }
-
-        .piece-body {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            transform-style: preserve-3d;
-        }
-
-        /* Pawn */
-        .pawn-body {
-            bottom: 8px;
-            width: 20px;
-            height: 35px;
-        }
-
-        .pawn-stem {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 20px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-            border-radius: 2px;
-        }
-
-        .pawn-head {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
-        }
-
-        /* Rook */
-        .rook-body {
-            bottom: 8px;
-            width: 24px;
-            height: 40px;
-        }
-
-        .rook-tower {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 30px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
-        }
-
-        .rook-battlement {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-        }
-
-        .rook-crenellation {
-            position: absolute;
-            top: 0;
-            width: 5px;
-            height: 6px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.2) 100%);
-        }
-
-        .rook-crenellation:nth-child(1) { left: 1px; }
-        .rook-crenellation:nth-child(2) { left: 8px; }
-        .rook-crenellation:nth-child(3) { right: 1px; }
-
-        /* Knight */
-        .knight-body {
-            bottom: 8px;
-            width: 22px;
-            height: 42px;
-        }
-
-        .knight-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 15px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
-            border-radius: 2px;
-        }
-
-        .knight-neck {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%) skewX(-5deg);
-            width: 10px;
-            height: 20px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-        }
-
-        .knight-head {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 16px;
-            height: 12px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 3px 3px 0 0;
-        }
-
-        .knight-ear {
-            position: absolute;
-            top: -3px;
-            right: 2px;
-            width: 4px;
-            height: 6px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 2px 2px 0 0;
-        }
-
-        /* Bishop */
-        .bishop-body {
-            bottom: 8px;
-            width: 22px;
-            height: 45px;
-        }
-
-        .bishop-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 12px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
-            border-radius: 2px;
-        }
-
-        .bishop-stem {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 10px;
-            height: 25px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-            clip-path: polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%);
-        }
-
-        .bishop-hat {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-        }
-
-        .bishop-tip {
-            position: absolute;
-            top: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 8px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 50%;
-        }
-
-        /* Queen */
-        .queen-body {
-            bottom: 8px;
-            width: 26px;
-            height: 50px;
-        }
-
-        .queen-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 22px;
-            height: 12px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
-            border-radius: 2px;
-        }
-
-        .queen-stem {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 28px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-        }
-
-        .queen-crown {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 12px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 2px;
-        }
-
-        .queen-spike {
-            position: absolute;
-            top: -6px;
-            width: 3px;
-            height: 8px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.2) 100%);
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-        }
-
-        .queen-spike:nth-child(1) { left: 2px; }
-        .queen-spike:nth-child(2) { left: 8.5px; }
-        .queen-spike:nth-child(3) { right: 2px; }
-
-        /* King */
-        .king-body {
-            bottom: 8px;
-            width: 26px;
-            height: 55px;
-        }
-
-        .king-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 22px;
-            height: 12px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
-            border-radius: 2px;
-        }
-
-        .king-stem {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 30px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
-            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
-        }
-
-        .king-crown {
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 2px;
-        }
-
-        .king-cross-v {
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 12px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(0,0,0,0.2) 100%);
-        }
-
-        .king-cross-h {
-            position: absolute;
-            top: 3px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 2px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(0,0,0,0.2) 100%);
-        }
-
-        /* Colors for pieces */
-        .piece-white .piece-base,
-        .piece-white .piece-body * {
-            filter: brightness(1.2);
-        }
-
-        .piece-white .pawn-stem,
-        .piece-white .rook-tower,
-        .piece-white .knight-base,
-        .piece-white .knight-neck,
-        .piece-white .bishop-base,
-        .piece-white .bishop-stem,
-        .piece-white .queen-base,
-        .piece-white .queen-stem,
-        .piece-white .king-base,
-        .piece-white .king-stem {
-            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 40%, #d8d8d8 100%);
-            box-shadow:
-                inset -2px -2px 4px rgba(0, 0, 0, 0.15),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.8);
-        }
-
-        .piece-white .pawn-head,
-        .piece-white .rook-battlement,
-        .piece-white .rook-crenellation,
-        .piece-white .knight-head,
-        .piece-white .knight-ear,
-        .piece-white .bishop-hat,
-        .piece-white .bishop-tip,
-        .piece-white .queen-crown,
-        .piece-white .queen-spike,
-        .piece-white .king-crown,
-        .piece-white .king-cross-v,
-        .piece-white .king-cross-h {
-            background: linear-gradient(135deg, #ffffff 0%, #ececec 50%, #d0d0d0 100%);
-            box-shadow:
-                inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-                inset 1px 1px 3px rgba(255, 255, 255, 0.9),
-                0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .piece-black .pawn-stem,
-        .piece-black .rook-tower,
-        .piece-black .knight-base,
-        .piece-black .knight-neck,
-        .piece-black .bishop-base,
-        .piece-black .bishop-stem,
-        .piece-black .queen-base,
-        .piece-black .queen-stem,
-        .piece-black .king-base,
-        .piece-black .king-stem {
-            background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 40%, #0a0a0a 100%);
-            box-shadow:
-                inset -2px -2px 4px rgba(0, 0, 0, 0.6),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.1);
-        }
-
-        .piece-black .pawn-head,
-        .piece-black .rook-battlement,
-        .piece-black .rook-crenellation,
-        .piece-black .knight-head,
-        .piece-black .knight-ear,
-        .piece-black .bishop-hat,
-        .piece-black .bishop-tip,
-        .piece-black .queen-crown,
-        .piece-black .queen-spike,
-        .piece-black .king-crown,
-        .piece-black .king-cross-v,
-        .piece-black .king-cross-h {
-            background: linear-gradient(135deg, #3a3a3a 0%, #252525 50%, #151515 100%);
-            box-shadow:
-                inset -1px -1px 3px rgba(0, 0, 0, 0.8),
-                inset 1px 1px 3px rgba(255, 255, 255, 0.15),
-                0 2px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        .square-3d.selected .square-top {
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.6), rgba(0, 200, 0, 0.6)) !important;
-            box-shadow:
-                0 0 20px rgba(0, 255, 0, 0.8),
-                inset 0 0 20px rgba(255, 255, 255, 0.3);
-            transform: translateZ(5px);
-        }
-
-        .square-3d.legal-move .square-top::after {
-            content: '';
-            position: absolute;
-            width: 35%;
-            height: 35%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(100, 200, 100, 0.8), rgba(50, 150, 50, 0.4));
-            box-shadow: 0 0 10px rgba(100, 200, 100, 0.6);
-        }
-
-        .square-3d.legal-capture .square-top::after {
-            content: '';
-            position: absolute;
-            width: 90%;
-            height: 90%;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 50, 50, 0.8);
-            box-shadow:
-                0 0 15px rgba(255, 50, 50, 0.6),
-                inset 0 0 15px rgba(255, 50, 50, 0.3);
-        }
-
-        .square-3d.check .square-top {
-            background: radial-gradient(circle, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.4)) !important;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(255, 0, 0, 1);
-            }
-        }
-
-        .square-3d.last-move .square-top {
-            background: linear-gradient(135deg, rgba(255, 255, 0, 0.5), rgba(200, 200, 0, 0.5)) !important;
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.6);
         }
 
         .status {
@@ -857,28 +312,10 @@
             background: #764ba2;
         }
 
-        .coords-3d {
-            position: absolute;
-            font-size: 10px;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.6);
-            text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
-            z-index: 5;
-        }
-
-        .coord-file {
-            bottom: 2px;
-            right: 4px;
-        }
-
-        .coord-rank {
-            top: 2px;
-            left: 4px;
-        }
-
         @media (max-width: 1400px) {
             .container {
                 flex-direction: column;
+                align-items: center;
             }
 
             .side-panel {
@@ -887,22 +324,16 @@
                 max-width: 700px;
             }
 
-            .scene {
+            #canvas-container {
                 width: 600px;
                 height: 600px;
             }
         }
 
         @media (max-width: 700px) {
-            .scene {
+            #canvas-container {
                 width: 90vw;
                 height: 90vw;
-            }
-
-            .piece-3d {
-                width: 35px;
-                height: 45px;
-                transform: scale(0.8);
             }
 
             h1 {
@@ -914,31 +345,18 @@
                 font-size: 12px;
             }
         }
-
-        /* Lighting effects */
-        .board-3d::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
-            pointer-events: none;
-            transform: translateZ(100px);
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="game-panel">
-            <h1>3D Chess AI</h1>
+            <h1>True 3D Chess AI</h1>
 
             <div class="controls">
                 <button onclick="game.newGame()">New Game</button>
                 <button onclick="game.undo()">Undo</button>
                 <button onclick="game.redo()">Redo</button>
-                <button onclick="game.flipBoard()">Flip Board</button>
+                <button onclick="game.toggleRotation()">Toggle Rotation</button>
                 <button onclick="game.saveGame()">Save</button>
                 <button onclick="game.loadGame()">Load</button>
                 <button onclick="game.exportPGN()">Export PGN</button>
@@ -951,9 +369,7 @@
 
             <div class="status" id="status">White to move</div>
 
-            <div class="scene">
-                <div id="board" class="board-3d"></div>
-            </div>
+            <div id="canvas-container"></div>
         </div>
 
         <div class="side-panel">
@@ -1013,16 +429,17 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
     <script>
-        class ChessGame {
+        class ChessGame3D {
             constructor() {
+                // Chess game state
                 this.board = this.createInitialBoard();
                 this.currentPlayer = 'white';
                 this.selectedSquare = null;
                 this.moveHistory = [];
                 this.redoStack = [];
                 this.capturedPieces = { white: [], black: [] };
-                this.isFlipped = false;
                 this.difficulty = 2;
                 this.enPassantTarget = null;
                 this.castlingRights = {
@@ -1038,6 +455,7 @@
                 this.whiteTime = 600;
                 this.blackTime = 600;
                 this.timerInterval = null;
+                this.autoRotate = false;
 
                 this.smackTalk = [
                     "You call that a move?",
@@ -1081,7 +499,30 @@
 
                 this.pst = this.createPieceSquareTables();
 
-                this.initBoard();
+                // 3D rendering
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.boardMeshes = [];
+                this.pieceMeshes = {};
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
+                this.highlightedSquares = [];
+                this.themes = {
+                    classic: { light: 0xf0d9b5, dark: 0xb58863 },
+                    blue: { light: 0xdee3e6, dark: 0x8ca2ad },
+                    green: { light: 0xffffdd, dark: 0x86a666 },
+                    purple: { light: 0xe8d4f1, dark: 0x9b59b6 },
+                    wood: { light: 0xf4e4c1, dark: 0x8b4513 },
+                    marble: { light: 0xffffff, dark: 0x708090 }
+                };
+                this.currentTheme = 'classic';
+
+                this.init3D();
+                this.createBoard();
+                this.createPieces();
+                this.setupEventListeners();
+                this.animate();
                 this.updateDisplay();
             }
 
@@ -1175,232 +616,423 @@
                 };
             }
 
-            initBoard() {
-                const boardEl = document.getElementById('board');
-                boardEl.innerHTML = '';
-                boardEl.className = this.isFlipped ? 'board-3d flipped' : 'board-3d';
+            init3D() {
+                const container = document.getElementById('canvas-container');
+                const width = 700;
+                const height = 700;
 
-                for (let displayRow = 0; displayRow < 8; displayRow++) {
-                    for (let displayCol = 0; displayCol < 8; displayCol++) {
-                        const row = this.isFlipped ? 7 - displayRow : displayRow;
-                        const col = this.isFlipped ? 7 - displayCol : displayCol;
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x1a1a2e);
 
-                        const square = document.createElement('div');
-                        square.className = 'square-3d ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
-                        square.dataset.row = row;
-                        square.dataset.col = col;
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                this.camera.position.set(12, 16, 12);
+                this.camera.lookAt(0, 0, 0);
 
-                        // Position the square in 3D space
-                        square.style.left = (displayCol * 12.5) + '%';
-                        square.style.top = (displayRow * 12.5) + '%';
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(width, height);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                container.appendChild(this.renderer.domElement);
 
-                        // Create 3D cube faces
-                        const top = document.createElement('div');
-                        top.className = 'square-top';
+                // Lights
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
 
-                        const bottom = document.createElement('div');
-                        bottom.className = 'square-bottom';
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 20, 10);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                directionalLight.shadow.camera.left = -15;
+                directionalLight.shadow.camera.right = 15;
+                directionalLight.shadow.camera.top = 15;
+                directionalLight.shadow.camera.bottom = -15;
+                this.scene.add(directionalLight);
 
-                        const front = document.createElement('div');
-                        front.className = 'square-front';
+                const fillLight = new THREE.DirectionalLight(0x667eea, 0.3);
+                fillLight.position.set(-10, 10, -10);
+                this.scene.add(fillLight);
 
-                        const back = document.createElement('div');
-                        back.className = 'square-back';
+                const rimLight = new THREE.DirectionalLight(0x764ba2, 0.3);
+                rimLight.position.set(0, 10, -15);
+                this.scene.add(rimLight);
+            }
 
-                        const left = document.createElement('div');
-                        left.className = 'square-left';
+            createBoard() {
+                const boardGroup = new THREE.Group();
+                const squareSize = 2;
+                const boardSize = 8;
 
-                        const right = document.createElement('div');
-                        right.className = 'square-right';
+                // Create board squares
+                for (let row = 0; row < boardSize; row++) {
+                    for (let col = 0; col < boardSize; col++) {
+                        const isLight = (row + col) % 2 === 0;
+                        const color = isLight ?
+                            this.themes[this.currentTheme].light :
+                            this.themes[this.currentTheme].dark;
 
-                        // Add coordinates
-                        if ((this.isFlipped && displayCol === 0) || (!this.isFlipped && displayCol === 7)) {
-                            const rankCoord = document.createElement('span');
-                            rankCoord.className = 'coords-3d coord-rank';
-                            rankCoord.textContent = 8 - row;
-                            top.appendChild(rankCoord);
-                        }
-                        if ((this.isFlipped && displayRow === 0) || (!this.isFlipped && displayRow === 7)) {
-                            const fileCoord = document.createElement('span');
-                            fileCoord.className = 'coords-3d coord-file';
-                            fileCoord.textContent = String.fromCharCode(97 + col);
-                            top.appendChild(fileCoord);
-                        }
+                        const geometry = new THREE.BoxGeometry(squareSize, 0.4, squareSize);
+                        const material = new THREE.MeshStandardMaterial({
+                            color: color,
+                            metalness: 0.2,
+                            roughness: 0.7
+                        });
+                        const square = new THREE.Mesh(geometry, material);
 
-                        square.appendChild(top);
-                        square.appendChild(bottom);
-                        square.appendChild(front);
-                        square.appendChild(back);
-                        square.appendChild(left);
-                        square.appendChild(right);
+                        square.position.x = (col - 3.5) * squareSize;
+                        square.position.z = (row - 3.5) * squareSize;
+                        square.position.y = -0.2;
 
-                        square.addEventListener('click', () => this.handleSquareClick(row, col));
-                        square.addEventListener('dragover', (e) => e.preventDefault());
-                        square.addEventListener('drop', (e) => this.handleDrop(e, row, col));
+                        square.receiveShadow = true;
+                        square.userData = { row, col, type: 'square' };
 
-                        boardEl.appendChild(square);
+                        boardGroup.add(square);
+                        this.boardMeshes.push(square);
                     }
                 }
 
-                this.renderPieces();
-            }
-
-            renderPieces() {
-                const squares = document.querySelectorAll('.square-3d');
-
-                squares.forEach(square => {
-                    const row = parseInt(square.dataset.row);
-                    const col = parseInt(square.dataset.col);
-                    const piece = this.board[row][col];
-
-                    const top = square.querySelector('.square-top');
-                    const existingPiece = top.querySelector('.piece-3d');
-                    if (existingPiece) {
-                        existingPiece.remove();
-                    }
-
-                    if (piece !== '.') {
-                        const pieceEl = this.create3DPiece(piece);
-                        pieceEl.draggable = !this.gameOver && this.isPlayerPiece(piece);
-
-                        pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, row, col));
-                        pieceEl.addEventListener('dragend', () => this.handleDragEnd());
-
-                        top.appendChild(pieceEl);
-                    }
+                // Add board border
+                const borderGeometry = new THREE.BoxGeometry(boardSize * squareSize + 1, 0.6, boardSize * squareSize + 1);
+                const borderMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2a2a2a,
+                    metalness: 0.4,
+                    roughness: 0.6
                 });
+                const border = new THREE.Mesh(borderGeometry, borderMaterial);
+                border.position.y = -0.5;
+                border.receiveShadow = true;
+                boardGroup.add(border);
+
+                this.scene.add(boardGroup);
             }
 
-            create3DPiece(piece) {
-                const pieceEl = document.createElement('div');
-                const isWhite = piece === piece.toUpperCase();
-                const pieceType = piece.toLowerCase();
+            create3DPiece(pieceType, isWhite) {
+                const group = new THREE.Group();
+                const color = isWhite ? 0xf0f0f0 : 0x2a2a2a;
+                const material = new THREE.MeshStandardMaterial({
+                    color: color,
+                    metalness: 0.3,
+                    roughness: 0.5
+                });
 
-                pieceEl.className = `piece-3d piece-${isWhite ? 'white' : 'black'}`;
+                const type = pieceType.toLowerCase();
 
-                // Create base for all pieces
-                const base = document.createElement('div');
-                base.className = 'piece-base';
-                pieceEl.appendChild(base);
+                // Base for all pieces
+                const baseGeometry = new THREE.CylinderGeometry(0.6, 0.7, 0.3, 32);
+                const base = new THREE.Mesh(baseGeometry, material);
+                base.position.y = 0.15;
+                base.castShadow = true;
+                group.add(base);
 
-                // Create piece-specific body
-                const body = document.createElement('div');
-                body.className = 'piece-body';
+                switch(type) {
+                    case 'p': // Pawn
+                        const pawnBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.35, 0.45, 1.2, 16),
+                            material
+                        );
+                        pawnBody.position.y = 0.9;
+                        pawnBody.castShadow = true;
+                        group.add(pawnBody);
 
-                switch(pieceType) {
-                    case 'p':
-                        body.className += ' pawn-body';
-                        const pawnStem = document.createElement('div');
-                        pawnStem.className = 'pawn-stem';
-                        const pawnHead = document.createElement('div');
-                        pawnHead.className = 'pawn-head';
-                        body.appendChild(pawnStem);
-                        body.appendChild(pawnHead);
+                        const pawnHead = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.35, 16, 16),
+                            material
+                        );
+                        pawnHead.position.y = 1.7;
+                        pawnHead.castShadow = true;
+                        group.add(pawnHead);
                         break;
 
-                    case 'r':
-                        body.className += ' rook-body';
-                        const rookTower = document.createElement('div');
-                        rookTower.className = 'rook-tower';
-                        const rookBattlement = document.createElement('div');
-                        rookBattlement.className = 'rook-battlement';
-                        for (let i = 0; i < 3; i++) {
-                            const cren = document.createElement('div');
-                            cren.className = 'rook-crenellation';
-                            rookBattlement.appendChild(cren);
+                    case 'r': // Rook
+                        const rookBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.45, 0.5, 1.5, 16),
+                            material
+                        );
+                        rookBody.position.y = 1.05;
+                        rookBody.castShadow = true;
+                        group.add(rookBody);
+
+                        const rookTop = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.55, 0.5, 0.3, 16),
+                            material
+                        );
+                        rookTop.position.y = 1.95;
+                        rookTop.castShadow = true;
+                        group.add(rookTop);
+
+                        // Crenellations
+                        for (let i = 0; i < 4; i++) {
+                            const angle = (Math.PI / 2) * i;
+                            const cren = new THREE.Mesh(
+                                new THREE.BoxGeometry(0.25, 0.4, 0.25),
+                                material
+                            );
+                            cren.position.y = 2.3;
+                            cren.position.x = Math.cos(angle) * 0.4;
+                            cren.position.z = Math.sin(angle) * 0.4;
+                            cren.castShadow = true;
+                            group.add(cren);
                         }
-                        rookTower.appendChild(rookBattlement);
-                        body.appendChild(rookTower);
                         break;
 
-                    case 'n':
-                        body.className += ' knight-body';
-                        const knightBase = document.createElement('div');
-                        knightBase.className = 'knight-base';
-                        const knightNeck = document.createElement('div');
-                        knightNeck.className = 'knight-neck';
-                        const knightHead = document.createElement('div');
-                        knightHead.className = 'knight-head';
-                        const knightEar = document.createElement('div');
-                        knightEar.className = 'knight-ear';
-                        knightHead.appendChild(knightEar);
-                        body.appendChild(knightBase);
-                        body.appendChild(knightNeck);
-                        body.appendChild(knightHead);
+                    case 'n': // Knight
+                        const knightBase = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.4, 0.5, 0.8, 16),
+                            material
+                        );
+                        knightBase.position.y = 0.7;
+                        knightBase.castShadow = true;
+                        group.add(knightBase);
+
+                        const knightNeck = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.25, 0.35, 1.0, 16),
+                            material
+                        );
+                        knightNeck.position.y = 1.5;
+                        knightNeck.rotation.z = 0.3;
+                        knightNeck.castShadow = true;
+                        group.add(knightNeck);
+
+                        const knightHead = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.6, 0.5, 0.5),
+                            material
+                        );
+                        knightHead.position.y = 2.1;
+                        knightHead.position.x = 0.2;
+                        knightHead.castShadow = true;
+                        group.add(knightHead);
+
+                        // Ears
+                        const ear1 = new THREE.Mesh(
+                            new THREE.ConeGeometry(0.15, 0.3, 8),
+                            material
+                        );
+                        ear1.position.set(0.15, 2.4, -0.15);
+                        ear1.castShadow = true;
+                        group.add(ear1);
+
+                        const ear2 = new THREE.Mesh(
+                            new THREE.ConeGeometry(0.15, 0.3, 8),
+                            material
+                        );
+                        ear2.position.set(0.15, 2.4, 0.15);
+                        ear2.castShadow = true;
+                        group.add(ear2);
                         break;
 
-                    case 'b':
-                        body.className += ' bishop-body';
-                        const bishopBase = document.createElement('div');
-                        bishopBase.className = 'bishop-base';
-                        const bishopStem = document.createElement('div');
-                        bishopStem.className = 'bishop-stem';
-                        const bishopHat = document.createElement('div');
-                        bishopHat.className = 'bishop-hat';
-                        const bishopTip = document.createElement('div');
-                        bishopTip.className = 'bishop-tip';
-                        bishopHat.appendChild(bishopTip);
-                        body.appendChild(bishopBase);
-                        body.appendChild(bishopStem);
-                        body.appendChild(bishopHat);
+                    case 'b': // Bishop
+                        const bishopBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.35, 0.5, 1.5, 16),
+                            material
+                        );
+                        bishopBody.position.y = 1.05;
+                        bishopBody.castShadow = true;
+                        group.add(bishopBody);
+
+                        const bishopMid = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.45, 16, 16),
+                            material
+                        );
+                        bishopMid.position.y = 1.9;
+                        bishopMid.scale.y = 1.2;
+                        bishopMid.castShadow = true;
+                        group.add(bishopMid);
+
+                        const bishopTop = new THREE.Mesh(
+                            new THREE.ConeGeometry(0.3, 0.6, 16),
+                            material
+                        );
+                        bishopTop.position.y = 2.6;
+                        bishopTop.castShadow = true;
+                        group.add(bishopTop);
+
+                        const bishopBall = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.15, 16, 16),
+                            material
+                        );
+                        bishopBall.position.y = 3.0;
+                        bishopBall.castShadow = true;
+                        group.add(bishopBall);
+
+                        // Diagonal cut
+                        const cutGeometry = new THREE.TorusGeometry(0.25, 0.08, 8, 16);
+                        const cut = new THREE.Mesh(cutGeometry, material);
+                        cut.position.y = 2.6;
+                        cut.rotation.x = Math.PI / 2;
+                        cut.castShadow = true;
+                        group.add(cut);
                         break;
 
-                    case 'q':
-                        body.className += ' queen-body';
-                        const queenBase = document.createElement('div');
-                        queenBase.className = 'queen-base';
-                        const queenStem = document.createElement('div');
-                        queenStem.className = 'queen-stem';
-                        const queenCrown = document.createElement('div');
-                        queenCrown.className = 'queen-crown';
-                        for (let i = 0; i < 3; i++) {
-                            const spike = document.createElement('div');
-                            spike.className = 'queen-spike';
-                            queenCrown.appendChild(spike);
+                    case 'q': // Queen
+                        const queenBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.4, 0.55, 1.8, 16),
+                            material
+                        );
+                        queenBody.position.y = 1.2;
+                        queenBody.castShadow = true;
+                        group.add(queenBody);
+
+                        const queenMid = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.5, 16, 16),
+                            material
+                        );
+                        queenMid.position.y = 2.2;
+                        queenMid.scale.y = 1.3;
+                        queenMid.castShadow = true;
+                        group.add(queenMid);
+
+                        // Crown spikes
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (Math.PI / 4) * i;
+                            const spike = new THREE.Mesh(
+                                new THREE.ConeGeometry(0.12, 0.5, 8),
+                                material
+                            );
+                            spike.position.y = 3.0;
+                            spike.position.x = Math.cos(angle) * 0.35;
+                            spike.position.z = Math.sin(angle) * 0.35;
+                            spike.castShadow = true;
+                            group.add(spike);
                         }
-                        body.appendChild(queenBase);
-                        body.appendChild(queenStem);
-                        body.appendChild(queenCrown);
+
+                        const queenBall = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.2, 16, 16),
+                            material
+                        );
+                        queenBall.position.y = 3.3;
+                        queenBall.castShadow = true;
+                        group.add(queenBall);
                         break;
 
-                    case 'k':
-                        body.className += ' king-body';
-                        const kingBase = document.createElement('div');
-                        kingBase.className = 'king-base';
-                        const kingStem = document.createElement('div');
-                        kingStem.className = 'king-stem';
-                        const kingCrown = document.createElement('div');
-                        kingCrown.className = 'king-crown';
-                        const crossV = document.createElement('div');
-                        crossV.className = 'king-cross-v';
-                        const crossH = document.createElement('div');
-                        crossH.className = 'king-cross-h';
-                        kingCrown.appendChild(crossV);
-                        kingCrown.appendChild(crossH);
-                        body.appendChild(kingBase);
-                        body.appendChild(kingStem);
-                        body.appendChild(kingCrown);
+                    case 'k': // King
+                        const kingBody = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.45, 0.55, 2.0, 16),
+                            material
+                        );
+                        kingBody.position.y = 1.3;
+                        kingBody.castShadow = true;
+                        group.add(kingBody);
+
+                        const kingMid = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.5, 16, 16),
+                            material
+                        );
+                        kingMid.position.y = 2.4;
+                        kingMid.scale.y = 1.2;
+                        kingMid.castShadow = true;
+                        group.add(kingMid);
+
+                        // Cross
+                        const crossV = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.15, 0.8, 0.15),
+                            material
+                        );
+                        crossV.position.y = 3.3;
+                        crossV.castShadow = true;
+                        group.add(crossV);
+
+                        const crossH = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.6, 0.15, 0.15),
+                            material
+                        );
+                        crossH.position.y = 3.3;
+                        crossH.castShadow = true;
+                        group.add(crossH);
                         break;
                 }
 
-                pieceEl.appendChild(body);
-                return pieceEl;
+                return group;
             }
 
-            getPieceUnicode(piece) {
-                const pieces = {
-                    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-                    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
-                };
-                return pieces[piece] || '';
-            }
+            createPieces() {
+                // Clear existing pieces
+                Object.values(this.pieceMeshes).forEach(piece => {
+                    this.scene.remove(piece);
+                });
+                this.pieceMeshes = {};
 
-            isPlayerPiece(piece) {
-                if (this.currentPlayer === 'white') {
-                    return piece === piece.toUpperCase();
-                } else {
-                    return piece === piece.toLowerCase();
+                // Create pieces based on board state
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = this.board[row][col];
+                        if (piece !== '.') {
+                            const isWhite = piece === piece.toUpperCase();
+                            const pieceMesh = this.create3DPiece(piece, isWhite);
+
+                            pieceMesh.position.x = (col - 3.5) * 2;
+                            pieceMesh.position.z = (row - 3.5) * 2;
+                            pieceMesh.position.y = 0;
+
+                            pieceMesh.userData = { row, col, piece, type: 'piece' };
+
+                            this.scene.add(pieceMesh);
+                            this.pieceMeshes[`${row},${col}`] = pieceMesh;
+                        }
+                    }
                 }
+            }
+
+            setupEventListeners() {
+                this.renderer.domElement.addEventListener('click', (e) => this.onMouseClick(e));
+                this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
+            }
+
+            onMouseMove(event) {
+                const rect = this.renderer.domElement.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+
+                // Change cursor on hover
+                if (intersects.length > 0) {
+                    const object = this.findParentWithUserData(intersects[0].object);
+                    if (object && object.userData.type === 'piece' && !this.gameOver) {
+                        const piece = this.board[object.userData.row][object.userData.col];
+                        if (this.isPlayerPiece(piece)) {
+                            this.renderer.domElement.style.cursor = 'pointer';
+                            return;
+                        }
+                    } else if (object && object.userData.type === 'square' && this.selectedSquare) {
+                        this.renderer.domElement.style.cursor = 'pointer';
+                        return;
+                    }
+                }
+                this.renderer.domElement.style.cursor = 'default';
+            }
+
+            onMouseClick(event) {
+                if (this.gameOver) return;
+
+                const rect = this.renderer.domElement.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+
+                if (intersects.length > 0) {
+                    const object = this.findParentWithUserData(intersects[0].object);
+                    if (object && object.userData.row !== undefined) {
+                        this.handleSquareClick(object.userData.row, object.userData.col);
+                    }
+                }
+            }
+
+            findParentWithUserData(object) {
+                while (object) {
+                    if (object.userData && object.userData.row !== undefined) {
+                        return object;
+                    }
+                    object = object.parent;
+                }
+                return null;
             }
 
             handleSquareClick(row, col) {
@@ -1440,79 +1072,37 @@
                 }
             }
 
-            handleDragStart(e, row, col) {
-                if (!this.isPlayerPiece(this.board[row][col])) {
-                    e.preventDefault();
-                    return;
-                }
-
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', `${row},${col}`);
-                this.selectedSquare = [row, col];
-                e.target.classList.add('dragging');
-                this.highlightLegalMoves(row, col);
-            }
-
-            handleDragEnd() {
-                document.querySelectorAll('.piece-3d').forEach(p => p.classList.remove('dragging'));
-            }
-
-            handleDrop(e, row, col) {
-                e.preventDefault();
-                const data = e.dataTransfer.getData('text/plain');
-                const [fromRow, fromCol] = data.split(',').map(Number);
-
-                const legalMoves = this.getPseudoLegalMovesForPiece(fromRow, fromCol);
-                const fullMove = legalMoves.find(m =>
-                    m.to[0] === row && m.to[1] === col
-                ) || { from: [fromRow, fromCol], to: [row, col] };
-
-                if (this.isLegalMove(fullMove)) {
-                    this.makeMove(fullMove);
-
-                    if (!this.gameOver && this.currentPlayer === 'black') {
-                        setTimeout(() => this.makeAIMove(), 2000);
-                    }
-                }
-
-                this.clearSelection();
-            }
-
             highlightLegalMoves(row, col) {
                 this.clearHighlights();
 
-                const squares = document.querySelectorAll('.square-3d');
-                const squareIndex = this.getSquareIndex(row, col);
-                if (squareIndex >= 0) {
-                    squares[squareIndex].classList.add('selected');
-                }
-
                 const legalMoves = this.getLegalMovesForPiece(row, col);
 
+                // Highlight selected square
+                const selectedSquare = this.boardMeshes[row * 8 + col];
+                selectedSquare.material = new THREE.MeshStandardMaterial({
+                    color: 0x00ff00,
+                    metalness: 0.3,
+                    roughness: 0.7,
+                    emissive: 0x00ff00,
+                    emissiveIntensity: 0.3
+                });
+                this.highlightedSquares.push(selectedSquare);
+
+                // Highlight legal moves
                 legalMoves.forEach(move => {
                     const [toRow, toCol] = move.to;
-                    const toIndex = this.getSquareIndex(toRow, toCol);
-                    if (toIndex >= 0) {
-                        const square = squares[toIndex];
+                    const square = this.boardMeshes[toRow * 8 + toCol];
+                    const isCapture = this.board[toRow][toCol] !== '.';
 
-                        if (this.board[toRow][toCol] !== '.') {
-                            square.classList.add('legal-capture');
-                        } else {
-                            square.classList.add('legal-move');
-                        }
-                    }
+                    square.material = new THREE.MeshStandardMaterial({
+                        color: isCapture ? 0xff5555 : 0x55ff55,
+                        metalness: 0.3,
+                        roughness: 0.7,
+                        emissive: isCapture ? 0xff0000 : 0x00ff00,
+                        emissiveIntensity: 0.2
+                    });
+                    this.highlightedSquares.push(square);
                 });
-            }
-
-            getSquareIndex(row, col) {
-                const squares = document.querySelectorAll('.square-3d');
-                for (let i = 0; i < squares.length; i++) {
-                    if (parseInt(squares[i].dataset.row) === row &&
-                        parseInt(squares[i].dataset.col) === col) {
-                        return i;
-                    }
-                }
-                return -1;
             }
 
             clearSelection() {
@@ -1521,33 +1111,71 @@
             }
 
             clearHighlights() {
-                document.querySelectorAll('.square-3d').forEach(square => {
-                    square.classList.remove('selected', 'legal-move', 'legal-capture', 'highlighted', 'last-move');
-                });
+                this.highlightedSquares.forEach(square => {
+                    const row = square.userData.row;
+                    const col = square.userData.col;
+                    const isLight = (row + col) % 2 === 0;
+                    const color = isLight ?
+                        this.themes[this.currentTheme].light :
+                        this.themes[this.currentTheme].dark;
 
+                    square.material = new THREE.MeshStandardMaterial({
+                        color: color,
+                        metalness: 0.2,
+                        roughness: 0.7
+                    });
+                });
+                this.highlightedSquares = [];
+
+                // Highlight last move
                 if (this.lastMove) {
                     const [fromRow, fromCol] = this.lastMove.from;
                     const [toRow, toCol] = this.lastMove.to;
-                    const fromIndex = this.getSquareIndex(fromRow, fromCol);
-                    const toIndex = this.getSquareIndex(toRow, toCol);
-                    const squares = document.querySelectorAll('.square-3d');
-                    if (fromIndex >= 0) squares[fromIndex].classList.add('last-move');
-                    if (toIndex >= 0) squares[toIndex].classList.add('last-move');
+
+                    [this.boardMeshes[fromRow * 8 + fromCol],
+                     this.boardMeshes[toRow * 8 + toCol]].forEach(square => {
+                        square.material = new THREE.MeshStandardMaterial({
+                            color: 0xffff00,
+                            metalness: 0.3,
+                            roughness: 0.7,
+                            emissive: 0xffff00,
+                            emissiveIntensity: 0.1
+                        });
+                    });
                 }
 
+                // Highlight king in check
                 if (this.isInCheck(this.currentPlayer)) {
                     const kingPos = this.findKing(this.currentPlayer);
                     if (kingPos) {
                         const [row, col] = kingPos;
-                        const index = this.getSquareIndex(row, col);
-                        if (index >= 0) {
-                            const squares = document.querySelectorAll('.square-3d');
-                            squares[index].classList.add('check');
-                        }
+                        const square = this.boardMeshes[row * 8 + col];
+                        square.material = new THREE.MeshStandardMaterial({
+                            color: 0xff0000,
+                            metalness: 0.3,
+                            roughness: 0.7,
+                            emissive: 0xff0000,
+                            emissiveIntensity: 0.4
+                        });
                     }
                 }
             }
 
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                // Auto-rotate camera
+                if (this.autoRotate) {
+                    const time = Date.now() * 0.0001;
+                    this.camera.position.x = Math.cos(time) * 18;
+                    this.camera.position.z = Math.sin(time) * 18;
+                    this.camera.lookAt(0, 0, 0);
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            // Chess logic methods (preserved from original)
             getPseudoLegalMovesForPiece(row, col) {
                 const moves = [];
                 const piece = this.board[row][col].toLowerCase();
@@ -1707,6 +1335,14 @@
                 return (piece1 === piece1.toUpperCase()) !== (piece2 === piece2.toUpperCase());
             }
 
+            isPlayerPiece(piece) {
+                if (this.currentPlayer === 'white') {
+                    return piece === piece.toUpperCase();
+                } else {
+                    return piece === piece.toLowerCase();
+                }
+            }
+
             isLegalMove(move) {
                 const [fromRow, fromCol] = move.from;
                 const [toRow, toCol] = move.to;
@@ -1826,6 +1462,8 @@
                     this.fullMoveNumber++;
                 }
 
+                // Update 3D pieces
+                this.createPieces();
                 this.updateDisplay();
                 this.checkGameEnd();
             }
@@ -1978,7 +1616,10 @@
                         if (piece !== '.') {
                             const pieceColor = piece === piece.toUpperCase() ? 'white' : 'black';
                             if (pieceColor === color) {
+                                const savedPlayer = this.currentPlayer;
+                                this.currentPlayer = color;
                                 const pieceMoves = this.getLegalMovesForPiece(row, col);
+                                this.currentPlayer = savedPlayer;
                                 moves.push(...pieceMoves);
                             }
                         }
@@ -1996,17 +1637,16 @@
                         this.gameOver = true;
                         const winner = this.currentPlayer === 'white' ? 'Black' : 'White';
                         this.updateStatus(`Checkmate! ${winner} wins!`);
-                        this.showGameAnalysis();
                     } else {
                         this.gameOver = true;
-                        this.updateStatus('Stalemate! Game is a draw.');
+                        this.updateStatus('Stalemate! Draw.');
                     }
-                } else if (this.halfMoveClock >= 50) {
+                } else if (this.halfMoveClock >= 100) {
                     this.gameOver = true;
-                    this.updateStatus('Draw by 50-move rule');
+                    this.updateStatus('Draw by 50-move rule.');
                 } else if (this.isInsufficientMaterial()) {
                     this.gameOver = true;
-                    this.updateStatus('Draw by insufficient material');
+                    this.updateStatus('Draw by insufficient material.');
                 }
             }
 
@@ -2014,52 +1654,17 @@
                 const pieces = [];
                 for (let row = 0; row < 8; row++) {
                     for (let col = 0; col < 8; col++) {
-                        const piece = this.board[row][col];
-                        if (piece !== '.' && piece.toLowerCase() !== 'k') {
-                            pieces.push(piece.toLowerCase());
+                        if (this.board[row][col] !== '.') {
+                            pieces.push(this.board[row][col].toLowerCase());
                         }
                     }
                 }
 
-                if (pieces.length === 0) return true;
-                if (pieces.length === 1 && (pieces[0] === 'n' || pieces[0] === 'b')) return true;
-                if (pieces.length === 2 && pieces[0] === 'b' && pieces[1] === 'b') {
-                    let bishopSquareColors = [];
-                    for (let row = 0; row < 8; row++) {
-                        for (let col = 0; col < 8; col++) {
-                            if (this.board[row][col].toLowerCase() === 'b') {
-                                bishopSquareColors.push((row + col) % 2);
-                            }
-                        }
-                    }
-                    return bishopSquareColors[0] === bishopSquareColors[1];
+                if (pieces.length === 2) return true;
+                if (pieces.length === 3) {
+                    return pieces.includes('b') || pieces.includes('n');
                 }
-
                 return false;
-            }
-
-            speak(text) {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.rate = 1.0;
-                    utterance.pitch = 0.9;
-                    utterance.volume = 1.0;
-
-                    const voices = window.speechSynthesis.getVoices();
-                    const maleVoice = voices.find(voice =>
-                        voice.name.includes('Male') ||
-                        voice.name.includes('male') ||
-                        voice.name.includes('David') ||
-                        voice.name.includes('Daniel')
-                    );
-                    if (maleVoice) {
-                        utterance.voice = maleVoice;
-                    }
-
-                    window.speechSynthesis.speak(utterance);
-                }
             }
 
             makeAIMove() {
@@ -2187,56 +1792,48 @@
             }
 
             getPieceValue(piece, row, col) {
-                const pieceLower = piece.toLowerCase();
-                const baseValue = this.pieceValues[pieceLower];
+                const pieceType = piece.toLowerCase();
+                let value = this.pieceValues[pieceType];
 
-                if (!this.pst[pieceLower]) return baseValue;
+                const pstRow = piece === piece.toUpperCase() ? row : 7 - row;
+                const pstValue = this.pst[pieceType][pstRow][col];
 
-                const tableRow = piece === piece.toUpperCase() ? 7 - row : row;
-                const positionValue = this.pst[pieceLower][tableRow][col];
-
-                return baseValue + positionValue;
+                return value + pstValue;
             }
 
             saveState() {
                 return {
-                    currentPlayer: this.currentPlayer,
                     enPassantTarget: this.enPassantTarget,
                     castlingRights: JSON.parse(JSON.stringify(this.castlingRights)),
-                    halfMoveClock: this.halfMoveClock,
-                    fullMoveNumber: this.fullMoveNumber
+                    currentPlayer: this.currentPlayer
                 };
             }
 
             restoreState(state) {
-                this.currentPlayer = state.currentPlayer;
                 this.enPassantTarget = state.enPassantTarget;
                 this.castlingRights = state.castlingRights;
-                this.halfMoveClock = state.halfMoveClock;
-                this.fullMoveNumber = state.fullMoveNumber;
+                this.currentPlayer = state.currentPlayer;
             }
 
             updateDisplay() {
-                this.renderPieces();
                 this.updateStatus();
                 this.updateMoveHistory();
                 this.updateCapturedPieces();
-                this.updateEvaluationBar();
+                this.updateEvaluation();
                 this.clearHighlights();
             }
 
-            updateStatus(message = null) {
+            updateStatus(message) {
                 const statusEl = document.getElementById('status');
-
                 if (message) {
                     statusEl.textContent = message;
-                    return;
-                }
-
-                if (this.isInCheck(this.currentPlayer)) {
-                    statusEl.textContent = `${this.currentPlayer === 'white' ? 'White' : 'Black'} is in check!`;
                 } else {
-                    statusEl.textContent = `${this.currentPlayer === 'white' ? 'White' : 'Black'} to move`;
+                    const playerName = this.currentPlayer.charAt(0).toUpperCase() + this.currentPlayer.slice(1);
+                    if (this.isInCheck(this.currentPlayer)) {
+                        statusEl.textContent = `${playerName} to move - Check!`;
+                    } else {
+                        statusEl.textContent = `${playerName} to move`;
+                    }
                 }
             }
 
@@ -2246,44 +1843,41 @@
 
                 for (let i = 0; i < this.moveHistory.length; i += 2) {
                     const moveNum = Math.floor(i / 2) + 1;
-                    const whiteMove = this.moveToAlgebraic(this.moveHistory[i]);
-                    const blackMove = i + 1 < this.moveHistory.length ? this.moveToAlgebraic(this.moveHistory[i + 1]) : '';
-
-                    html += `${moveNum}. ${whiteMove} ${blackMove}<br>`;
+                    const whiteMove = this.formatMove(this.moveHistory[i]);
+                    const blackMove = i + 1 < this.moveHistory.length ? this.formatMove(this.moveHistory[i + 1]) : '';
+                    html += `<div>${moveNum}. ${whiteMove} ${blackMove}</div>`;
                 }
 
                 historyEl.innerHTML = html;
                 historyEl.scrollTop = historyEl.scrollHeight;
             }
 
-            moveToAlgebraic(moveData) {
-                if (!moveData) return '';
-
-                if (moveData.castling === 'kingside') return 'O-O';
-                if (moveData.castling === 'queenside') return 'O-O-O';
-
-                const piece = moveData.piece.toUpperCase();
+            formatMove(moveData) {
+                const [fromRow, fromCol] = moveData.from;
                 const [toRow, toCol] = moveData.to;
-                const file = String.fromCharCode(97 + toCol);
-                const rank = 8 - toRow;
+                const piece = moveData.piece.toUpperCase();
+                const captured = moveData.captured !== '.';
 
                 let notation = '';
 
-                if (piece !== 'P') {
-                    notation += piece;
-                }
-
-                if (moveData.captured !== '.') {
-                    if (piece === 'P') {
-                        notation += String.fromCharCode(97 + moveData.from[1]);
+                if (moveData.castling === 'kingside') {
+                    notation = 'O-O';
+                } else if (moveData.castling === 'queenside') {
+                    notation = 'O-O-O';
+                } else {
+                    if (piece !== 'P') {
+                        notation += piece;
                     }
-                    notation += 'x';
-                }
-
-                notation += file + rank;
-
-                if (moveData.promotion) {
-                    notation += '=Q';
+                    if (captured) {
+                        if (piece === 'P') {
+                            notation += String.fromCharCode(97 + fromCol);
+                        }
+                        notation += 'x';
+                    }
+                    notation += String.fromCharCode(97 + toCol) + (8 - toRow);
+                    if (moveData.promotion) {
+                        notation += '=Q';
+                    }
                 }
 
                 return notation;
@@ -2293,21 +1887,63 @@
                 const whiteEl = document.getElementById('capturedWhite');
                 const blackEl = document.getElementById('capturedBlack');
 
-                whiteEl.innerHTML = this.capturedPieces.white.map(p => this.getPieceUnicode(p)).join(' ');
-                blackEl.innerHTML = this.capturedPieces.black.map(p => this.getPieceUnicode(p)).join(' ');
+                whiteEl.innerHTML = this.capturedPieces.white.map(p =>
+                    `<span class="captured-piece">${this.getPieceUnicode(p)}</span>`
+                ).join('');
+
+                blackEl.innerHTML = this.capturedPieces.black.map(p =>
+                    `<span class="captured-piece">${this.getPieceUnicode(p)}</span>`
+                ).join('');
             }
 
-            updateEvaluationBar() {
-                const evaluation = this.evaluatePosition();
-                const barEl = document.getElementById('evalBar');
-
-                const cappedEval = Math.max(-1000, Math.min(1000, evaluation));
-                const percentage = ((cappedEval + 1000) / 2000) * 100;
-
-                barEl.style.width = percentage + '%';
-                barEl.textContent = (evaluation / 100).toFixed(1);
+            getPieceUnicode(piece) {
+                const pieces = {
+                    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+                    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+                };
+                return pieces[piece] || '';
             }
 
+            updateEvaluation() {
+                const score = this.evaluatePosition();
+                const normalizedScore = Math.max(-10, Math.min(10, score / 100));
+                const percentage = ((normalizedScore + 10) / 20) * 100;
+
+                const evalBar = document.getElementById('evalBar');
+                evalBar.style.width = percentage + '%';
+                evalBar.textContent = (normalizedScore > 0 ? '+' : '') + normalizedScore.toFixed(1);
+            }
+
+            speak(text) {
+                if (this.soundEnabled && 'speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+
+            playMoveSound(isCapture) {
+                if (!this.soundEnabled) return;
+
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = isCapture ? 800 : 400;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            }
+
+            // UI Methods
             newGame() {
                 this.board = this.createInitialBoard();
                 this.currentPlayer = 'white';
@@ -2325,6 +1961,7 @@
                 this.gameOver = false;
                 this.lastMove = null;
 
+                this.createPieces();
                 this.updateDisplay();
             }
 
@@ -2334,6 +1971,8 @@
                 const lastMove = this.moveHistory.pop();
                 this.redoStack.push(lastMove);
 
+                this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white';
+
                 const [fromRow, fromCol] = lastMove.from;
                 const [toRow, toCol] = lastMove.to;
 
@@ -2341,21 +1980,20 @@
                 this.board[toRow][toCol] = lastMove.captured;
 
                 if (lastMove.enPassant) {
-                    const captureRow = this.currentPlayer === 'black' ? toRow + 1 : toRow - 1;
+                    const captureRow = this.currentPlayer === 'white' ? toRow + 1 : toRow - 1;
                     this.board[captureRow][toCol] = lastMove.captured;
                     this.board[toRow][toCol] = '.';
                 }
 
                 if (lastMove.castling) {
-                    const rookCol = lastMove.castling === 'kingside' ? toCol - 1 : toCol + 1;
-                    const originalRookCol = lastMove.castling === 'kingside' ? 7 : 0;
-                    const rook = this.board[fromRow][rookCol];
-                    this.board[fromRow][originalRookCol] = rook;
-                    this.board[fromRow][rookCol] = '.';
+                    const rookCol = lastMove.castling === 'kingside' ? 7 : 0;
+                    const newRookCol = lastMove.castling === 'kingside' ? toCol - 1 : toCol + 1;
+                    this.board[fromRow][rookCol] = this.board[fromRow][newRookCol];
+                    this.board[fromRow][newRookCol] = '.';
                 }
 
                 if (lastMove.promotion) {
-                    this.board[fromRow][fromCol] = lastMove.piece;
+                    this.board[fromRow][fromCol] = this.currentPlayer === 'white' ? 'P' : 'p';
                 }
 
                 this.enPassantTarget = lastMove.enPassantTarget;
@@ -2370,15 +2008,10 @@
                     }
                 }
 
-                this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white';
-
-                if (this.currentPlayer === 'black') {
-                    this.fullMoveNumber--;
-                }
-
-                this.gameOver = false;
                 this.lastMove = this.moveHistory.length > 0 ? this.moveHistory[this.moveHistory.length - 1] : null;
+                this.gameOver = false;
 
+                this.createPieces();
                 this.updateDisplay();
             }
 
@@ -2389,69 +2022,108 @@
                 this.makeMove(move, true);
             }
 
-            flipBoard() {
-                this.isFlipped = !this.isFlipped;
-                this.initBoard();
+            toggleRotation() {
+                this.autoRotate = !this.autoRotate;
             }
 
             setDifficulty(level, button) {
                 this.difficulty = level;
-
                 document.querySelectorAll('.difficulty-selector button').forEach(btn => {
                     btn.classList.remove('active');
                 });
-
-                if (button) {
-                    button.classList.add('active');
-                }
+                button.classList.add('active');
             }
 
-            setTheme(theme) {
-                const themes = {
-                    classic: { light: '#f0d9b5', dark: '#b58863' },
-                    blue: { light: '#dee3e6', dark: '#8ca2ad' },
-                    green: { light: '#ffffdd', dark: '#86a666' },
-                    purple: { light: '#e8d4f0', dark: '#9c6fb5' },
-                    wood: { light: '#d7b899', dark: '#a47551' },
-                    marble: { light: '#e0e0e0', dark: '#7d7d7d' }
+            setTheme(themeName) {
+                this.currentTheme = themeName;
+
+                // Update board colors
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const square = this.boardMeshes[row * 8 + col];
+                        const isLight = (row + col) % 2 === 0;
+                        const color = isLight ?
+                            this.themes[themeName].light :
+                            this.themes[themeName].dark;
+
+                        square.material.color.setHex(color);
+                    }
+                }
+
+                this.clearHighlights();
+            }
+
+            saveGame() {
+                const gameState = {
+                    board: this.board,
+                    currentPlayer: this.currentPlayer,
+                    moveHistory: this.moveHistory,
+                    capturedPieces: this.capturedPieces,
+                    enPassantTarget: this.enPassantTarget,
+                    castlingRights: this.castlingRights,
+                    halfMoveClock: this.halfMoveClock,
+                    fullMoveNumber: this.fullMoveNumber
                 };
 
-                if (!themes[theme]) return;
-
-                const style = document.createElement('style');
-                style.textContent = `
-                    .square-3d.light .square-top {
-                        background: linear-gradient(135deg, ${themes[theme].light} 0%, ${this.adjustColor(themes[theme].light, -8)} 100%);
-                    }
-                    .square-3d.dark .square-top {
-                        background: linear-gradient(135deg, ${themes[theme].dark} 0%, ${this.adjustColor(themes[theme].dark, -8)} 100%);
-                    }
-                `;
-
-                document.querySelectorAll('style[data-theme]').forEach(s => s.remove());
-                style.setAttribute('data-theme', 'true');
-                document.head.appendChild(style);
+                const json = JSON.stringify(gameState);
+                localStorage.setItem('chess3d_save', json);
+                alert('Game saved!');
             }
 
-            adjustColor(color, percent) {
-                const num = parseInt(color.replace("#",""), 16);
-                const amt = Math.round(2.55 * percent);
-                const R = (num >> 16) + amt;
-                const G = (num >> 8 & 0x00FF) + amt;
-                const B = (num & 0x0000FF) + amt;
-                return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
-                    (G<255?G<1?0:G:255)*0x100 +
-                    (B<255?B<1?0:B:255))
-                    .toString(16).slice(1);
+            loadGame() {
+                const json = localStorage.getItem('chess3d_save');
+                if (!json) {
+                    alert('No saved game found.');
+                    return;
+                }
+
+                const gameState = JSON.parse(json);
+                this.board = gameState.board;
+                this.currentPlayer = gameState.currentPlayer;
+                this.moveHistory = gameState.moveHistory;
+                this.capturedPieces = gameState.capturedPieces;
+                this.enPassantTarget = gameState.enPassantTarget;
+                this.castlingRights = gameState.castlingRights;
+                this.halfMoveClock = gameState.halfMoveClock;
+                this.fullMoveNumber = gameState.fullMoveNumber;
+                this.gameOver = false;
+                this.lastMove = this.moveHistory.length > 0 ? this.moveHistory[this.moveHistory.length - 1] : null;
+
+                this.createPieces();
+                this.updateDisplay();
+                alert('Game loaded!');
+            }
+
+            exportPGN() {
+                let pgn = '[Event "3D Chess Game"]\n';
+                pgn += '[Site "Browser"]\n';
+                pgn += `[Date "${new Date().toISOString().split('T')[0]}"]\n`;
+                pgn += '[White "Player"]\n';
+                pgn += '[Black "AI"]\n\n';
+
+                for (let i = 0; i < this.moveHistory.length; i += 2) {
+                    const moveNum = Math.floor(i / 2) + 1;
+                    const whiteMove = this.formatMove(this.moveHistory[i]);
+                    const blackMove = i + 1 < this.moveHistory.length ? this.formatMove(this.moveHistory[i + 1]) : '';
+                    pgn += `${moveNum}. ${whiteMove}${blackMove ? ' ' + blackMove : ''} `;
+                }
+
+                const blob = new Blob([pgn], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'chess_game.pgn';
+                a.click();
+                URL.revokeObjectURL(url);
             }
 
             showHint() {
-                if (this.currentPlayer !== 'white' || this.gameOver) return;
+                if (this.gameOver || this.currentPlayer !== 'white') return;
+
+                const moves = this.getAllLegalMoves('white');
+                if (moves.length === 0) return;
 
                 const suggestionsEl = document.getElementById('suggestions');
-                const moves = this.getAllLegalMoves('white');
-
-                if (moves.length === 0) return;
 
                 const scoredMoves = moves.map(move => {
                     const boardCopy = this.copyBoard();
@@ -2484,130 +2156,33 @@
             highlightMove(from, to) {
                 this.clearHighlights();
 
-                const fromIndex = this.getSquareIndex(from[0], from[1]);
-                const toIndex = this.getSquareIndex(to[0], to[1]);
-                const squares = document.querySelectorAll('.square-3d');
+                const fromSquare = this.boardMeshes[from[0] * 8 + from[1]];
+                const toSquare = this.boardMeshes[to[0] * 8 + to[1]];
 
-                if (fromIndex >= 0) squares[fromIndex].classList.add('highlighted');
-                if (toIndex >= 0) squares[toIndex].classList.add('highlighted');
-            }
+                fromSquare.material = new THREE.MeshStandardMaterial({
+                    color: 0xffff00,
+                    metalness: 0.3,
+                    roughness: 0.7,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 0.3
+                });
 
-            saveGame() {
-                const gameState = {
-                    board: this.board,
-                    currentPlayer: this.currentPlayer,
-                    moveHistory: this.moveHistory,
-                    capturedPieces: this.capturedPieces,
-                    castlingRights: this.castlingRights,
-                    enPassantTarget: this.enPassantTarget,
-                    halfMoveClock: this.halfMoveClock,
-                    fullMoveNumber: this.fullMoveNumber
-                };
+                toSquare.material = new THREE.MeshStandardMaterial({
+                    color: 0xffff00,
+                    metalness: 0.3,
+                    roughness: 0.7,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 0.3
+                });
 
-                localStorage.setItem('chessGameSave3D', JSON.stringify(gameState));
-                alert('Game saved!');
-            }
-
-            loadGame() {
-                const saved = localStorage.getItem('chessGameSave3D');
-
-                if (!saved) {
-                    alert('No saved game found!');
-                    return;
-                }
-
-                try {
-                    const gameState = JSON.parse(saved);
-
-                    this.board = gameState.board;
-                    this.currentPlayer = gameState.currentPlayer;
-                    this.moveHistory = gameState.moveHistory;
-                    this.capturedPieces = gameState.capturedPieces;
-                    this.castlingRights = gameState.castlingRights;
-                    this.enPassantTarget = gameState.enPassantTarget;
-                    this.halfMoveClock = gameState.halfMoveClock;
-                    this.fullMoveNumber = gameState.fullMoveNumber;
-                    this.gameOver = false;
-                    this.redoStack = [];
-
-                    this.updateDisplay();
-                    alert('Game loaded!');
-                } catch (e) {
-                    alert('Error loading game!');
-                }
-            }
-
-            exportPGN() {
-                let pgn = '[Event "3D Chess AI Game"]\n';
-                pgn += `[Date "${new Date().toISOString().split('T')[0]}"]\n`;
-                pgn += '[White "Player"]\n';
-                pgn += '[Black "AI"]\n\n';
-
-                let moves = '';
-                for (let i = 0; i < this.moveHistory.length; i += 2) {
-                    const moveNum = Math.floor(i / 2) + 1;
-                    const whiteMove = this.moveToAlgebraic(this.moveHistory[i]);
-                    const blackMove = i + 1 < this.moveHistory.length ? this.moveToAlgebraic(this.moveHistory[i + 1]) : '';
-
-                    moves += `${moveNum}. ${whiteMove} `;
-                    if (blackMove) moves += `${blackMove} `;
-                }
-
-                pgn += moves.trim();
-
-                if (this.gameOver) {
-                    const status = document.getElementById('status').textContent;
-                    if (status.includes('White wins')) pgn += ' 1-0';
-                    else if (status.includes('Black wins')) pgn += ' 0-1';
-                    else pgn += ' 1/2-1/2';
-                }
-
-                const blob = new Blob([pgn], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '3d-chess-game.pgn';
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-
-            showGameAnalysis() {
-                setTimeout(() => {
-                    const totalMoves = this.moveHistory.length;
-                    const gameDuration = Math.floor(totalMoves / 2);
-
-                    alert(`Game Analysis:\n\nTotal moves: ${totalMoves}\nGame duration: ${gameDuration} full moves\n\nThank you for playing!`);
-                }, 1000);
-            }
-
-            playMoveSound(isCapture) {
-                if (!this.soundEnabled) return;
-
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.value = isCapture ? 800 : 600;
-                    oscillator.type = 'sine';
-
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.1);
-                } catch (e) {
-                    // Sound not supported
-                }
+                this.highlightedSquares.push(fromSquare, toSquare);
             }
         }
 
+        // Initialize game when page loads
         let game;
-        window.addEventListener('DOMContentLoaded', () => {
-            game = new ChessGame();
+        window.addEventListener('load', () => {
+            game = new ChessGame3D();
         });
     </script>
 </body>
