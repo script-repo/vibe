@@ -223,16 +223,14 @@
         }
 
         .piece-3d {
-            font-size: 3.5em;
             cursor: grab;
             transition: all 0.3s ease;
             transform-style: preserve-3d;
-            text-shadow:
-                2px 2px 4px rgba(0, 0, 0, 0.5),
-                0 0 10px rgba(255, 255, 255, 0.3);
             position: relative;
             z-index: 10;
-            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+            width: 50px;
+            height: 60px;
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
             animation: floatIn 0.5s ease;
         }
 
@@ -254,6 +252,382 @@
 
         .piece-3d.dragging {
             opacity: 0.5;
+        }
+
+        /* 3D Piece Components */
+        .piece-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 8px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+            border-radius: 50%;
+            transform-style: preserve-3d;
+        }
+
+        .piece-body {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transform-style: preserve-3d;
+        }
+
+        /* Pawn */
+        .pawn-body {
+            bottom: 8px;
+            width: 20px;
+            height: 35px;
+        }
+
+        .pawn-stem {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 20px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            border-radius: 2px;
+        }
+
+        .pawn-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
+        }
+
+        /* Rook */
+        .rook-body {
+            bottom: 8px;
+            width: 24px;
+            height: 40px;
+        }
+
+        .rook-tower {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 30px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
+        }
+
+        .rook-battlement {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+        }
+
+        .rook-crenellation {
+            position: absolute;
+            top: 0;
+            width: 5px;
+            height: 6px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.2) 100%);
+        }
+
+        .rook-crenellation:nth-child(1) { left: 1px; }
+        .rook-crenellation:nth-child(2) { left: 8px; }
+        .rook-crenellation:nth-child(3) { right: 1px; }
+
+        /* Knight */
+        .knight-body {
+            bottom: 8px;
+            width: 22px;
+            height: 42px;
+        }
+
+        .knight-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 15px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
+            border-radius: 2px;
+        }
+
+        .knight-neck {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%) skewX(-5deg);
+            width: 10px;
+            height: 20px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+        }
+
+        .knight-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .knight-ear {
+            position: absolute;
+            top: -3px;
+            right: 2px;
+            width: 4px;
+            height: 6px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Bishop */
+        .bishop-body {
+            bottom: 8px;
+            width: 22px;
+            height: 45px;
+        }
+
+        .bishop-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 12px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
+            border-radius: 2px;
+        }
+
+        .bishop-stem {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 25px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%);
+        }
+
+        .bishop-hat {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .bishop-tip {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 50%;
+        }
+
+        /* Queen */
+        .queen-body {
+            bottom: 8px;
+            width: 26px;
+            height: 50px;
+        }
+
+        .queen-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 12px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
+            border-radius: 2px;
+        }
+
+        .queen-stem {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 28px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+
+        .queen-crown {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 2px;
+        }
+
+        .queen-spike {
+            position: absolute;
+            top: -6px;
+            width: 3px;
+            height: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.2) 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .queen-spike:nth-child(1) { left: 2px; }
+        .queen-spike:nth-child(2) { left: 8.5px; }
+        .queen-spike:nth-child(3) { right: 2px; }
+
+        /* King */
+        .king-body {
+            bottom: 8px;
+            width: 26px;
+            height: 55px;
+        }
+
+        .king-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 12px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%);
+            border-radius: 2px;
+        }
+
+        .king-stem {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 30px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+        }
+
+        .king-crown {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 10px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 2px;
+        }
+
+        .king-cross-v {
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(0,0,0,0.2) 100%);
+        }
+
+        .king-cross-h {
+            position: absolute;
+            top: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 2px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(0,0,0,0.2) 100%);
+        }
+
+        /* Colors for pieces */
+        .piece-white .piece-base,
+        .piece-white .piece-body * {
+            filter: brightness(1.2);
+        }
+
+        .piece-white .pawn-stem,
+        .piece-white .rook-tower,
+        .piece-white .knight-base,
+        .piece-white .knight-neck,
+        .piece-white .bishop-base,
+        .piece-white .bishop-stem,
+        .piece-white .queen-base,
+        .piece-white .queen-stem,
+        .piece-white .king-base,
+        .piece-white .king-stem {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 40%, #d8d8d8 100%);
+            box-shadow:
+                inset -2px -2px 4px rgba(0, 0, 0, 0.15),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .piece-white .pawn-head,
+        .piece-white .rook-battlement,
+        .piece-white .rook-crenellation,
+        .piece-white .knight-head,
+        .piece-white .knight-ear,
+        .piece-white .bishop-hat,
+        .piece-white .bishop-tip,
+        .piece-white .queen-crown,
+        .piece-white .queen-spike,
+        .piece-white .king-crown,
+        .piece-white .king-cross-v,
+        .piece-white .king-cross-h {
+            background: linear-gradient(135deg, #ffffff 0%, #ececec 50%, #d0d0d0 100%);
+            box-shadow:
+                inset -1px -1px 3px rgba(0, 0, 0, 0.2),
+                inset 1px 1px 3px rgba(255, 255, 255, 0.9),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .piece-black .pawn-stem,
+        .piece-black .rook-tower,
+        .piece-black .knight-base,
+        .piece-black .knight-neck,
+        .piece-black .bishop-base,
+        .piece-black .bishop-stem,
+        .piece-black .queen-base,
+        .piece-black .queen-stem,
+        .piece-black .king-base,
+        .piece-black .king-stem {
+            background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 40%, #0a0a0a 100%);
+            box-shadow:
+                inset -2px -2px 4px rgba(0, 0, 0, 0.6),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .piece-black .pawn-head,
+        .piece-black .rook-battlement,
+        .piece-black .rook-crenellation,
+        .piece-black .knight-head,
+        .piece-black .knight-ear,
+        .piece-black .bishop-hat,
+        .piece-black .bishop-tip,
+        .piece-black .queen-crown,
+        .piece-black .queen-spike,
+        .piece-black .king-crown,
+        .piece-black .king-cross-v,
+        .piece-black .king-cross-h {
+            background: linear-gradient(135deg, #3a3a3a 0%, #252525 50%, #151515 100%);
+            box-shadow:
+                inset -1px -1px 3px rgba(0, 0, 0, 0.8),
+                inset 1px 1px 3px rgba(255, 255, 255, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .square-3d.selected .square-top {
@@ -526,7 +900,9 @@
             }
 
             .piece-3d {
-                font-size: 2.5em;
+                width: 35px;
+                height: 45px;
+                transform: scale(0.8);
             }
 
             h1 {
@@ -884,9 +1260,7 @@
                     }
 
                     if (piece !== '.') {
-                        const pieceEl = document.createElement('div');
-                        pieceEl.className = 'piece-3d';
-                        pieceEl.textContent = this.getPieceUnicode(piece);
+                        const pieceEl = this.create3DPiece(piece);
                         pieceEl.draggable = !this.gameOver && this.isPlayerPiece(piece);
 
                         pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, row, col));
@@ -895,6 +1269,122 @@
                         top.appendChild(pieceEl);
                     }
                 });
+            }
+
+            create3DPiece(piece) {
+                const pieceEl = document.createElement('div');
+                const isWhite = piece === piece.toUpperCase();
+                const pieceType = piece.toLowerCase();
+
+                pieceEl.className = `piece-3d piece-${isWhite ? 'white' : 'black'}`;
+
+                // Create base for all pieces
+                const base = document.createElement('div');
+                base.className = 'piece-base';
+                pieceEl.appendChild(base);
+
+                // Create piece-specific body
+                const body = document.createElement('div');
+                body.className = 'piece-body';
+
+                switch(pieceType) {
+                    case 'p':
+                        body.className += ' pawn-body';
+                        const pawnStem = document.createElement('div');
+                        pawnStem.className = 'pawn-stem';
+                        const pawnHead = document.createElement('div');
+                        pawnHead.className = 'pawn-head';
+                        body.appendChild(pawnStem);
+                        body.appendChild(pawnHead);
+                        break;
+
+                    case 'r':
+                        body.className += ' rook-body';
+                        const rookTower = document.createElement('div');
+                        rookTower.className = 'rook-tower';
+                        const rookBattlement = document.createElement('div');
+                        rookBattlement.className = 'rook-battlement';
+                        for (let i = 0; i < 3; i++) {
+                            const cren = document.createElement('div');
+                            cren.className = 'rook-crenellation';
+                            rookBattlement.appendChild(cren);
+                        }
+                        rookTower.appendChild(rookBattlement);
+                        body.appendChild(rookTower);
+                        break;
+
+                    case 'n':
+                        body.className += ' knight-body';
+                        const knightBase = document.createElement('div');
+                        knightBase.className = 'knight-base';
+                        const knightNeck = document.createElement('div');
+                        knightNeck.className = 'knight-neck';
+                        const knightHead = document.createElement('div');
+                        knightHead.className = 'knight-head';
+                        const knightEar = document.createElement('div');
+                        knightEar.className = 'knight-ear';
+                        knightHead.appendChild(knightEar);
+                        body.appendChild(knightBase);
+                        body.appendChild(knightNeck);
+                        body.appendChild(knightHead);
+                        break;
+
+                    case 'b':
+                        body.className += ' bishop-body';
+                        const bishopBase = document.createElement('div');
+                        bishopBase.className = 'bishop-base';
+                        const bishopStem = document.createElement('div');
+                        bishopStem.className = 'bishop-stem';
+                        const bishopHat = document.createElement('div');
+                        bishopHat.className = 'bishop-hat';
+                        const bishopTip = document.createElement('div');
+                        bishopTip.className = 'bishop-tip';
+                        bishopHat.appendChild(bishopTip);
+                        body.appendChild(bishopBase);
+                        body.appendChild(bishopStem);
+                        body.appendChild(bishopHat);
+                        break;
+
+                    case 'q':
+                        body.className += ' queen-body';
+                        const queenBase = document.createElement('div');
+                        queenBase.className = 'queen-base';
+                        const queenStem = document.createElement('div');
+                        queenStem.className = 'queen-stem';
+                        const queenCrown = document.createElement('div');
+                        queenCrown.className = 'queen-crown';
+                        for (let i = 0; i < 3; i++) {
+                            const spike = document.createElement('div');
+                            spike.className = 'queen-spike';
+                            queenCrown.appendChild(spike);
+                        }
+                        body.appendChild(queenBase);
+                        body.appendChild(queenStem);
+                        body.appendChild(queenCrown);
+                        break;
+
+                    case 'k':
+                        body.className += ' king-body';
+                        const kingBase = document.createElement('div');
+                        kingBase.className = 'king-base';
+                        const kingStem = document.createElement('div');
+                        kingStem.className = 'king-stem';
+                        const kingCrown = document.createElement('div');
+                        kingCrown.className = 'king-crown';
+                        const crossV = document.createElement('div');
+                        crossV.className = 'king-cross-v';
+                        const crossH = document.createElement('div');
+                        crossH.className = 'king-cross-h';
+                        kingCrown.appendChild(crossV);
+                        kingCrown.appendChild(crossH);
+                        body.appendChild(kingBase);
+                        body.appendChild(kingStem);
+                        body.appendChild(kingCrown);
+                        break;
+                }
+
+                pieceEl.appendChild(body);
+                return pieceEl;
             }
 
             getPieceUnicode(piece) {
