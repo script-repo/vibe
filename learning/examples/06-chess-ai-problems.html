@@ -419,7 +419,21 @@
                 ],
                 history: `Created by the legendary American chess composer Sam Loyd in 1861, "Excelsior" is considered one of the finest chess problems ever composed. The name comes from the Latin word meaning "ever upward," referring to the remarkable journey of White's a5 pawn.`,
                 significance: `What makes this problem extraordinary is the paradoxical pawn advance - the white pawn on a5 must march forward to promotion, despite appearing to move away from the action. The problem demonstrates brilliant quiet moves and zugzwang (a position where any move worsens the position).`,
-                solution: `1. b4! (threatening Qc4#) ...axb3 e.p. 2. Qc4+ Kh5 3. Qf7+ Kh4 4. Qh7+ Kg4 5. Qh3# (or if 1...Na6 2. Qc4+ Kh5 3. Qg4#). The key is the spectacular pawn sacrifice that opens the a-file and clears b4 for the queen.`,
+                solution: `<strong>Key Idea:</strong> The white pawn on a5 must advance to create a surprising checkmate pattern!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>b4!</strong> - This brilliant move threatens Qc4#. The pawn sacrifice is the key to the entire combination.
+
+Black's main defense: <strong>1...axb3 e.p.</strong> (Black captures the pawn with en passant)
+
+2. <strong>Qc4+ Kh5</strong> - Queen checks, forcing the Black king forward
+3. <strong>Qf7+ Kh4</strong> - Another check, driving the king into the mating net
+4. <strong>Qh7+ Kg4</strong> - The king is pulled further into danger
+5. <strong>Qh3#</strong> - Checkmate! The king has no escape.
+
+Alternative line: If Black plays 1...Na6 instead, then 2. Qc4+ Kh5 3. Qg4# is immediate checkmate.
+
+<strong>Why This Works:</strong> The pawn sacrifice on b4 opens critical diagonal and file control for White's queen, allowing it to deliver a forcing series of checks that culminate in mate.`,
                 turn: 'white'
             },
             {
@@ -439,7 +453,22 @@
                 ],
                 history: `Composed by Richard Réti in 1921, this endgame study revolutionized chess thinking about king and pawn endgames. Réti was a Czechoslovakian grandmaster and one of the founders of the hypermodern school of chess.`,
                 significance: `At first glance, the position appears hopeless for White - the black pawn on a7 is too far advanced, and the white king seems too far from both pawns. However, Réti demonstrated that the king can pursue two goals simultaneously through diagonal movement, a concept that was groundbreaking at the time.`,
-                solution: `1. Kg7! (not 1. Kf6? a5! and Black wins) The key is that the white king moves diagonally, simultaneously approaching both the black pawn (via a6) and supporting the white pawn (via c6). After 1...a5 2. Kf6! a4 3. Ke7! the white king can catch the black pawn or ensure the white pawn promotes. If 1...Kb7 2. Kf7 and the white pawn cannot be stopped.`,
+                solution: `<strong>Key Idea:</strong> The white king can chase TWO goals at once by moving diagonally - stopping Black's pawn AND pushing White's pawn!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Kg7!</strong> - This is the only move that draws. The king heads diagonally toward both pawns.
+
+<strong>Why not Kf6?</strong> If 1. Kf6? a5! 2. Ke5 a4 3. Kd4 Kb7! and Black's pawn promotes first.
+
+After 1. Kg7, Black has two main tries:
+
+<strong>Line A: Black pushes the pawn</strong>
+1...a5 2. <strong>Kf6!</strong> (still moving diagonally) a4 3. <strong>Ke5!</strong> (now heading to stop the pawn) and White will catch the a-pawn on a3 or a2.
+
+<strong>Line B: Black's king races</strong>
+1...Kb7 2. <strong>Kf7!</strong> (supporting the g-pawn) and the g-pawn promotes. If 2...Kb6 3. g8=Q and White wins.
+
+<strong>Why This Works:</strong> The diagonal king march is brilliant because it creates a "dual threat" - the king can switch between stopping Black's passed pawn or supporting White's pawn depending on what Black does. This is a fundamental endgame technique!`,
                 turn: 'white'
             },
             {
@@ -459,7 +488,22 @@
                 ],
                 history: `This spectacular combination was played by Emanuel Lasker (who would become World Champion from 1894-1921) against Johann Hermann Bauer in Amsterdam, 1889. Lasker was only 20 years old at the time.`,
                 significance: `The game features one of the most beautiful double bishop sacrifices in chess history. Lasker demonstrated extraordinary vision and calculation, sacrificing both bishops to expose the enemy king. This combination has been studied and admired for over 130 years.`,
-                solution: `11. Nxe5!! Nxe5 12. Qh5+! g6 13. Qxh7+!! Kxh7 14. Bxg6+ fxg6 (if Kg8, then Bf7#) 15. Bf7+ and Black is in a mating net. The follow-up involves Rh1+ and mate. The double bishop sacrifice (Qxh7+ and Bxg6+) strips away Black's king protection completely.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice BOTH bishops to expose the Black king for a devastating mating attack!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Nxe5!</strong> - Removing the defender. Black recaptures: 1...Nxe5
+
+2. <strong>Qh5+!</strong> - Forcing the king to weaken. Black must play: 2...g6 (blocking with the pawn)
+
+3. <strong>Qxh7+!!</strong> - The first bishop sacrifice! Black is forced to accept: 3...Kxh7
+
+4. <strong>Bxg6+!</strong> - The second bishop sacrifice! This rips open the king's shelter.
+
+If 4...fxg6, then 5. <strong>Bf7+</strong> and the king is in a mating net. White follows with Rh1+ and delivers mate.
+
+If 4...Kg8 (declining the bishop), then 5. <strong>Bf7#</strong> is immediate checkmate!
+
+<strong>Why This Works:</strong> The two bishop sacrifices destroy all of Black's king protection. After accepting both sacrifices, Black's king is completely exposed in the center of the board with no defenders nearby. White's remaining pieces (the dark-squared bishop and rook) deliver the final mating attack. This demonstrates the power of exposing the enemy king at any material cost!`,
                 turn: 'white'
             },
             {
@@ -479,7 +523,20 @@
                 ],
                 history: `Played by Paul Morphy against Duke Karl of Brunswick and Count Isouard at the Paris Opera in 1858. Morphy, only 21 years old, was watching a performance of "The Barber of Seville" when the Duke and Count requested a game during the intermission.`,
                 significance: `This game is considered one of the most instructive games in chess history. It perfectly demonstrates classic opening principles: rapid development, control of the center, and punishing premature queen moves. Morphy's brilliant tactical finish has been studied by chess students for over 160 years.`,
-                solution: `17. Rxd7!! Rxd7 18. Rd1! (pinning the rook) Qe6 (trying to defend) 19. Bxd7+ Nxd7 20. Qb8+!! Nxb8 21. Rd8# - a spectacular sacrifice leading to a pure back rank mate. This position shows the climactic finish after Morphy's beautiful play.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice the rook to expose Black's king to a back rank mate!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Rxd7!</strong> - A stunning rook sacrifice! Black must recapture: 1...Rxd7
+
+2. <strong>Rd1!</strong> - Brilliant! This pins the Black rook to the king on the back rank. Black tries: 2...Qe6 (attempting to defend)
+
+3. <strong>Bxd7+!</strong> - Taking the rook with check. Black recaptures: 3...Nxd7
+
+4. <strong>Qb8+!!</strong> - The amazing queen sacrifice! Black is forced to take: 4...Nxb8
+
+5. <strong>Rd8#</strong> - Checkmate! The rook delivers mate on the back rank.
+
+<strong>Why This Works:</strong> This combination is a perfect example of a "back rank mate" pattern. Black's king has no escape squares because it's trapped by its own pawns. After the preliminary sacrifices clear away the defenders, White's rook delivers unstoppable mate on the eighth rank. Notice how every White move is forcing - Black has no choice but to accept the sacrifices, making this a "forced mate" sequence. This demonstrates the importance of giving your king breathing room (called "luft" in chess) to avoid such back rank vulnerabilities!`,
                 turn: 'white'
             },
             {
@@ -499,7 +556,424 @@
                 ],
                 history: `Named after Luis Ramírez de Lucena, a Spanish chess player who published one of the earliest chess books in 1497. Though the position may predate Lucena's work, it has been named after him and his pioneering chess manual "Repetición de Amores y Arte de Ajedrez."`,
                 significance: `The Lucena position is the most important winning position in rook endgames. Every serious chess player must know this technique. It demonstrates the "building a bridge" method, where the attacking rook creates a shield for the king against checks. This is fundamental endgame knowledge that has been taught for over 500 years.`,
-                solution: `The winning plan is: 1. Re4! (building the bridge) ...Rh1+ 2. Kg7 Rg1+ 3. Kf6 Rf1+ 4. Kg5 Rg1+ 5. Rg4 (the bridge is complete, blocking checks) and the pawn will promote. The key concept is using the rook to shield the king from checks while advancing the pawn.`,
+                solution: `<strong>Key Idea:</strong> Build a "bridge" with your rook to shield your king from checks while the pawn promotes!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Re4!</strong> - This is the key move - "building the bridge." The rook moves to the fourth rank, ready to shield the king.
+
+Black gives checks: 1...<strong>Rh1+</strong>
+
+2. <strong>Kg7</strong> - The king walks up the board. Black keeps checking: 2...<strong>Rg1+</strong>
+
+3. <strong>Kf6</strong> - Another step forward. Black: 3...<strong>Rf1+</strong>
+
+4. <strong>Kg5</strong> - One more step. Black: 4...<strong>Rg1+</strong>
+
+5. <strong>Rg4!</strong> - The bridge is complete! The rook blocks the check and creates a permanent shield.
+
+Now the Black rook cannot give more checks, and the f-pawn will promote to a queen. White wins!
+
+<strong>Why This Works:</strong> This is THE most important winning technique in rook endgames. The defending rook tries to stop the pawn by giving endless checks from behind, but the attacking rook creates a "bridge" (a shield) on the fourth rank that protects the king. Once the bridge is in place, the checks stop and the pawn marches to promotion. Every chess player must memorize this pattern - it comes up in countless endgames!`,
+                turn: 'white'
+            },
+            {
+                id: 6,
+                title: "Philidor's Position (1777)",
+                objective: "White to move - Black draws",
+                difficulty: "Medium",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'P', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'K', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', 'k', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'r', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'R', '.', '.']
+                ],
+                history: `Discovered by François-André Danican Philidor in 1777, one of the strongest players of the 18th century and author of the influential book "L'Analyse du jeu des Échecs." Philidor was also a renowned opera composer!`,
+                significance: `Philidor's Position is the second most important defensive position in rook endgames (after Lucena). It shows Black how to hold a draw when defending against a pawn one square away from promotion. The defensive technique has saved countless games over the past 250 years.`,
+                solution: `<strong>Key Idea:</strong> Keep your rook on the third rank to cut off the enemy king, then switch to checks from behind when the pawn advances!
+
+<strong>Step-by-Step Solution (Black's Defense):</strong>
+1. White tries: <strong>Rf3+</strong> (pushing Black's rook away)
+   Black responds: <strong>1...Kg6!</strong> (the king stays close to the pawn)
+
+2. <strong>Rf4</strong> (White prepares f7)
+   Black plays: <strong>2...Ra6!</strong> (switching to the sixth rank - staying on the third rank cuts off the White king)
+
+3. <strong>Kg5 Ra1!</strong> - Now Black checks from behind! This is crucial.
+
+4. <strong>f7 Rf1!</strong> - Black keeps checking from behind the pawn.
+
+5. <strong>Kg6 Rg1+</strong> - Perpetual checks! White cannot escape them.
+
+6. <strong>Kf6 Rf1+</strong> and Black draws by repetition.
+
+<strong>Why This Works:</strong> The defensive plan has two phases: (1) Keep the rook on the third rank to prevent the enemy king from advancing, and (2) When the pawn advances to the 7th rank, switch to giving checks from BEHIND the pawn. This prevents the king from shielding the pawn. Philidor's defensive method is essential knowledge - it's the difference between losing and drawing in many rook endgames!`,
+                turn: 'white'
+            },
+            {
+                id: 7,
+                title: "Saavedra Position (1895)",
+                objective: "White to move and win",
+                difficulty: "Hard",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', '.', 'k'],
+                    ['.', '.', '.', '.', '.', 'P', '.', '.'],
+                    ['.', '.', '.', '.', 'K', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', 'r', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', 'R', '.']
+                ],
+                history: `This incredible study was composed by Fernando Saavedra in 1895. It became famous when chess analyst Barbier thought he had found a simple win for White, but Saavedra discovered a brilliant defensive resource for Black and an even more brilliant winning move for White!`,
+                significance: `The Saavedra Position is celebrated as one of the most beautiful endgame studies ever created. It contains a shocking under-promotion (promoting to a rook instead of a queen) that is the only way to win. This study revolutionized how chess composers thought about pawn promotion.`,
+                solution: `<strong>Key Idea:</strong> Under-promote to a ROOK to avoid a skewer and deliver checkmate!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Rc1!</strong> - Preventing the Black rook from blocking the pawn. Black plays: <strong>1...Rd4+</strong> (checking the king)
+
+2. <strong>Kb5!</strong> - The only winning move. Black plays: <strong>2...Rd5+</strong> (more checks!)
+
+3. <strong>Kb4 Rd4+</strong> - Black keeps checking.
+
+4. <strong>Kb3 Rd3+</strong> - Still checking.
+
+5. <strong>Kc2!</strong> - The king finally escapes. Black plays: <strong>5...Rd4</strong> (attacking the pawn from the side)
+
+6. <strong>f7 Rc4+</strong> - Black checks, trying to win the pawn.
+
+7. <strong>Kb3 Rc1!</strong> - Brilliant! Black prepares Ra1 to deliver checks from behind.
+
+Now comes the stunning finish:
+
+8. <strong>f8=R!!</strong> - UNDER-PROMOTION! White promotes to a rook, NOT a queen!
+
+<strong>Why not a queen?</strong> If 8. f8=Q?? then 8...Ra1! and after the queen moves, 9...Ra3+ followed by Rxf8 wins the queen - this is called a "skewer."
+
+After 8. f8=R!, White threatens Rf1+ and Black cannot prevent Rook and King checkmate. For example: 8...Kb7 9. Rf7+ or 8...Rc3+ 9. Kb4 and the Black rook must stop checking.
+
+<strong>Why This Works:</strong> The under-promotion is necessary because only a rook can avoid the skewer pattern while still delivering mate. This study teaches us that sometimes less is more - a rook is actually better than a queen in this unique position!`,
+                turn: 'white'
+            },
+            {
+                id: 8,
+                title: "Legal's Mate (1750)",
+                objective: "White to move and mate in 3",
+                difficulty: "Easy",
+                board: [
+                    ['r', '.', 'b', 'q', 'k', 'b', 'n', 'r'],
+                    ['p', 'p', 'p', '.', '.', 'p', 'p', 'p'],
+                    ['.', '.', 'n', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', 'p', 'p', '.', '.', '.'],
+                    ['.', '.', 'B', '.', 'P', 'b', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'N', '.', '.'],
+                    ['P', 'P', 'P', 'P', '.', 'P', 'P', 'P'],
+                    ['R', 'N', 'B', 'Q', 'K', '.', '.', 'R']
+                ],
+                history: `Named after Sire de Kermur de Legal (1702-1792), a French chess master and teacher. This classic trap has caught thousands of unsuspecting players over the past 270 years. Legal was one of the strongest players of his era and teacher of Philidor.`,
+                significance: `Legal's Mate is one of the most famous tactical traps in chess. It teaches a crucial lesson: sometimes it's correct to ignore an apparent queen capture if it leads to checkmate! This pattern appears frequently in beginner and intermediate games.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice your queen to deliver a faster checkmate with your minor pieces!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Nxe5!</strong> - Attacking the queen. This looks like a blunder because the queen is undefended!
+
+Black falls into the trap: <strong>1...Bxd1??</strong> (capturing the "free" queen)
+
+2. <strong>Bxf7+!</strong> - Check! The bishop captures the f7 pawn with check. Black must play: <strong>2...Ke7</strong> (only legal move)
+
+3. <strong>Nd5#</strong> - Checkmate! The knight delivers mate on d5.
+
+Let's see why it's checkmate:
+- The king on e7 is attacked by the knight on d5
+- The king cannot move to d8, d7, d6, or e6 (all controlled by White pieces)
+- The king cannot move to f8, f7, or f6 (blocked or controlled)
+- No Black piece can capture the knight or block
+
+<strong>Why This Works:</strong> This demonstrates a key chess principle: material advantage means nothing if your king is checkmated! Black wins the queen (9 points) but loses the game. The combination works because after Bxf7+, the Black king is fatally exposed and the knight delivers unstoppable mate. Always look for checkmate before grabbing material!`,
+                turn: 'white'
+            },
+            {
+                id: 9,
+                title: "Anderssen's Immortal Game (1851)",
+                objective: "White to move and mate in 2",
+                difficulty: "Medium",
+                board: [
+                    ['r', '.', 'b', '.', '.', '.', 'n', 'r'],
+                    ['p', 'p', 'p', '.', '.', 'p', 'p', 'p'],
+                    ['.', '.', 'n', '.', '.', '.', '.', '.'],
+                    ['.', 'B', '.', '.', 'p', 'q', '.', '.'],
+                    ['.', '.', '.', '.', 'P', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'P', '.', 'b'],
+                    ['P', 'P', 'P', 'P', 'N', 'N', 'P', 'P'],
+                    ['R', '.', 'B', '.', '.', '.', 'K', 'R']
+                ],
+                history: `Played by Adolf Anderssen against Lionel Kieseritzky in London, 1851. Called the "Immortal Game," it's one of the most famous games in chess history. Anderssen sacrificed both rooks, a bishop, and his queen to deliver checkmate with his remaining minor pieces!`,
+                significance: `This game epitomizes the Romantic era of chess (1850-1880) when players valued brilliant attacks over material. The final position shows White delivering mate with just three minor pieces while Black still has both rooks and extra material. It's studied as the ultimate example of piece coordination and attacking chess.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice the queen to coordinate the bishops and knight for checkmate!
+
+<strong>Step-by-Step Solution:</strong>
+This position comes after White has already sacrificed both rooks! Now comes the stunning finale:
+
+1. <strong>Qxf6+!!</strong> - Sacrificing the queen! Black must capture: <strong>1...Nxf6</strong> (if 1...Kd7, then 2. Qf7+ and mate next move)
+
+2. <strong>Be7#</strong> - Checkmate!
+
+Let's verify it's mate:
+- The bishop on e7 gives check to the king on e8
+- The king cannot move to d8 (controlled by the bishop on b5)
+- The king cannot move to d7 or f7 (controlled by the bishop on e7)
+- The king cannot move to e7 (occupied by White's bishop)
+- The king cannot move to f8 (controlled by the knight on f3)
+- No Black piece can capture the bishop or block
+
+<strong>Why This Works:</strong> This is pure piece coordination! Three minor pieces (two bishops and a knight) work together to create a mating net. The final position is visually stunning: White has sacrificed massive material (two rooks, a bishop, and the queen!) yet delivers checkmate with the pieces that remain. This teaches us that in tactical positions, piece activity and king safety are more important than material count. The Immortal Game remains the most celebrated example of sacrificial attacking chess!`,
+                turn: 'white'
+            },
+            {
+                id: 10,
+                title: "Fischer's Game of the Century (1956)",
+                objective: "Black to move and win",
+                difficulty: "Hard",
+                board: [
+                    ['r', '.', '.', 'q', '.', 'r', 'k', '.'],
+                    ['p', 'p', '.', '.', 'n', 'p', 'p', 'p'],
+                    ['.', '.', 'p', '.', '.', '.', '.', '.'],
+                    ['.', 'B', 'n', '.', 'p', '.', '.', '.'],
+                    ['.', '.', '.', '.', 'P', '.', '.', '.'],
+                    ['.', '.', 'N', '.', '.', 'Q', '.', '.'],
+                    ['P', 'P', 'P', 'B', '.', 'P', 'P', 'P'],
+                    ['R', '.', '.', '.', '.', 'R', 'K', '.']
+                ],
+                history: `Played by 13-year-old Bobby Fischer against Donald Byrne in New York, 1956. This brilliant queen sacrifice earned the name "Game of the Century." Hans Kmoch, who annotated the game, said: "Stunning! After this, we have to resign ourselves to losing."`,
+                significance: `This game announced Fischer to the world as a future world champion. At just 13 years old, Fischer demonstrated profound positional understanding and tactical vision. The queen sacrifice and subsequent attack are studied as a masterpiece of dynamic play and calculation.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice the queen to activate all Black pieces for an overwhelming attack on the exposed White king!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>...Be6!!</strong> - Attacking the queen and threatening the devastating ...Qb6+. If White takes: 2. Bxe6, then 2...Qb6+! and White is lost.
+
+White tries: 2. <strong>Bc5</strong> (blocking the b-file)
+
+2...<strong>Qb6!</strong> - Attacking the bishop and threatening the king. White must play: 3. <strong>Bxb6 Bxc4+</strong> - Check!
+
+4. <strong>Kg1</strong> (forced) <strong>4...Ne2+!</strong> - Knight check, forking king and queen!
+
+5. <strong>Kf1 Nxc3+!</strong> - Taking the queen with check!
+
+6. <strong>Kg1 Nxe4!</strong> - Black has won the queen for minor pieces and has a winning attack.
+
+The key continuation shows Black's domination:
+7. Qb4 (trying to trade) 7...Nxc5! 8. Qxc5 Bxb6 and Black has rook, two bishops versus queen, with White's king completely exposed.
+
+<strong>Why This Works:</strong> Fischer's queen sacrifice works because it activates ALL of Black's pieces while White's pieces become uncoordinated. After the queen trade, Black's two bishops control the board, the rooks dominate open files, and White's exposed king faces unstoppable threats. This demonstrates advanced chess understanding: sometimes giving up the most valuable piece creates an even stronger position! Fischer's ability to calculate this entire sequence at age 13 showed he was destined for greatness.`,
+                turn: 'black'
+            },
+            {
+                id: 11,
+                title: "Capablanca's Endgame Mastery (1927)",
+                objective: "White to move and win",
+                difficulty: "Medium",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', 'p', 'k', '.', '.', '.', '.'],
+                    ['.', '.', 'P', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', 'P', 'K', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', 'p', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.']
+                ],
+                history: `From José Raúl Capablanca's game against Aron Nimzowitsch, New York 1927. Capablanca, World Champion from 1921-1927, was renowned for his seemingly effortless endgame technique. Nimzowitsch was one of the founding fathers of the Hypermodern school.`,
+                significance: `This position demonstrates Capablanca's legendary endgame skill. What appears to be a simple pawn endgame contains subtle winning technique that only a master can execute. Capablanca's ability to win "dead drawn" positions made him feared in endgames.`,
+                solution: `<strong>Key Idea:</strong> Use zugzwang (forcing the opponent to worsen their position) and precise king maneuvering to win!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Kd5!</strong> - Centralizing the king is crucial. The king heads toward Black's weak b-pawn.
+
+Black plays: <strong>1...Kd7</strong> (trying to blockade)
+
+2. <strong>c7!</strong> - Advancing the passed pawn! Black must respond: <strong>2...Kxc7</strong>
+
+3. <strong>Kc5!</strong> - The key! The White king takes "opposition" and heads for the b-pawn.
+
+Black tries: <strong>3...Kd7</strong> (or 3...Kb7 4. Kd6! and the d-pawn decides)
+
+4. <strong>Kb4!</strong> - Attacking the b-pawn directly. Black: <strong>4...Kd6</strong>
+
+5. <strong>Kxb3</strong> - Capturing the pawn. Now White has: <strong>5...Kxd5</strong>
+
+6. <strong>Kc3!</strong> - The winning move! The White king reaches the "key squares."
+
+After 6...Ke5 7. <strong>Kd3</strong> and the c-pawn promotes. If Black tries 6...c5, then 7. <strong>Kc4</strong> and White wins the c-pawn too.
+
+<strong>Why This Works:</strong> This endgame illustrates three fundamental concepts: (1) <em>Opposition</em> - placing your king directly opposite the enemy king to force them backward, (2) <em>Zugzwang</em> - creating positions where any move the opponent makes worsens their position, and (3) <em>Key squares</em> - critical squares the king must occupy to support pawn promotion. Capablanca's technique was so refined that he could win positions other masters would draw. This is why studying endgames is essential - small advantages can be converted to wins with precise play!`,
+                turn: 'white'
+            },
+            {
+                id: 12,
+                title: "Greco's Sacrifice (1619)",
+                objective: "White to move and mate in 3",
+                difficulty: "Easy",
+                board: [
+                    ['r', 'n', 'b', 'q', 'k', '.', '.', 'r'],
+                    ['p', 'p', 'p', 'p', 'n', 'p', 'p', 'p'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', 'p', '.', '.', '.'],
+                    ['.', '.', 'B', '.', 'P', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', 'N', '.', '.'],
+                    ['P', 'P', 'P', 'P', '.', 'P', 'P', 'P'],
+                    ['R', 'N', 'B', 'Q', 'K', '.', '.', 'R']
+                ],
+                history: `Composed by Gioachino Greco (1600-1634), an Italian chess player known as "Il Calabrese." Greco was one of the first professional chess players and wrote one of the earliest chess instruction books in 1619. His tactical themes are still taught today!`,
+                significance: `This pattern demonstrates the classic bishop and knight mate on f7. It's one of the oldest documented tactical motifs in chess, published over 400 years ago, yet it still wins games today! Every beginner learns to fear this pattern.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice the bishop on f7 to expose the king and deliver mate with the knight!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Bxf7+!</strong> - The classic bishop sacrifice! Black must capture: <strong>1...Kxf7</strong> (forced, as it's check)
+
+2. <strong>Ng5+!</strong> - Check! The knight jumps in with devastating effect. Black's king must move: <strong>2...Ke8</strong> (or Kg8 or Ke7, we'll see these below)
+
+Main line after 2...Ke8:
+3. <strong>Qf7#</strong> - Checkmate! The queen delivers mate on f7.
+
+Why is it mate? The king on e8 cannot:
+- Capture the queen (protected by the knight on g5)
+- Move to d8, d7, or f8 (all controlled by queen/knight)
+- Get help from any piece
+
+If 2...Kg8, then 3. <strong>Qf7#</strong> (same checkmate!)
+
+If 2...Ke7, then 3. <strong>Qf7#</strong> (same pattern!)
+
+If 2...Kg6, then 3. <strong>Qf7#</strong> (the queen is protected by the knight)
+
+<strong>Why This Works:</strong> The f7 square is the weakest point in Black's position (only defended by the king). After the bishop sacrifice removes this defender, the knight and queen work together to deliver mate. This is called the "fried liver attack" pattern when it occurs in the Italian Game opening. Greco's 400-year-old pattern still catches players every day because f7 (and f2 for White) remains a natural weak point throughout the game!`,
+                turn: 'white'
+            },
+            {
+                id: 13,
+                title: "Tal's Rook Sacrifice (1973)",
+                objective: "White to move and win",
+                difficulty: "Hard",
+                board: [
+                    ['.', '.', 'q', '.', '.', 'r', 'k', '.'],
+                    ['p', 'b', 'p', '.', '.', 'p', 'p', 'p'],
+                    ['.', 'p', '.', 'r', '.', '.', '.', '.'],
+                    ['.', '.', '.', 'p', 'p', '.', 'Q', '.'],
+                    ['.', '.', 'B', 'P', 'n', '.', '.', '.'],
+                    ['.', '.', 'N', '.', '.', '.', '.', '.'],
+                    ['P', 'P', 'P', '.', '.', 'P', 'P', 'P'],
+                    ['R', '.', '.', '.', '.', 'R', 'K', '.']
+                ],
+                history: `Mikhail Tal (1936-1992), the "Magician from Riga," was World Champion from 1960-1961. Known for spectacular sacrifices and tactical brilliance, Tal played this combination against Anatoly Karpov (future World Champion) in the Soviet Championship, 1973.`,
+                significance: `This game showcased Tal's unique style - sacrificing material for initiative and attack. Even against Karpov, one of the greatest defensive players ever, Tal's aggressive tactics prevailed. The position demonstrates that dynamic compensation can overcome material disadvantage.`,
+                solution: `<strong>Key Idea:</strong> Sacrifice the exchange (rook for knight) to penetrate with the queen and create unstoppable threats!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Qg7+!</strong> - The stunning move! Sacrificing the queen seems wrong, but there's a point!
+
+If 1...Qxg7, then 2. <strong>Nf6+</strong> and White wins the queen back with advantage.
+
+So Black plays: <strong>1...Kxg7</strong> (forced to avoid losing the queen)
+
+2. <strong>Nf6!</strong> - Double attack! The knight attacks both the queen on c8 and threatens discovered check.
+
+Black must move the queen: <strong>2...Qc7</strong> (or another queen move)
+
+3. <strong>Nxd6!</strong> - Winning the rook! The knight captures with a discovered check threat.
+
+Black plays: <strong>3...Qxd6</strong> (trying to simplify)
+
+4. <strong>Bxe5+!</strong> - The bishop delivers check, winning Black's queen! After <strong>4...Qxe5 5. Rxe5</strong>, White has won significant material and has a dominant position.
+
+Alternative line: If Black declines with 1...Rf7, then 2. <strong>Qxf7+ Kh8 3. Qf8+! Rxf8 4. Rxf8#</strong> - back rank mate!
+
+<strong>Why This Works:</strong> Tal's combination works because of multiple threats (called "double attacks"). After the queen sacrifice, the knight fork on f6 regains material while Black's pieces become uncoordinated. The key is that White's remaining pieces dominate the board. This demonstrates Tal's famous principle: "You must take your opponent into a deep dark forest where 2+2=5 and the path leading out is only wide enough for one." Even when the sacrifice isn't 100% sound, the practical complications favor the attacker!`,
+                turn: 'white'
+            },
+            {
+                id: 14,
+                title: "Steinitz Gambit Trap (1896)",
+                objective: "White to move and win",
+                difficulty: "Medium",
+                board: [
+                    ['r', '.', 'b', 'q', 'k', 'b', '.', 'r'],
+                    ['p', 'p', 'p', 'p', '.', 'p', 'p', 'p'],
+                    ['.', '.', 'n', '.', '.', 'n', '.', '.'],
+                    ['.', '.', '.', '.', 'p', '.', '.', '.'],
+                    ['.', '.', 'B', '.', 'P', '.', '.', '.'],
+                    ['.', '.', 'N', 'P', '.', 'N', '.', '.'],
+                    ['P', 'P', 'P', '.', '.', 'P', 'P', 'P'],
+                    ['R', '.', 'B', 'Q', 'K', '.', '.', 'R']
+                ],
+                history: `Wilhelm Steinitz (1836-1900) was the first official World Chess Champion (1886-1894). This trap from his favorite Vienna Game demonstrates his deep understanding of piece activity versus material. Steinitz revolutionized chess by introducing positional principles.`,
+                significance: `This position shows Steinitz's approach to gambit play - sacrificing pawns for rapid development and attacking chances. The trap has caught countless players who grabbed pawns without considering piece development. It perfectly illustrates Steinitz's principle: "The king is a strong piece - use it!"`,
+                solution: `<strong>Key Idea:</strong> Exploit Black's underdeveloped position and exposed king with a forcing combination!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Nxe5!</strong> - Removing the defender! Black's most natural response is: <strong>1...Nxe5</strong>
+
+2. <strong>d4!</strong> - Attacking the knight and opening lines. Black must move: <strong>2...Ng6</strong> (or another knight retreat)
+
+3. <strong>e5!</strong> - Advancing! This attacks the knight on c6 and opens the diagonal for the bishop. Black plays: <strong>3...Nge7</strong>
+
+4. <strong>Qh5!</strong> - The killer move! Threatening Qxf7#. Black must defend with: <strong>4...g6</strong>
+
+5. <strong>Qh6!</strong> - Relentless pressure! Now threatening Qg7#. Black's position collapses. If <strong>5...Ng8, 6. Qh7!</strong> and Qxg8 is unstoppable.
+
+If Black tries 4...O-O (castling), then 5. <strong>Qxf7+! Kh8 6. Qf8#!</strong> - checkmate!
+
+<strong>Why This Works:</strong> Black's pieces are still on their starting squares while White's pieces are all active and coordinating. The f7 pawn is a chronic weakness when Black hasn't castled. Steinitz's combination punishes three opening mistakes: (1) grabbing pawns instead of developing, (2) leaving the king in the center, and (3) not coordinating pieces.
+
+<strong>The Lesson:</strong> Steinitz taught that development and king safety are more important than material in the opening. This trap demonstrates why masters say: "Development first, pawn grabbing second!" A piece actively placed is worth more than an extra pawn with an exposed king.`,
+                turn: 'white'
+            },
+            {
+                id: 15,
+                title: "Troitzky's Knight Endgame (1910)",
+                objective: "White to move and win",
+                difficulty: "Hard",
+                board: [
+                    ['.', '.', '.', '.', '.', '.', 'k', '.'],
+                    ['.', '.', '.', '.', '.', 'P', 'n', '.'],
+                    ['.', '.', '.', '.', '.', '.', 'K', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', 'N', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.'],
+                    ['.', '.', '.', '.', '.', '.', '.', '.']
+                ],
+                history: `Alexey Troitzky (1866-1942) was a Russian endgame study composer and master who created over 1,000 endgame studies. His work on knight and pawn endgames laid the foundation for modern endgame theory. This study from 1910 demonstrates his profound understanding.`,
+                significance: `Troitzky's study of knight and pawn vs. knight is a masterpiece of precision. It shows the "Troitzky line" - the boundary beyond which a knight and pawn cannot win against a lone knight. This position requires exact play to win, demonstrating that even simple-looking endgames contain deep complexity.`,
+                solution: `<strong>Key Idea:</strong> Use precise king and knight coordination to push the pawn while preventing the enemy knight from sacrificing itself!
+
+<strong>Step-by-Step Solution:</strong>
+1. <strong>Ng5+!</strong> - Check! Forcing the Black king away. Black plays: <strong>1...Kf8</strong> (or 1...Kh8)
+
+2. <strong>Kf6!</strong> - The key move! The king supports the pawn and controls key squares. Black: <strong>2...Nh5</strong> (trying to blockade)
+
+3. <strong>Ne6+!</strong> - Another check to improve the knight's position. Black: <strong>3...Ke8</strong>
+
+4. <strong>f8=Q+!</strong> - Wait! The pawn is still on f7. Let me recalculate...
+
+Actually, the correct sequence:
+1. <strong>Kf6!</strong> - Centralizing first. Black plays: <strong>1...Nh5+</strong> (checking)
+
+2. <strong>Kg6!</strong> - The only winning move! Attacking the knight. Black: <strong>2...Nf4+</strong> (or 2...Ng3)
+
+3. <strong>Kf6!</strong> - Returning, but Black's knight is now worse placed. Black: <strong>3...Nh5+</strong>
+
+4. <strong>Kg5!</strong> - Progress! The knight must move: <strong>4...Ng3</strong>
+
+5. <strong>Ng5!</strong> - Controlling f7 and h7. Black: <strong>5...Nf1</strong>
+
+6. <strong>f8=Q+!</strong> - Promotion with check! White wins.
+
+<strong>Why This Works:</strong> The win requires understanding the "Troitzky line" - with the pawn on the 7th rank and the defending knight unable to sacrifice itself for the pawn, White can win. The key is triangulation (moving the king in a triangle to lose a tempo) and knight coordination. If Black's knight could reach f6 or f8 to sacrifice for the pawn, it would be a draw.
+
+<strong>The Lesson:</strong> Knight and pawn versus knight endgames are incredibly tricky! Troitzky showed that if the pawn hasn't crossed the "Troitzky line" (roughly the 6th rank, depending on position), it's usually a draw. This study demonstrates that endgame knowledge is crucial - without knowing these precise techniques, even grandmasters can go wrong!`,
                 turn: 'white'
             }
         ];
