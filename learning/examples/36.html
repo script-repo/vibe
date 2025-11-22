@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress-Style Hook System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .code {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .result {
+            background: #dbeafe;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WordPress-Style Hook System</h1>
+
+        <div class="panel">
+            <h2>Filters (Modify and Return Data)</h2>
+            <div class="code">
+// Add filter<br>
+hooks.addFilter('content', (text) => text.toUpperCase(), 10);<br>
+hooks.addFilter('content', (text) => text + ' [Modified]', 20);<br><br>
+// Apply filters<br>
+const result = hooks.applyFilters('content', 'hello world');
+            </div>
+            <button onclick="testFilters()">Test Filters</button>
+            <div id="filterResult"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Actions (Execute Without Return)</h2>
+            <div class="code">
+// Add action<br>
+hooks.addAction('user_login', (user) => console.log('Welcome', user));<br><br>
+// Do action<br>
+hooks.doAction('user_login', { name: 'John' });
+            </div>
+            <button onclick="testActions()">Test Actions</button>
+            <div id="actionResult"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Priority-Based Execution</h2>
+            <button onclick="testPriority()">Test Priority Order</button>
+            <div id="priorityResult"></div>
+        </div>
+    </div>
+
+    <script>
+        class HookSystem {
+            constructor() {
+                this.filters = {};
+                this.actions = {};
+            }
+
+            // Add a filter (modifies and returns data)
+            addFilter(tag, callback, priority = 10) {
+                if (!this.filters[tag]) {
+                    this.filters[tag] = [];
+                }
+
+                this.filters[tag].push({ callback, priority });
+                this.filters[tag].sort((a, b) => a.priority - b.priority);
+            }
+
+            // Apply filters in chain
+            applyFilters(tag, value, ...args) {
+                if (!this.filters[tag]) return value;
+
+                let result = value;
+
+                for (const filter of this.filters[tag]) {
+                    try {
+                        result = filter.callback(result, ...args);
+                    } catch (error) {
+                        console.error(`Filter ${tag} failed:`, error);
+                    }
+                }
+
+                return result;
+            }
+
+            // Add an action (executes without return)
+            addAction(tag, callback, priority = 10) {
+                if (!this.actions[tag]) {
+                    this.actions[tag] = [];
+                }
+
+                this.actions[tag].push({ callback, priority });
+                this.actions[tag].sort((a, b) => a.priority - b.priority);
+            }
+
+            // Execute all actions
+            doAction(tag, ...args) {
+                if (!this.actions[tag]) return;
+
+                for (const action of this.actions[tag]) {
+                    try {
+                        action.callback(...args);
+                    } catch (error) {
+                        console.error(`Action ${tag} failed:`, error);
+                    }
+                }
+            }
+
+            // Remove filter
+            removeFilter(tag, callback) {
+                if (!this.filters[tag]) return;
+                this.filters[tag] = this.filters[tag].filter(f => f.callback !== callback);
+            }
+
+            // Remove action
+            removeAction(tag, callback) {
+                if (!this.actions[tag]) return;
+                this.actions[tag] = this.actions[tag].filter(a => a.callback !== callback);
+            }
+        }
+
+        const hooks = new HookSystem();
+
+        // Register some example filters
+        hooks.addFilter('post_title', (title) => {
+            return title.trim();
+        }, 5);
+
+        hooks.addFilter('post_title', (title) => {
+            return title.toUpperCase();
+        }, 10);
+
+        hooks.addFilter('post_title', (title) => {
+            return `📝 ${title}`;
+        }, 15);
+
+        hooks.addFilter('price', (price) => {
+            return price * 1.1; // Add 10% tax
+        }, 10);
+
+        hooks.addFilter('price', (price) => {
+            return Math.round(price * 100) / 100; // Round to 2 decimals
+        }, 20);
+
+        // Register some example actions
+        hooks.addAction('app_init', () => {
+            console.log('App initializing...');
+        }, 1);
+
+        hooks.addAction('app_init', () => {
+            console.log('Loading config...');
+        }, 5);
+
+        hooks.addAction('app_init', () => {
+            console.log('App ready!');
+        }, 10);
+
+        function testFilters() {
+            const results = [];
+
+            const title = hooks.applyFilters('post_title', '  hello world  ');
+            results.push(`Post Title: "${title}"`);
+
+            const price = hooks.applyFilters('price', 99.99);
+            results.push(`Price with tax: $${price}`);
+
+            document.getElementById('filterResult').innerHTML = `
+                <div class="result">
+                    <strong>Filter Results:</strong><br>
+                    ${results.join('<br>')}
+                </div>
+            `;
+        }
+
+        function testActions() {
+            const logs = [];
+            const originalLog = console.log;
+
+            console.log = (...args) => {
+                logs.push(args.join(' '));
+                originalLog(...args);
+            };
+
+            hooks.doAction('app_init');
+
+            console.log = originalLog;
+
+            document.getElementById('actionResult').innerHTML = `
+                <div class="result">
+                    <strong>Action Execution Log:</strong><br>
+                    ${logs.join('<br>')}
+                </div>
+            `;
+        }
+
+        function testPriority() {
+            const results = [];
+
+            // Clear existing filters
+            hooks.filters.test_priority = [];
+
+            // Add filters in random priority order
+            hooks.addFilter('test_priority', (val) => {
+                results.push('Priority 20 executed');
+                return val + ' -> [P20]';
+            }, 20);
+
+            hooks.addFilter('test_priority', (val) => {
+                results.push('Priority 5 executed');
+                return val + ' -> [P5]';
+            }, 5);
+
+            hooks.addFilter('test_priority', (val) => {
+                results.push('Priority 15 executed');
+                return val + ' -> [P15]';
+            }, 15);
+
+            hooks.addFilter('test_priority', (val) => {
+                results.push('Priority 1 executed');
+                return val + ' -> [P1]';
+            }, 1);
+
+            const result = hooks.applyFilters('test_priority', 'START');
+
+            document.getElementById('priorityResult').innerHTML = `
+                <div class="result">
+                    <strong>Execution Order (by priority):</strong><br>
+                    ${results.join('<br>')}<br><br>
+                    <strong>Final Result:</strong><br>
+                    ${result}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

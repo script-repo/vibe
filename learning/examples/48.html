@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Token Manager with Auto-Refresh</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { color: #333; margin-bottom: 30px; }
+        .section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        h2 { color: #667eea; font-size: 18px; margin-bottom: 15px; }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .token-display {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.active { background: #d1fae5; color: #065f46; }
+        .status.expired { background: #fee2e2; color: #991b1b; }
+        .status.warning { background: #fef3c7; color: #92400e; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .metric:last-child { border-bottom: none; }
+        .label { color: #666; }
+        .value { font-weight: bold; color: #333; }
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JWT Token Manager</h1>
+
+        <div class="section">
+            <h2>Authentication Status</h2>
+            <div class="status expired" id="status">Not authenticated</div>
+
+            <button onclick="tokenManager.simulateLogin()">Login (Get Token)</button>
+            <button onclick="tokenManager.logout()">Logout</button>
+            <button onclick="tokenManager.testApiCall()">Test API Call</button>
+        </div>
+
+        <div class="section">
+            <h2>Token Information</h2>
+            <div class="metric">
+                <span class="label">Issued At:</span>
+                <span class="value" id="issuedAt">-</span>
+            </div>
+            <div class="metric">
+                <span class="label">Expires At:</span>
+                <span class="value" id="expiresAt">-</span>
+            </div>
+            <div class="metric">
+                <span class="label">Time Until Expiry:</span>
+                <span class="value" id="timeUntilExpiry">-</span>
+            </div>
+            <div class="metric">
+                <span class="label">Auto-Refresh In:</span>
+                <span class="value" id="refreshIn">-</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Access Token</h2>
+            <div class="token-display" id="tokenDisplay">No token</div>
+        </div>
+
+        <div class="section">
+            <h2>Event Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        class JWTTokenManager {
+            constructor() {
+                this.accessToken = null;
+                this.refreshToken = null;
+                this.refreshTimer = null;
+                this.updateInterval = null;
+
+                // Try to restore tokens from storage
+                this.restoreTokens();
+            }
+
+            // Parse JWT without external libraries
+            parseJWT(token) {
+                try {
+                    const parts = token.split('.');
+                    if (parts.length !== 3) {
+                        throw new Error('Invalid JWT format');
+                    }
+
+                    // Decode base64url
+                    const payload = parts[1];
+                    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                    return JSON.parse(decoded);
+                } catch (error) {
+                    this.log(`Error parsing JWT: ${error.message}`);
+                    return null;
+                }
+            }
+
+            // Create a fake JWT token for demo
+            createFakeJWT(expiresInSeconds = 60) {
+                const header = { alg: 'HS256', typ: 'JWT' };
+                const now = Math.floor(Date.now() / 1000);
+                const payload = {
+                    sub: 'user123',
+                    name: 'Demo User',
+                    iat: now,
+                    exp: now + expiresInSeconds
+                };
+
+                const headerB64 = btoa(JSON.stringify(header));
+                const payloadB64 = btoa(JSON.stringify(payload));
+                const signature = 'fake_signature_' + Math.random().toString(36).substr(2, 9);
+
+                return `${headerB64}.${payloadB64}.${signature}`;
+            }
+
+            simulateLogin() {
+                this.log('Simulating login...');
+
+                // Create tokens (access token expires in 60 seconds for demo)
+                this.accessToken = this.createFakeJWT(60);
+                this.refreshToken = 'refresh_token_' + Math.random().toString(36).substr(2, 16);
+
+                // Store tokens
+                localStorage.setItem('access_token', this.accessToken);
+                localStorage.setItem('refresh_token', this.refreshToken);
+
+                this.log('Login successful - tokens stored');
+                this.updateUI();
+                this.scheduleRefresh();
+            }
+
+            scheduleRefresh() {
+                // Clear existing timer
+                if (this.refreshTimer) {
+                    clearTimeout(this.refreshTimer);
+                }
+
+                // Parse token to get expiration
+                const payload = this.parseJWT(this.accessToken);
+                if (!payload || !payload.exp) {
+                    this.log('Cannot schedule refresh - invalid token');
+                    return;
+                }
+
+                const now = Math.floor(Date.now() / 1000);
+                const expiresIn = payload.exp - now;
+
+                // Refresh 5 minutes (300 seconds) before expiry
+                // For demo, we'll refresh 10 seconds before expiry
+                const refreshIn = Math.max(0, expiresIn - 10);
+
+                this.log(`Scheduling auto-refresh in ${refreshIn} seconds`);
+
+                this.refreshTimer = setTimeout(() => {
+                    this.refreshAccessToken();
+                }, refreshIn * 1000);
+
+                // Start UI update interval
+                this.startUIUpdates();
+            }
+
+            async refreshAccessToken() {
+                if (!this.refreshToken) {
+                    this.log('No refresh token available');
+                    this.logout();
+                    return;
+                }
+
+                this.log('Refreshing access token...');
+
+                try {
+                    // Simulate API call to refresh token
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Get new access token (expires in 60 seconds)
+                    const newAccessToken = this.createFakeJWT(60);
+
+                    this.accessToken = newAccessToken;
+                    localStorage.setItem('access_token', newAccessToken);
+
+                    this.log('Access token refreshed successfully');
+                    this.updateUI();
+
+                    // Schedule next refresh
+                    this.scheduleRefresh();
+
+                } catch (error) {
+                    this.log(`Token refresh failed: ${error.message}`);
+                    this.logout();
+                }
+            }
+
+            logout() {
+                this.log('Logging out...');
+
+                this.accessToken = null;
+                this.refreshToken = null;
+
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+
+                if (this.refreshTimer) {
+                    clearTimeout(this.refreshTimer);
+                    this.refreshTimer = null;
+                }
+
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+
+                this.updateUI();
+                this.log('Logged out successfully');
+            }
+
+            restoreTokens() {
+                this.accessToken = localStorage.getItem('access_token');
+                this.refreshToken = localStorage.getItem('refresh_token');
+
+                if (this.accessToken) {
+                    const payload = this.parseJWT(this.accessToken);
+                    const now = Math.floor(Date.now() / 1000);
+
+                    if (payload && payload.exp > now) {
+                        this.log('Restored valid token from storage');
+                        this.scheduleRefresh();
+                    } else {
+                        this.log('Stored token expired');
+                        this.logout();
+                    }
+                }
+
+                this.updateUI();
+            }
+
+            testApiCall() {
+                if (!this.accessToken) {
+                    this.log('Cannot make API call - not authenticated');
+                    return;
+                }
+
+                const payload = this.parseJWT(this.accessToken);
+                const now = Math.floor(Date.now() / 1000);
+
+                if (payload.exp < now) {
+                    this.log('Token expired - API call would fail');
+                    return;
+                }
+
+                this.log(`API call successful with token for user: ${payload.name}`);
+            }
+
+            startUIUpdates() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+
+                this.updateInterval = setInterval(() => {
+                    this.updateUI();
+                }, 1000);
+            }
+
+            updateUI() {
+                if (!this.accessToken) {
+                    document.getElementById('status').className = 'status expired';
+                    document.getElementById('status').textContent = 'Not authenticated';
+                    document.getElementById('tokenDisplay').textContent = 'No token';
+                    document.getElementById('issuedAt').textContent = '-';
+                    document.getElementById('expiresAt').textContent = '-';
+                    document.getElementById('timeUntilExpiry').textContent = '-';
+                    document.getElementById('refreshIn').textContent = '-';
+                    return;
+                }
+
+                const payload = this.parseJWT(this.accessToken);
+                const now = Math.floor(Date.now() / 1000);
+                const timeUntilExpiry = payload.exp - now;
+                const refreshTime = Math.max(0, timeUntilExpiry - 10);
+
+                // Update status
+                let statusClass = 'active';
+                let statusText = 'Authenticated';
+
+                if (timeUntilExpiry <= 0) {
+                    statusClass = 'expired';
+                    statusText = 'Token expired';
+                } else if (timeUntilExpiry <= 15) {
+                    statusClass = 'warning';
+                    statusText = 'Token expiring soon';
+                }
+
+                document.getElementById('status').className = `status ${statusClass}`;
+                document.getElementById('status').textContent = statusText;
+
+                // Update token display
+                document.getElementById('tokenDisplay').textContent = this.accessToken;
+
+                // Update metrics
+                document.getElementById('issuedAt').textContent = new Date(payload.iat * 1000).toLocaleTimeString();
+                document.getElementById('expiresAt').textContent = new Date(payload.exp * 1000).toLocaleTimeString();
+                document.getElementById('timeUntilExpiry').textContent = `${Math.max(0, timeUntilExpiry)}s`;
+                document.getElementById('refreshIn').textContent = `${refreshTime}s`;
+            }
+
+            log(message) {
+                const logDiv = document.getElementById('log');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+
+                const timestamp = new Date().toLocaleTimeString();
+                entry.textContent = `[${timestamp}] ${message}`;
+
+                logDiv.insertBefore(entry, logDiv.firstChild);
+            }
+        }
+
+        const tokenManager = new JWTTokenManager();
+    </script>
+</body>
+</html>

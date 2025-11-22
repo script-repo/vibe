@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Visualizer (Web Audio + 3D)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px 0;
+            width: 100%;
+        }
+        button:hover { background: #22c55e; }
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            background: #1a1a1a;
+            color: #fff;
+            border: 2px solid #3d3d3d;
+        }
+        .info {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <h2 style="margin-bottom: 15px;">Music Visualizer</h2>
+        <button onclick="viz.startMicrophone()">Use Microphone</button>
+        <button onclick="viz.playTestTone()">Play Test Tone</button>
+        <select id="modeSelect" onchange="viz.changeMode(this.value)">
+            <option value="bars">Frequency Bars</option>
+            <option value="circle">Circle</option>
+            <option value="waveform">Waveform</option>
+            <option value="particles">Particles</option>
+        </select>
+        <div class="info">
+            BPM: <span id="bpm">--</span><br>
+            Frequency: <span id="freq">--</span> Hz
+        </div>
+    </div>
+
+    <script>
+        class MusicVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.audioContext = null;
+                this.analyser = null;
+                this.dataArray = null;
+                this.bufferLength = null;
+                this.mode = 'bars';
+                this.particles = [];
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            async startMicrophone() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.setupAudio(stream);
+                } catch (error) {
+                    alert('Microphone access denied. Using test tone instead.');
+                    this.playTestTone();
+                }
+            }
+
+            playTestTone() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440; // A4 note
+
+                // Modulate frequency for interest
+                const lfo = this.audioContext.createOscillator();
+                const lfoGain = this.audioContext.createGain();
+                lfo.frequency.value = 2;
+                lfoGain.gain.value = 50;
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(oscillator.frequency);
+                lfo.start();
+
+                gainNode.gain.value = 0.3;
+
+                oscillator.connect(gainNode);
+                this.setupAudioAnalyzer(gainNode);
+                oscillator.start();
+            }
+
+            setupAudio(stream) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = this.audioContext.createMediaStreamSource(stream);
+                this.setupAudioAnalyzer(source);
+            }
+
+            setupAudioAnalyzer(source) {
+                this.analyser = this.audioContext.createAnalyser();
+                this.analyser.fftSize = 2048;
+                this.bufferLength = this.analyser.frequencyBinCount;
+                this.dataArray = new Uint8Array(this.bufferLength);
+
+                source.connect(this.analyser);
+                this.analyser.connect(this.audioContext.destination);
+
+                this.animate();
+            }
+
+            changeMode(mode) {
+                this.mode = mode;
+                if (mode === 'particles') {
+                    this.initParticles();
+                }
+            }
+
+            initParticles() {
+                this.particles = [];
+                for (let i = 0; i < 100; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        radius: Math.random() * 3 + 1
+                    });
+                }
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                if (!this.analyser) return;
+
+                this.analyser.getByteFrequencyData(this.dataArray);
+
+                // Clear canvas
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Render based on mode
+                switch(this.mode) {
+                    case 'bars':
+                        this.renderBars();
+                        break;
+                    case 'circle':
+                        this.renderCircle();
+                        break;
+                    case 'waveform':
+                        this.renderWaveform();
+                        break;
+                    case 'particles':
+                        this.renderParticles();
+                        break;
+                }
+
+                this.updateInfo();
+            }
+
+            renderBars() {
+                const barWidth = this.canvas.width / this.bufferLength * 2.5;
+                let x = 0;
+
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const barHeight = (this.dataArray[i] / 255) * this.canvas.height * 0.8;
+
+                    const hue = (i / this.bufferLength) * 360;
+                    this.ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    this.ctx.fillRect(x, this.canvas.height - barHeight, barWidth, barHeight);
+
+                    x += barWidth + 1;
+                }
+            }
+
+            renderCircle() {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                const radius = 100;
+
+                this.ctx.beginPath();
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const angle = (i / this.bufferLength) * Math.PI * 2;
+                    const value = this.dataArray[i] / 255;
+                    const r = radius + value * 200;
+
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.closePath();
+
+                const gradient = this.ctx.createRadialGradient(centerX, centerY, radius, centerX, centerY, radius + 200);
+                gradient.addColorStop(0, '#4ade80');
+                gradient.addColorStop(1, '#667eea');
+
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 3;
+                this.ctx.stroke();
+            }
+
+            renderWaveform() {
+                this.analyser.getByteTimeDomainData(this.dataArray);
+
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = '#4ade80';
+                this.ctx.lineWidth = 2;
+
+                const sliceWidth = this.canvas.width / this.bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const v = this.dataArray[i] / 128.0;
+                    const y = v * this.canvas.height / 2;
+
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                this.ctx.stroke();
+            }
+
+            renderParticles() {
+                if (this.particles.length === 0) {
+                    this.initParticles();
+                }
+
+                const avg = this.dataArray.reduce((a, b) => a + b) / this.bufferLength;
+
+                for (let particle of this.particles) {
+                    const force = (avg / 255) * 5;
+
+                    particle.vx += (Math.random() - 0.5) * force;
+                    particle.vy += (Math.random() - 0.5) * force;
+
+                    particle.vx *= 0.95;
+                    particle.vy *= 0.95;
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+                    if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `hsl(${(avg / 255) * 360}, 100%, 50%)`;
+                    this.ctx.fill();
+                }
+            }
+
+            updateInfo() {
+                // Estimate BPM from frequency data
+                const sum = this.dataArray.reduce((a, b) => a + b, 0);
+                const avg = sum / this.bufferLength;
+                const bpm = Math.round((avg / 255) * 180);
+
+                // Find dominant frequency
+                let maxIndex = 0;
+                let maxValue = 0;
+                for (let i = 0; i < this.bufferLength; i++) {
+                    if (this.dataArray[i] > maxValue) {
+                        maxValue = this.dataArray[i];
+                        maxIndex = i;
+                    }
+                }
+
+                const freq = Math.round((maxIndex / this.bufferLength) * (this.audioContext.sampleRate / 2));
+
+                document.getElementById('bpm').textContent = bpm;
+                document.getElementById('freq').textContent = freq;
+            }
+        }
+
+        const viz = new MusicVisualizer();
+    </script>
+</body>
+</html>

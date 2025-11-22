@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components with Shadow DOM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 { color: #667eea; margin-bottom: 20px; }
+        .demo { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Components with Shadow DOM</h1>
+
+        <div class="section">
+            <h2>User Card Component</h2>
+            <div class="demo">
+                <user-card name="Alice Johnson" role="Software Engineer" avatar="👩‍💻"></user-card>
+                <user-card name="Bob Smith" role="Product Manager" avatar="👨‍💼"></user-card>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Counter Component</h2>
+            <div class="demo">
+                <custom-counter initial="0" step="1"></custom-counter>
+                <custom-counter initial="10" step="5"></custom-counter>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Toggle Switch Component</h2>
+            <div class="demo">
+                <toggle-switch label="Enable Notifications"></toggle-switch>
+                <toggle-switch label="Dark Mode" checked></toggle-switch>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User Card Component
+        class UserCard extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+
+            connectedCallback() {
+                const name = this.getAttribute('name') || 'Unknown';
+                const role = this.getAttribute('role') || 'No role';
+                const avatar = this.getAttribute('avatar') || '👤';
+
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host {
+                            display: block;
+                            margin: 10px 0;
+                        }
+                        .card {
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            padding: 20px;
+                            border-radius: 12px;
+                            display: flex;
+                            align-items: center;
+                            gap: 15px;
+                            transition: transform 0.3s ease;
+                        }
+                        .card:hover {
+                            transform: translateY(-4px);
+                        }
+                        .avatar {
+                            font-size: 48px;
+                            width: 64px;
+                            height: 64px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background: rgba(255, 255, 255, 0.2);
+                            border-radius: 50%;
+                        }
+                        .info h3 {
+                            margin: 0 0 5px 0;
+                            font-size: 20px;
+                        }
+                        .info p {
+                            margin: 0;
+                            opacity: 0.9;
+                            font-size: 14px;
+                        }
+                    </style>
+                    <div class="card">
+                        <div class="avatar">${avatar}</div>
+                        <div class="info">
+                            <h3>${name}</h3>
+                            <p>${role}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Counter Component
+        class CustomCounter extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                this.count = 0;
+            }
+
+            static get observedAttributes() {
+                return ['initial', 'step'];
+            }
+
+            connectedCallback() {
+                this.count = parseInt(this.getAttribute('initial')) || 0;
+                this.step = parseInt(this.getAttribute('step')) || 1;
+                this.render();
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'initial') {
+                    this.count = parseInt(newValue) || 0;
+                    this.render();
+                } else if (name === 'step') {
+                    this.step = parseInt(newValue) || 1;
+                }
+            }
+
+            render() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host {
+                            display: inline-block;
+                            margin: 10px;
+                        }
+                        .counter {
+                            background: white;
+                            border: 2px solid #e0e0e0;
+                            border-radius: 8px;
+                            padding: 20px;
+                            text-align: center;
+                            min-width: 200px;
+                        }
+                        .count {
+                            font-size: 48px;
+                            font-weight: bold;
+                            color: #667eea;
+                            margin: 20px 0;
+                        }
+                        button {
+                            padding: 10px 20px;
+                            border: none;
+                            border-radius: 6px;
+                            background: #667eea;
+                            color: white;
+                            font-weight: bold;
+                            cursor: pointer;
+                            margin: 0 5px;
+                        }
+                        button:hover {
+                            background: #5568d3;
+                        }
+                    </style>
+                    <div class="counter">
+                        <div class="count">${this.count}</div>
+                        <button id="dec">-</button>
+                        <button id="inc">+</button>
+                    </div>
+                `;
+
+                this.shadowRoot.getElementById('inc').addEventListener('click', () => {
+                    this.count += this.step;
+                    this.render();
+                    this.dispatchEvent(new CustomEvent('count-changed', { detail: this.count }));
+                });
+
+                this.shadowRoot.getElementById('dec').addEventListener('click', () => {
+                    this.count -= this.step;
+                    this.render();
+                    this.dispatchEvent(new CustomEvent('count-changed', { detail: this.count }));
+                });
+            }
+        }
+
+        // Toggle Switch Component
+        class ToggleSwitch extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+
+            static get observedAttributes() {
+                return ['checked', 'label'];
+            }
+
+            connectedCallback() {
+                this.render();
+            }
+
+            attributeChangedCallback() {
+                this.render();
+            }
+
+            render() {
+                const checked = this.hasAttribute('checked');
+                const label = this.getAttribute('label') || 'Toggle';
+
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host {
+                            display: block;
+                            margin: 15px 0;
+                        }
+                        .toggle-container {
+                            display: flex;
+                            align-items: center;
+                            gap: 15px;
+                        }
+                        .toggle-label {
+                            font-size: 16px;
+                            color: #333;
+                        }
+                        .toggle-switch {
+                            width: 60px;
+                            height: 30px;
+                            background: ${checked ? '#4ade80' : '#ccc'};
+                            border-radius: 15px;
+                            position: relative;
+                            cursor: pointer;
+                            transition: background 0.3s ease;
+                        }
+                        .toggle-switch:hover {
+                            background: ${checked ? '#22c55e' : '#b3b3b3'};
+                        }
+                        .toggle-knob {
+                            width: 26px;
+                            height: 26px;
+                            background: white;
+                            border-radius: 50%;
+                            position: absolute;
+                            top: 2px;
+                            left: ${checked ? '32px' : '2px'};
+                            transition: left 0.3s ease;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                        }
+                    </style>
+                    <div class="toggle-container">
+                        <span class="toggle-label">${label}</span>
+                        <div class="toggle-switch" id="switch">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                `;
+
+                this.shadowRoot.getElementById('switch').addEventListener('click', () => {
+                    if (this.hasAttribute('checked')) {
+                        this.removeAttribute('checked');
+                    } else {
+                        this.setAttribute('checked', '');
+                    }
+                    this.dispatchEvent(new CustomEvent('toggle', {
+                        detail: this.hasAttribute('checked')
+                    }));
+                });
+            }
+        }
+
+        // Register custom elements
+        customElements.define('user-card', UserCard);
+        customElements.define('custom-counter', CustomCounter);
+        customElements.define('toggle-switch', ToggleSwitch);
+
+        // Listen to events
+        document.querySelectorAll('custom-counter').forEach(counter => {
+            counter.addEventListener('count-changed', (e) => {
+                console.log('Counter changed:', e.detail);
+            });
+        });
+
+        document.querySelectorAll('toggle-switch').forEach(toggle => {
+            toggle.addEventListener('toggle', (e) => {
+                console.log('Toggle switched:', e.detail);
+            });
+        });
+    </script>
+</body>
+</html>

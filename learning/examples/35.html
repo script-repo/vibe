@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Architecture with Registry Pattern</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .plugin {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        .plugin.active { border-left-color: #4ade80; }
+        .plugin.disabled { border-left-color: #ef4444; opacity: 0.6; }
+        .plugin-name { font-weight: bold; color: #667eea; }
+        .plugin-status { font-size: 12px; color: #666; margin-top: 5px; }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 12px;
+        }
+        button:hover { background: #5568d3; }
+        button.danger { background: #ef4444; }
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Plugin Architecture with Registry Pattern</h1>
+
+        <div class="panel">
+            <h2>Registered Plugins</h2>
+            <div id="pluginList"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Actions</h2>
+            <button onclick="app.testPluginLifecycle()">Test Plugin Lifecycle</button>
+            <button onclick="app.executeAllPlugins()">Execute All Plugins</button>
+            <button onclick="app.clearLog()">Clear Log</button>
+        </div>
+
+        <div class="panel">
+            <h2>Event Log</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Plugin Registry Pattern
+        class PluginRegistry {
+            constructor() {
+                this.plugins = new Map();
+                this.hooks = {};
+            }
+
+            register(plugin) {
+                // Validate plugin interface
+                if (!this.validatePlugin(plugin)) {
+                    throw new Error(`Invalid plugin: missing required methods`);
+                }
+
+                if (this.plugins.has(plugin.name)) {
+                    throw new Error(`Plugin ${plugin.name} already registered`);
+                }
+
+                this.plugins.set(plugin.name, {
+                    plugin,
+                    enabled: false,
+                    priority: plugin.priority || 10
+                });
+
+                this.log(`Plugin "${plugin.name}" registered`);
+
+                return this;
+            }
+
+            validatePlugin(plugin) {
+                return (
+                    plugin.name &&
+                    typeof plugin.init === 'function' &&
+                    typeof plugin.enable === 'function' &&
+                    typeof plugin.disable === 'function'
+                );
+            }
+
+            enable(name) {
+                const entry = this.plugins.get(name);
+                if (!entry) {
+                    throw new Error(`Plugin ${name} not found`);
+                }
+
+                if (entry.enabled) {
+                    this.log(`Plugin "${name}" already enabled`);
+                    return;
+                }
+
+                try {
+                    entry.plugin.enable();
+                    entry.enabled = true;
+                    this.log(`Plugin "${name}" enabled`);
+                    this.runHook('plugin:enabled', { name });
+                } catch (error) {
+                    this.log(`Failed to enable plugin "${name}": ${error.message}`);
+                    throw error;
+                }
+            }
+
+            disable(name) {
+                const entry = this.plugins.get(name);
+                if (!entry) {
+                    throw new Error(`Plugin ${name} not found`);
+                }
+
+                if (!entry.enabled) {
+                    this.log(`Plugin "${name}" already disabled`);
+                    return;
+                }
+
+                try {
+                    entry.plugin.disable();
+                    entry.enabled = false;
+                    this.log(`Plugin "${name}" disabled`);
+                    this.runHook('plugin:disabled', { name });
+                } catch (error) {
+                    this.log(`Failed to disable plugin "${name}": ${error.message}`);
+                }
+            }
+
+            execute(name, context) {
+                const entry = this.plugins.get(name);
+                if (!entry) {
+                    throw new Error(`Plugin ${name} not found`);
+                }
+
+                if (!entry.enabled) {
+                    this.log(`Plugin "${name}" is disabled, skipping execution`);
+                    return null;
+                }
+
+                try {
+                    this.log(`Executing plugin "${name}"`);
+                    const result = entry.plugin.execute?.(context);
+                    return result;
+                } catch (error) {
+                    this.log(`Plugin "${name}" execution failed: ${error.message}`);
+                    // Graceful degradation
+                    return null;
+                }
+            }
+
+            executeAll(context) {
+                // Sort by priority (lower number = higher priority)
+                const sorted = Array.from(this.plugins.entries())
+                    .filter(([_, entry]) => entry.enabled)
+                    .sort((a, b) => a[1].priority - b[1].priority);
+
+                this.log(`Executing ${sorted.length} enabled plugins`);
+
+                const results = [];
+                for (const [name, entry] of sorted) {
+                    try {
+                        const result = entry.plugin.execute?.(context);
+                        results.push({ name, result, success: true });
+                    } catch (error) {
+                        this.log(`Plugin "${name}" failed: ${error.message}`);
+                        results.push({ name, error: error.message, success: false });
+                    }
+                }
+
+                return results;
+            }
+
+            addHook(event, callback) {
+                if (!this.hooks[event]) {
+                    this.hooks[event] = [];
+                }
+                this.hooks[event].push(callback);
+            }
+
+            runHook(event, data) {
+                if (!this.hooks[event]) return;
+
+                for (const callback of this.hooks[event]) {
+                    try {
+                        callback(data);
+                    } catch (error) {
+                        this.log(`Hook execution failed: ${error.message}`);
+                    }
+                }
+            }
+
+            getPlugin(name) {
+                return this.plugins.get(name);
+            }
+
+            getAllPlugins() {
+                return Array.from(this.plugins.entries());
+            }
+
+            log(message) {
+                const logDiv = document.getElementById('log');
+                const timestamp = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.textContent = `[${timestamp}] ${message}`;
+                logDiv.appendChild(entry);
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+        }
+
+        // Example Plugins
+        const analyticsPlugin = {
+            name: 'analytics',
+            version: '1.0.0',
+            priority: 5,
+
+            init() {
+                console.log('Analytics plugin initialized');
+            },
+
+            enable() {
+                console.log('Analytics tracking enabled');
+            },
+
+            disable() {
+                console.log('Analytics tracking disabled');
+            },
+
+            execute(context) {
+                return { event: 'page_view', page: context.page };
+            },
+
+            destroy() {
+                console.log('Analytics plugin destroyed');
+            }
+        };
+
+        const darkModePlugin = {
+            name: 'dark-mode',
+            version: '1.0.0',
+            priority: 1,
+
+            init() {
+                console.log('Dark mode plugin initialized');
+            },
+
+            enable() {
+                document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+            },
+
+            disable() {
+                document.body.style.filter = '';
+            },
+
+            execute(context) {
+                return { theme: 'dark' };
+            }
+        };
+
+        const notificationsPlugin = {
+            name: 'notifications',
+            version: '1.0.0',
+            priority: 10,
+
+            init() {
+                console.log('Notifications plugin initialized');
+            },
+
+            enable() {
+                console.log('Notifications enabled');
+            },
+
+            disable() {
+                console.log('Notifications disabled');
+            },
+
+            execute(context) {
+                return { message: `Notification: ${context.message}` };
+            }
+        };
+
+        // Application
+        class PluginApp {
+            constructor() {
+                this.registry = new PluginRegistry();
+
+                // Register plugins
+                this.registry.register(analyticsPlugin);
+                this.registry.register(darkModePlugin);
+                this.registry.register(notificationsPlugin);
+
+                // Add hooks
+                this.registry.addHook('plugin:enabled', (data) => {
+                    this.updateUI();
+                });
+
+                this.registry.addHook('plugin:disabled', (data) => {
+                    this.updateUI();
+                });
+
+                // Initialize all plugins
+                for (const [name, entry] of this.registry.getAllPlugins()) {
+                    entry.plugin.init();
+                }
+
+                this.updateUI();
+            }
+
+            updateUI() {
+                const list = document.getElementById('pluginList');
+                list.innerHTML = '';
+
+                for (const [name, entry] of this.registry.getAllPlugins()) {
+                    const div = document.createElement('div');
+                    div.className = `plugin ${entry.enabled ? 'active' : 'disabled'}`;
+
+                    div.innerHTML = `
+                        <div class="plugin-name">${entry.plugin.name} v${entry.plugin.version}</div>
+                        <div class="plugin-status">
+                            Priority: ${entry.priority} |
+                            Status: ${entry.enabled ? 'Enabled' : 'Disabled'}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            ${entry.enabled ?
+                                `<button onclick="app.disablePlugin('${name}')">Disable</button>` :
+                                `<button onclick="app.enablePlugin('${name}')">Enable</button>`
+                            }
+                            <button onclick="app.executePlugin('${name}')">Execute</button>
+                        </div>
+                    `;
+
+                    list.appendChild(div);
+                }
+            }
+
+            enablePlugin(name) {
+                this.registry.enable(name);
+            }
+
+            disablePlugin(name) {
+                this.registry.disable(name);
+            }
+
+            executePlugin(name) {
+                const result = this.registry.execute(name, {
+                    page: '/home',
+                    message: 'Test notification'
+                });
+                this.registry.log(`Result: ${JSON.stringify(result)}`);
+            }
+
+            executeAllPlugins() {
+                const results = this.registry.executeAll({
+                    page: '/home',
+                    message: 'Test notification'
+                });
+                this.registry.log(`Executed ${results.length} plugins`);
+            }
+
+            testPluginLifecycle() {
+                this.registry.log('Testing plugin lifecycle...');
+                this.registry.enable('analytics');
+                setTimeout(() => this.registry.disable('analytics'), 2000);
+                setTimeout(() => this.registry.enable('analytics'), 4000);
+            }
+
+            clearLog() {
+                document.getElementById('log').innerHTML = '';
+            }
+        }
+
+        // Initialize app
+        const app = new PluginApp();
+    </script>
+</body>
+</html>

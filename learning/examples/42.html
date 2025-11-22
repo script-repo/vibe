@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Globe with Climate Zones</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000814;
+            color: #fff;
+            overflow: hidden;
+        }
+        #canvas { display: block; width: 100%; height: 100vh; }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h2 { margin-bottom: 15px; color: #4ade80; }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #22c55e; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <h2>Weather Globe</h2>
+        <button onclick="globe.toggleRotation()">Toggle Rotation</button>
+        <button onclick="globe.toggleClouds()">Toggle Clouds</button>
+        <button onclick="globe.toggleGlow()">Toggle Atmosphere</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        class WeatherGlobe {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.camera.position.z = 3;
+
+                this.rotating = true;
+                this.showClouds = true;
+                this.showGlow = true;
+
+                this.initGlobe();
+                this.animate();
+
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            initGlobe() {
+                // Main globe
+                const geometry = new THREE.SphereGeometry(1, 64, 64);
+                const material = new THREE.MeshPhongMaterial({
+                    map: this.createEarthTexture(),
+                    bumpMap: this.createBumpMap(),
+                    bumpScale: 0.05,
+                });
+
+                this.globe = new THREE.Mesh(geometry, material);
+                this.scene.add(this.globe);
+
+                // Clouds layer
+                const cloudGeometry = new THREE.SphereGeometry(1.02, 64, 64);
+                const cloudMaterial = new THREE.MeshPhongMaterial({
+                    map: this.createCloudTexture(),
+                    transparent: true,
+                    opacity: 0.4
+                });
+
+                this.clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                this.scene.add(this.clouds);
+
+                // Atmospheric glow
+                const glowGeometry = new THREE.SphereGeometry(1.1, 32, 32);
+                const glowMaterial = new THREE.ShaderMaterial({
+                    uniforms: {},
+                    vertexShader: `
+                        varying vec3 vNormal;
+                        void main() {
+                            vNormal = normalize(normalMatrix * normal);
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vNormal;
+                        void main() {
+                            float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                            gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+                        }
+                    `,
+                    side: THREE.BackSide,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true
+                });
+
+                this.glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                this.scene.add(this.glow);
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+                this.scene.add(ambientLight);
+
+                const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+                sunLight.position.set(5, 3, 5);
+                this.scene.add(sunLight);
+            }
+
+            createEarthTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 2048;
+                canvas.height = 1024;
+                const ctx = canvas.getContext('2d');
+
+                // Climate zones based on latitude
+                for (let y = 0; y < canvas.height; y++) {
+                    const lat = (y / canvas.height) * Math.PI;
+                    const zone = this.getClimateZone(lat);
+
+                    ctx.fillStyle = zone.color;
+                    ctx.fillRect(0, y, canvas.width, 1);
+
+                    // Add variation with noise
+                    for (let x = 0; x < canvas.width; x++) {
+                        if (Math.random() > 0.7) {
+                            ctx.fillStyle = zone.variantColor;
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+
+            getClimateZone(lat) {
+                const zones = [
+                    { lat: 0.2, color: '#ffffff', variantColor: '#f0f0f0' },      // Arctic
+                    { lat: 0.4, color: '#90c090', variantColor: '#a0d0a0' },      // Temperate
+                    { lat: 0.6, color: '#70a070', variantColor: '#60c060' },      // Subtropical
+                    { lat: 0.8, color: '#f0d070', variantColor: '#e0c060' },      // Tropical
+                    { lat: 1.0, color: '#70a070', variantColor: '#60c060' }       // Southern
+                ];
+
+                for (const zone of zones) {
+                    if (lat < zone.lat) return zone;
+                }
+
+                return zones[zones.length - 1];
+            }
+
+            createCloudTexture() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw cloud patches
+                ctx.fillStyle = '#ffffff';
+                for (let i = 0; i < 200; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const radius = Math.random() * 50 + 20;
+
+                    ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+
+            createBumpMap() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+
+                // Generate terrain noise
+                for (let y = 0; y < canvas.height; y++) {
+                    for (let x = 0; x < canvas.width; x++) {
+                        const value = Math.random() * 255;
+                        ctx.fillStyle = `rgb(${value}, ${value}, ${value})`;
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+
+            toggleRotation() {
+                this.rotating = !this.rotating;
+            }
+
+            toggleClouds() {
+                this.showClouds = !this.showClouds;
+                this.clouds.visible = this.showClouds;
+            }
+
+            toggleGlow() {
+                this.showGlow = !this.showGlow;
+                this.glow.visible = this.showGlow;
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                if (this.rotating) {
+                    this.globe.rotation.y += 0.002;
+                    this.clouds.rotation.y += 0.003;
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        const globe = new WeatherGlobe();
+    </script>
+</body>
+</html>

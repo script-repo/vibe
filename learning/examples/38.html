@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Calling & Tool Use</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 30px; }
+        .panel {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .tool {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #4ade80;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        .result {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #3d3d3d;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Function Calling & Tool Use</h1>
+
+        <div class="panel">
+            <h2>Available Tools</h2>
+            <div class="tool">
+                <strong>get_weather(location: string)</strong><br>
+                Get current weather for a location
+            </div>
+            <div class="tool">
+                <strong>calculate(expression: string)</strong><br>
+                Evaluate mathematical expressions
+            </div>
+            <div class="tool">
+                <strong>search(query: string)</strong><br>
+                Search for information
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>AI Query</h2>
+            <input type="text" id="queryInput" placeholder="Ask something (e.g., 'What's the weather in Tokyo?')" onkeypress="if(event.key==='Enter') sendQuery()">
+            <button onclick="sendQuery()">Send</button>
+        </div>
+
+        <div class="panel">
+            <h2>Tool Execution Log</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tool definitions (OpenAI function calling format)
+        const tools = [
+            {
+                type: 'function',
+                function: {
+                    name: 'get_weather',
+                    description: 'Get the current weather in a given location',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            location: {
+                                type: 'string',
+                                description: 'The city and state, e.g. San Francisco, CA'
+                            }
+                        },
+                        required: ['location']
+                    }
+                }
+            },
+            {
+                type: 'function',
+                function: {
+                    name: 'calculate',
+                    description: 'Evaluate a mathematical expression',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            expression: {
+                                type: 'string',
+                                description: 'The mathematical expression to evaluate'
+                            }
+                        },
+                        required: ['expression']
+                    }
+                }
+            },
+            {
+                type: 'function',
+                function: {
+                    name: 'search',
+                    description: 'Search for information on the internet',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            query: {
+                                type: 'string',
+                                description: 'The search query'
+                            }
+                        },
+                        required: ['query']
+                    }
+                }
+            }
+        ];
+
+        // Tool implementations
+        const toolImplementations = {
+            get_weather: async (args) => {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return {
+                    location: args.location,
+                    temperature: Math.floor(Math.random() * 30) + 10,
+                    condition: ['Sunny', 'Cloudy', 'Rainy', 'Snowy'][Math.floor(Math.random() * 4)]
+                };
+            },
+
+            calculate: async (args) => {
+                try {
+                    // Simple safe evaluation (in production, use a proper math parser)
+                    const result = eval(args.expression.replace(/[^0-9+\-*/(). ]/g, ''));
+                    return { expression: args.expression, result };
+                } catch (error) {
+                    return { error: 'Invalid expression' };
+                }
+            },
+
+            search: async (args) => {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return {
+                    query: args.query,
+                    results: [
+                        { title: `Result 1 for "${args.query}"`, snippet: 'This is a relevant result...' },
+                        { title: `Result 2 for "${args.query}"`, snippet: 'Another relevant result...' }
+                    ]
+                };
+            }
+        };
+
+        function addResult(content, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'result';
+            div.style.borderLeft = type === 'tool' ? '3px solid #4ade80' : '3px solid #3b82f6';
+
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<strong>[${timestamp}]</strong><br>${content}`;
+
+            resultsDiv.insertBefore(div, resultsDiv.firstChild);
+        }
+
+        async function sendQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) return;
+
+            addResult(`User: ${query}`);
+            document.getElementById('queryInput').value = '';
+
+            // Simulate AI determining which tool to call
+            const toolCall = determineToolCall(query);
+
+            if (toolCall) {
+                addResult(
+                    `AI decided to call: <strong>${toolCall.name}</strong><br>` +
+                    `Arguments: ${JSON.stringify(toolCall.arguments, null, 2)}`,
+                    'tool'
+                );
+
+                // Execute the tool
+                const result = await toolImplementations[toolCall.name](toolCall.arguments);
+
+                addResult(
+                    `Tool result:<br>${JSON.stringify(result, null, 2)}`,
+                    'tool'
+                );
+
+                // AI response with tool result
+                const finalResponse = generateResponse(query, toolCall, result);
+                addResult(`AI: ${finalResponse}`);
+            } else {
+                addResult(`AI: I can answer that directly: ${query}`);
+            }
+        }
+
+        function determineToolCall(query) {
+            const lowerQuery = query.toLowerCase();
+
+            if (lowerQuery.includes('weather')) {
+                const location = extractLocation(query) || 'San Francisco';
+                return {
+                    name: 'get_weather',
+                    arguments: { location }
+                };
+            }
+
+            if (lowerQuery.includes('calculate') || /\d+[\+\-\*\/]\d+/.test(query)) {
+                const expression = query.match(/[\d\+\-\*\/\(\) ]+/)?.[0] || query;
+                return {
+                    name: 'calculate',
+                    arguments: { expression: expression.trim() }
+                };
+            }
+
+            if (lowerQuery.includes('search') || lowerQuery.includes('find')) {
+                return {
+                    name: 'search',
+                    arguments: { query }
+                };
+            }
+
+            return null;
+        }
+
+        function extractLocation(query) {
+            const match = query.match(/in ([A-Za-z ]+)/i);
+            return match ? match[1].trim() : null;
+        }
+
+        function generateResponse(query, toolCall, result) {
+            if (toolCall.name === 'get_weather') {
+                return `The weather in ${result.location} is ${result.condition} with a temperature of ${result.temperature}°C.`;
+            }
+
+            if (toolCall.name === 'calculate') {
+                return result.error || `The result of ${result.expression} is ${result.result}.`;
+            }
+
+            if (toolCall.name === 'search') {
+                return `I found ${result.results.length} results for "${result.query}". The top result is: ${result.results[0].title}`;
+            }
+
+            return 'Here is the information you requested.';
+        }
+
+        // Add welcome message
+        window.addEventListener('DOMContentLoaded', () => {
+            addResult('AI Assistant ready! I can use tools to help you. Try asking about weather, calculations, or searching for information.');
+        });
+    </script>
+</body>
+</html>
