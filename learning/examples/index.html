@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web App Examples Showcase</title>
+    <title>Web App Examples - Learning Showcase</title>
     <style>
         * {
             margin: 0;
@@ -12,687 +12,466 @@
         }
 
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #1a1a2e;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary-color: #667eea;
+            --primary-dark: #5568d3;
+            --secondary-color: #764ba2;
+            --bg-dark: #0f0f1e;
+            --bg-card: #1a1a2e;
+            --bg-hover: #252540;
             --text-primary: #ffffff;
             --text-secondary: #a0a0b0;
-            --accent-1: #667eea;
-            --accent-2: #764ba2;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            --gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            --gradient-6: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        [data-theme="light"] {
-            --bg-primary: #f5f7fa;
-            --bg-secondary: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --text-primary: #1a1a2e;
-            --text-secondary: #6b7280;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
+            background: var(--bg-dark);
             color: var(--text-primary);
-            overflow-x: hidden;
-            transition: var(--transition);
-        }
-
-        /* Animated Background */
-        .animated-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
             overflow: hidden;
-            pointer-events: none;
-        }
-
-        .gradient-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            animation: float 20s infinite ease-in-out;
-        }
-
-        .orb-1 {
-            width: 500px;
-            height: 500px;
-            background: var(--gradient-1);
-            top: -250px;
-            left: -250px;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 400px;
-            height: 400px;
-            background: var(--gradient-2);
-            top: 50%;
-            right: -200px;
-            animation-delay: -5s;
-        }
-
-        .orb-3 {
-            width: 600px;
-            height: 600px;
-            background: var(--gradient-3);
-            bottom: -300px;
-            left: 50%;
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.1); }
-            66% { transform: translate(-30px, 30px) scale(0.9); }
+            height: 100vh;
         }
 
         /* Header */
         header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            z-index: 100;
             position: relative;
-            z-index: 10;
-            padding: 2rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 2rem;
-            flex-wrap: wrap;
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: white;
+            margin: 0;
         }
 
-        .header-actions {
+        .subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 0.25rem;
+        }
+
+        /* Main Container */
+        .main-container {
             display: flex;
-            gap: 1rem;
-            align-items: center;
+            height: calc(100vh - 88px);
+            overflow: hidden;
         }
 
-        .theme-toggle {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        /* Search and Filter */
-        .controls {
-            position: relative;
-            z-index: 10;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .search-filter-container {
+        /* Sidebar (Left Panel) */
+        .sidebar {
+            width: 400px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .search-box {
-            flex: 1;
-            min-width: 300px;
-            position: relative;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .search-box input {
             width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             color: var(--text-primary);
-            font-size: 1rem;
-            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
             transition: var(--transition);
         }
 
         .search-box input:focus {
             outline: none;
-            border-color: var(--accent-1);
-            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .search-box::before {
-            content: "🔍";
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2rem;
-        }
-
-        .filter-tags {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-tag {
-            padding: 0.5rem 1rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-        }
-
-        .filter-tag:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .filter-tag.active {
-            background: var(--gradient-1);
-            border-color: transparent;
-            color: white;
-        }
-
-        .results-info {
-            margin-top: 1rem;
+        .search-box input::placeholder {
             color: var(--text-secondary);
-            font-size: 0.9rem;
         }
 
-        /* Grid Container */
-        .grid-view {
-            position: relative;
-            z-index: 10;
-            padding: 0 2rem 4rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .examples-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Example Card */
-        .example-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-            backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .example-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--card-gradient);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .example-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .example-card:hover::before {
-            opacity: 1;
-        }
-
-        .card-icon {
-            width: 100%;
-            height: 120px;
-            border-radius: 12px;
-            background: var(--card-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-icon::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-        }
-
-        .card-number {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .card-description {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .card-meta {
+        .stats {
+            padding: 1rem 1.5rem;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
 
-        .card-size {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .card-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .tech-tag {
+        .stat-badge {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
             padding: 0.25rem 0.75rem;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.3);
             border-radius: 12px;
-            font-size: 0.75rem;
-            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
-        /* Viewer Mode */
-        .viewer-mode {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
+        /* Example List */
+        .example-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
         }
 
-        .viewer-mode.active {
-            display: flex;
+        .example-item {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .viewer-header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem 2rem;
+        .example-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .example-item.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-color: transparent;
+        }
+
+        .example-item.active .example-title,
+        .example-item.active .example-meta,
+        .example-item.active .example-description {
+            color: white;
+        }
+
+        .example-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
         }
 
-        .viewer-nav {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .viewer-btn {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .viewer-btn:hover {
+        .example-number {
             background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .viewer-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .viewer-title {
-            font-size: 1.25rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
             font-weight: 600;
-            flex: 1;
-            text-align: center;
         }
 
-        .viewer-content {
+        .example-item.active .example-number {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .example-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .example-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .example-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-tag {
+            padding: 0.25rem 0.5rem;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .example-item.active .meta-tag {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .complexity {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .example-item.active .complexity {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .complexity-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .complexity-dot.filled {
+            background: var(--primary-color);
+        }
+
+        .example-item.active .complexity-dot.filled {
+            background: white;
+        }
+
+        /* Content Area (Right Panel) */
+        .content-area {
             flex: 1;
-            position: relative;
+            display: flex;
+            flex-direction: column;
             background: #000;
+            position: relative;
         }
 
-        .viewer-iframe {
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-subtext {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: relative;
+        }
+
+        .iframe-container.active {
+            display: block;
+        }
+
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
             background: white;
         }
 
-        .loading-spinner {
+        .loading-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent-1);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Quick Nav */
-        .quick-nav {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem;
-            z-index: 50;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-            box-shadow: var(--shadow);
+        .iframe-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .quick-nav.active {
-            display: block;
-            animation: slideUp 0.3s ease;
+        .iframe-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .iframe-actions {
+            display: flex;
+            gap: 0.5rem;
         }
 
-        .quick-nav-item {
-            padding: 0.75rem;
-            margin: 0.25rem 0;
-            border-radius: 8px;
+        .btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
             cursor: pointer;
             transition: var(--transition);
-            font-size: 0.9rem;
-            white-space: nowrap;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .quick-nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-color);
         }
 
-        .quick-nav-item.active {
-            background: var(--gradient-1);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .examples-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .search-filter-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                min-width: 100%;
-            }
-
-            .viewer-header {
-                padding: 1rem;
-            }
-
-            .viewer-title {
-                font-size: 1rem;
-            }
-
-            .quick-nav {
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
-            }
-        }
-
-        /* Scrollbar */
+        /* Scrollbar Styling */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: var(--bg-dark);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 5px;
+            background: var(--border-color);
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Stats Display */
-        .stats-bar {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .sidebar {
+                width: 320px;
+            }
         }
 
-        .stat-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 50%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .content-area {
+                height: 50%;
+            }
+
+            .example-item:hover {
+                transform: translateX(0);
+            }
         }
 
-        .stat-icon {
-            font-size: 1.5rem;
-        }
-
-        .stat-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
+        /* No Results State */
+        .no-results {
+            text-align: center;
+            padding: 3rem 2rem;
             color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="animated-bg">
-        <div class="gradient-orb orb-1"></div>
-        <div class="gradient-orb orb-2"></div>
-        <div class="gradient-orb orb-3"></div>
-    </div>
-
-    <!-- Header -->
     <header>
-        <div class="header-content">
-            <h1>Web App Examples Showcase</h1>
-            <div class="header-actions">
-                <button class="theme-toggle" onclick="toggleTheme()">
-                    <span id="theme-icon">🌙</span> Toggle Theme
-                </button>
-            </div>
-        </div>
+        <h1>Web App Examples - Learning Showcase</h1>
+        <div class="subtitle">Explore 49 comprehensive single-file web applications</div>
     </header>
 
-    <!-- Grid View -->
-    <div id="gridView" class="grid-view">
-        <!-- Controls -->
-        <div class="controls">
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-icon">📦</div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="totalCount">22</div>
-                        <div class="stat-label">Total Examples</div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="visibleCount">22</div>
-                        <div class="stat-label">Showing</div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-info">
-                        <div class="stat-value">20+</div>
-                        <div class="stat-label">Technologies</div>
-                    </div>
-                </div>
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search examples by name, technology, or complexity..."
+                    oninput="filterExamples()"
+                >
             </div>
 
-            <div class="search-filter-container">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search examples..." oninput="filterExamples()">
-                </div>
-                <div class="filter-tags" id="filterTags"></div>
+            <div class="stats">
+                <span>Examples</span>
+                <span class="stat-badge" id="exampleCount">49 total</span>
             </div>
-            <div class="results-info" id="resultsInfo"></div>
-        </div>
 
-        <!-- Examples Grid -->
-        <div class="examples-grid" id="examplesGrid"></div>
+            <div class="example-list" id="exampleList">
+                <!-- Examples will be injected here -->
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">👈</div>
+                <div class="empty-state-text">Select an example to view</div>
+                <div class="empty-state-subtext">Choose from 49 examples on the left</div>
+            </div>
+
+            <div class="iframe-container" id="iframeContainer">
+                <div class="iframe-header">
+                    <div class="iframe-title" id="iframeTitle"></div>
+                    <div class="iframe-actions">
+                        <a href="#" class="btn" id="openNewTab" target="_blank">
+                            Open in New Tab ↗
+                        </a>
+                    </div>
+                </div>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                </div>
+                <iframe id="exampleFrame"></iframe>
+            </div>
+        </main>
     </div>
-
-    <!-- Viewer Mode -->
-    <div id="viewerMode" class="viewer-mode">
-        <div class="viewer-header">
-            <div class="viewer-nav">
-                <button class="viewer-btn" onclick="closeViewer()">
-                    ← Back to Grid
-                </button>
-                <button class="viewer-btn" id="prevBtn" onclick="navigateExample(-1)">
-                    ⏮ Previous
-                </button>
-                <button class="viewer-btn" id="nextBtn" onclick="navigateExample(1)">
-                    Next ⏭
-                </button>
-            </div>
-            <div class="viewer-title" id="viewerTitle"></div>
-            <button class="viewer-btn" onclick="toggleQuickNav()">
-                📋 Quick Nav
-            </button>
-        </div>
-        <div class="viewer-content">
-            <div class="loading-spinner" id="loadingSpinner"></div>
-            <iframe id="viewerIframe" class="viewer-iframe"></iframe>
-        </div>
-    </div>
-
-    <!-- Quick Navigation -->
-    <div id="quickNav" class="quick-nav"></div>
 
     <script>
         // Example Data
@@ -701,293 +480,609 @@
                 id: 1,
                 file: '01-interactive-resume.html',
                 name: 'Interactive Resume',
-                description: 'Dynamic resume with timeline, skills visualization, and theme switching',
-                icon: '📄',
-                size: '57K',
+                description: 'Dynamic professional resume with timeline, skills visualization, and theme switching',
                 technologies: ['HTML', 'CSS', 'JavaScript', 'SVG'],
-                category: 'Professional',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                outcome: 'Create impressive online portfolios',
+                complexity: 3,
+                size: '67K'
             },
             {
                 id: 2,
                 file: '02-neural-network-visualizer.html',
                 name: 'Neural Network Visualizer',
                 description: 'Interactive neural network training visualization with real-time metrics',
-                icon: '🧠',
-                size: '52K',
                 technologies: ['Canvas', 'Machine Learning', 'Animation'],
-                category: 'Data Science',
-                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                outcome: 'Visualize ML concepts interactively',
+                complexity: 3,
+                size: '52K'
             },
             {
                 id: 3,
                 file: '03-pomodoro-analytics.html',
                 name: 'Pomodoro Analytics',
                 description: 'Productivity timer with detailed analytics and session tracking',
-                icon: '⏱️',
-                size: '53K',
-                technologies: ['Charts', 'LocalStorage', 'Timer'],
-                category: 'Productivity',
-                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                technologies: ['Charts', 'LocalStorage', 'Timer API'],
+                outcome: 'Build productivity tracking apps',
+                complexity: 3,
+                size: '53K'
             },
             {
                 id: 4,
                 file: '04-markdown-editor.html',
                 name: 'Markdown Editor',
                 description: 'Live markdown editor with syntax highlighting and preview',
-                icon: '✍️',
-                size: '68K',
                 technologies: ['Markdown', 'Code Editor', 'Export'],
-                category: 'Tools',
-                gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                outcome: 'Create document editing tools',
+                complexity: 3,
+                size: '68K'
             },
             {
                 id: 5,
                 file: '05-webgl-particle-universe.html',
-                name: 'WebGL Particle Universe',
-                description: 'Interactive 3D particle system with gravity and collision physics',
-                icon: '🌌',
-                size: '35K',
+                name: 'Quantum Particle Universe',
+                description: 'WebGL-powered particle system with physics simulation',
                 technologies: ['WebGL', '3D', 'Physics', 'Particles'],
-                category: 'Graphics',
-                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                outcome: 'Create stunning visual effects',
+                complexity: 4,
+                size: '60K'
             },
             {
                 id: 6,
                 file: '06-chess-ai.html',
                 name: 'Chess with AI',
                 description: 'Full chess game with AI opponent and move validation',
-                icon: '♟️',
-                size: '66K',
                 technologies: ['Game Logic', 'AI', 'SVG'],
-                category: 'Games',
-                gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+                outcome: 'Build complex game mechanics',
+                complexity: 4,
+                size: '72K'
             },
             {
                 id: 7,
-                file: '07-budget-tracker.html',
-                name: 'Budget Tracker',
-                description: 'Personal finance manager with charts and expense categorization',
-                icon: '💰',
-                size: '95K',
-                technologies: ['Charts', 'Forms', 'Data Management'],
-                category: 'Finance',
-                gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+                file: '06-chess-ai-3d.html',
+                name: 'True 3D Chess',
+                description: '3D chess implementation with WebGL rendering',
+                technologies: ['WebGL', '3D', 'Game Logic', 'AI'],
+                outcome: 'Advanced 3D game development',
+                complexity: 5,
+                size: '84K'
             },
             {
                 id: 8,
-                file: '08-music-visualizer.html',
-                name: 'Music Visualizer',
-                description: 'Audio visualizer with frequency analysis and visual effects',
-                icon: '🎵',
-                size: '44K',
-                technologies: ['Web Audio API', 'Canvas', 'Visualization'],
-                category: 'Audio',
-                gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+                file: '06-chess-ai-problems.html',
+                name: 'Chess Problems & Puzzles',
+                description: 'Classic chess puzzles with solution checker',
+                technologies: ['Game Logic', 'Puzzles', 'AI'],
+                outcome: 'Educational game systems',
+                complexity: 4,
+                size: '90K'
             },
             {
                 id: 9,
-                file: '09-vector-drawing.html',
-                name: 'Vector Drawing App',
-                description: 'SVG-based drawing tool with shapes, colors, and export',
-                icon: '🎨',
-                size: '84K',
-                technologies: ['SVG', 'Drawing', 'Export'],
-                category: 'Creative',
-                gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
+                file: '07-budget-tracker.html',
+                name: 'Budget Tracker',
+                description: 'Personal finance manager with charts and expense categorization',
+                technologies: ['Charts', 'Forms', 'LocalStorage'],
+                outcome: 'Build financial tracking apps',
+                complexity: 4,
+                size: '95K'
             },
             {
                 id: 10,
-                file: '10-smart-form-builder.html',
-                name: 'Smart Form Builder',
-                description: 'Drag-and-drop form builder with validation and export',
-                icon: '📝',
-                size: '83K',
-                technologies: ['Drag & Drop', 'Forms', 'Validation'],
-                category: 'Tools',
-                gradient: 'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+                file: '08-music-visualizer.html',
+                name: 'Music Visualizer Studio',
+                description: 'Audio visualizer with frequency analysis and visual effects',
+                technologies: ['Web Audio API', 'Canvas', 'FFT'],
+                outcome: 'Create audio-reactive visuals',
+                complexity: 4,
+                size: '102K'
             },
             {
                 id: 11,
-                file: '11-3d-product-configurator.html',
-                name: '3D Product Configurator',
-                description: 'Interactive 3D product viewer with customization options',
-                icon: '📦',
-                size: '46K',
-                technologies: ['3D', 'WebGL', 'Interactive'],
-                category: 'E-commerce',
-                gradient: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)'
+                file: '09-vector-drawing.html',
+                name: 'Vector Drawing App',
+                description: 'SVG-based drawing tool with shapes, colors, and export',
+                technologies: ['SVG', 'Drawing', 'Export'],
+                outcome: 'Build creative design tools',
+                complexity: 4,
+                size: '93K'
             },
             {
                 id: 12,
-                file: '12-image-filter-studio.html',
-                name: 'Image Filter Studio',
-                description: 'Photo editor with filters, adjustments, and effects',
-                icon: '🖼️',
-                size: '71K',
-                technologies: ['Canvas', 'Image Processing', 'Filters'],
-                category: 'Creative',
-                gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
+                file: '10-smart-form-builder.html',
+                name: 'Smart Form Builder',
+                description: 'Drag-and-drop form builder with validation and export',
+                technologies: ['Drag & Drop', 'Forms', 'Validation'],
+                outcome: 'Create no-code form builders',
+                complexity: 4,
+                size: '83K'
             },
             {
                 id: 13,
-                file: '13-weather-globe.html',
-                name: 'Weather Globe',
-                description: '3D globe with weather data visualization and city search',
-                icon: '🌍',
-                size: '44K',
-                technologies: ['3D', 'API', 'Geolocation'],
-                category: 'Data Visualization',
-                gradient: 'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)'
+                file: '11-3d-product-configurator.html',
+                name: '3D Sneaker Configurator',
+                description: 'Interactive 3D product viewer with customization options',
+                technologies: ['3D', 'WebGL', 'E-commerce'],
+                outcome: 'Build product configurators',
+                complexity: 3,
+                size: '46K'
             },
             {
                 id: 14,
-                file: '14-dashboard-builder.html',
-                name: 'Dashboard Builder',
-                description: 'Customizable dashboard with widgets and data visualization',
-                icon: '📊',
-                size: '71K',
-                technologies: ['Charts', 'Drag & Drop', 'Widgets'],
-                category: 'Data Visualization',
-                gradient: 'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)'
+                file: '12-image-filter-studio.html',
+                name: 'Image Filter Studio',
+                description: 'Photo editor with WebGL filters and adjustments',
+                technologies: ['WebGL', 'Image Processing', 'Shaders'],
+                outcome: 'Create photo editing apps',
+                complexity: 4,
+                size: '80K'
             },
             {
                 id: 15,
-                file: '15-voice-task-manager.html',
-                name: 'Voice Task Manager',
-                description: 'Task manager with voice commands and speech recognition',
-                icon: '🎤',
-                size: '72K',
-                technologies: ['Voice API', 'Speech Recognition', 'Tasks'],
-                category: 'Productivity',
-                gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)'
+                file: '13-weather-globe.html',
+                name: 'Weather Globe 3D',
+                description: '3D globe with weather data visualization and city search',
+                technologies: ['3D', 'API', 'Geolocation'],
+                outcome: 'Build data visualization tools',
+                complexity: 3,
+                size: '63K'
             },
             {
                 id: 16,
-                file: '16-ai-code-playground.html',
-                name: 'AI Code Playground',
-                description: 'Code editor with AI-powered assistance, syntax highlighting, and execution',
-                icon: '💻',
-                size: '50K',
-                technologies: ['Code Editor', 'AI', 'Sandbox', 'LLM'],
-                category: 'Developer Tools',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                file: '14-dashboard-builder.html',
+                name: 'Smart Dashboard Builder',
+                description: 'Customizable dashboard with widgets and charts',
+                technologies: ['Charts', 'Drag & Drop', 'Widgets'],
+                outcome: 'Create analytics dashboards',
+                complexity: 4,
+                size: '71K'
             },
             {
                 id: 17,
-                file: '17-collaborative-whiteboard.html',
-                name: 'Collaborative Whiteboard',
-                description: 'Multi-user whiteboard with drawing tools, layers, and real-time sync',
-                icon: '🎨',
-                size: '24K',
-                technologies: ['Canvas', 'Drawing', 'Collaboration', 'Layers'],
-                category: 'Creative',
-                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                file: '15-voice-task-manager.html',
+                name: 'Voice Task Manager',
+                description: 'Task manager with voice commands and speech recognition',
+                technologies: ['Voice API', 'Speech Recognition'],
+                outcome: 'Build voice-controlled apps',
+                complexity: 4,
+                size: '78K'
             },
             {
                 id: 18,
-                file: '18-ai-recipe-generator.html',
-                name: 'AI Recipe Generator',
-                description: 'Smart recipe finder with dietary filters, nutritional info, and shopping lists',
-                icon: '🍳',
-                size: '45K',
-                technologies: ['AI Matching', 'Recipe Database', 'Nutrition'],
-                category: 'Lifestyle',
-                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                file: '16-ai-code-playground.html',
+                name: 'AI Code Playground',
+                description: 'Code editor with AI assistance and live execution',
+                technologies: ['Code Editor', 'AI', 'Sandbox'],
+                outcome: 'Create coding environments',
+                complexity: 3,
+                size: '52K'
             },
             {
                 id: 19,
-                file: '19-rag-knowledge-base.html',
-                name: 'RAG Knowledge Base',
-                description: 'Document Q&A system with vector search, citations, and knowledge graph',
-                icon: '📚',
-                size: '53K',
-                technologies: ['RAG', 'Vector Search', 'TF-IDF', 'NLP'],
-                category: 'AI/ML',
-                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                file: '17-collaborative-whiteboard.html',
+                name: 'Collaborative Whiteboard',
+                description: 'Multi-user whiteboard with drawing tools and layers',
+                technologies: ['Canvas', 'Drawing', 'Real-time'],
+                outcome: 'Build collaboration tools',
+                complexity: 3,
+                size: '46K'
             },
             {
                 id: 20,
-                file: '20-stock-ticker.html',
-                name: 'Real-Time Stock Ticker',
-                description: 'Stock market simulator with candlestick charts and technical indicators',
-                icon: '📈',
-                size: '48K',
-                technologies: ['Charts', 'Financial', 'Technical Analysis'],
-                category: 'Finance',
-                gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                file: '18-ai-recipe-generator.html',
+                name: 'AI Recipe Generator',
+                description: 'Smart recipe finder with dietary filters and nutrition info',
+                technologies: ['AI Matching', 'Recipe Database'],
+                outcome: 'Create recommendation engines',
+                complexity: 4,
+                size: '112K'
             },
             {
                 id: 21,
-                file: '21-sudoku-game.html',
-                name: 'Sudoku - Brainium Style',
-                description: 'Professional Sudoku puzzle game with 4 difficulty levels (Easy, Medium, Hard, Expert). Features pencil marks, hints, undo/redo, timer, statistics tracking, and beautiful glassmorphism UI. Includes win detection with confetti animation.',
-                icon: '🔢',
-                size: '51K',
-                technologies: ['HTML', 'CSS', 'JavaScript', 'Backtracking Algorithm', 'LocalStorage'],
-                category: 'Games',
-                gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)'
+                file: '19-rag-knowledge-base.html',
+                name: 'RAG Knowledge Base',
+                description: 'Document Q&A system with vector search and citations',
+                technologies: ['RAG', 'Vector Search', 'TF-IDF'],
+                outcome: 'Build intelligent search systems',
+                complexity: 3,
+                size: '53K'
             },
             {
                 id: 22,
+                file: '20-stock-ticker.html',
+                name: 'Real-Time Stock Ticker',
+                description: 'Stock market simulator with candlestick charts',
+                technologies: ['Charts', 'Financial', 'Real-time'],
+                outcome: 'Create financial dashboards',
+                complexity: 3,
+                size: '57K'
+            },
+            {
+                id: 23,
+                file: '21-sudoku-game.html',
+                name: 'Sudoku - Brainium Style',
+                description: 'Professional Sudoku with 4 difficulty levels and hints',
+                technologies: ['Game Logic', 'Backtracking', 'UI'],
+                outcome: 'Build puzzle game mechanics',
+                complexity: 3,
+                size: '51K'
+            },
+            {
+                id: 24,
                 file: '22-spider-solitaire.html',
-                name: 'Spider Solitaire - Classic Card Game',
-                description: 'Classic Spider Solitaire with 3 difficulty modes (1, 2, or 4 suits). Features drag-and-drop card movement, unlimited undo, hint system, score tracking, timer, and realistic card animations. Complete King-to-Ace sequences are auto-removed.',
-                icon: '🃏',
-                size: '57K',
-                technologies: ['HTML', 'CSS', 'JavaScript', 'Drag & Drop API', 'LocalStorage'],
-                category: 'Games',
-                gradient: 'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)'
+                name: 'Spider Solitaire',
+                description: 'Classic card game with drag-and-drop and undo',
+                technologies: ['Game Logic', 'Drag & Drop', 'Cards'],
+                outcome: 'Create card game systems',
+                complexity: 3,
+                size: '58K'
+            },
+            {
+                id: 25,
+                file: '23-neural-visualizer.html',
+                name: 'Neural Music Visualizer (Simple)',
+                description: 'Simplified neural network music visualization',
+                technologies: ['Canvas', 'Audio API', 'Animation'],
+                outcome: 'Learn audio-visual integration',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 26,
+                file: '23-neural-visualizer-2.html',
+                name: 'Neural Music Visualizer (Advanced)',
+                description: 'Advanced neural network music visualization',
+                technologies: ['Canvas', 'Audio API', 'ML Viz'],
+                outcome: 'Advanced visualization techniques',
+                complexity: 3,
+                size: '29K'
+            },
+            {
+                id: 27,
+                file: '25-webgl-particle-universe.html',
+                name: 'WebGL Particle Universe',
+                description: 'Interactive particle system with gravity physics',
+                technologies: ['WebGL', 'Shaders', 'Physics'],
+                outcome: 'Master WebGL basics',
+                complexity: 2,
+                size: '14K'
+            },
+            {
+                id: 28,
+                file: '26-procedural-3d-generation.html',
+                name: 'Procedural 3D Generation',
+                description: 'Generate 3D meshes using procedural algorithms',
+                technologies: ['3D', 'Procedural', 'Algorithms'],
+                outcome: 'Learn procedural generation',
+                complexity: 2,
+                size: '16K'
+            },
+            {
+                id: 29,
+                file: '27-rag-knowledge-base.html',
+                name: 'RAG Knowledge Base (Compact)',
+                description: 'Lightweight RAG implementation demo',
+                technologies: ['RAG', 'Vector Search'],
+                outcome: 'Understand RAG fundamentals',
+                complexity: 2,
+                size: '20K'
+            },
+            {
+                id: 30,
+                file: '28-streaming-chat-typewriter.html',
+                name: 'Streaming Chat Typewriter',
+                description: 'Implement streaming chat with typewriter effect',
+                technologies: ['Streaming', 'Animation', 'Chat'],
+                outcome: 'Build streaming interfaces',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 31,
+                file: '29-client-side-llms.html',
+                name: 'Client-Side LLM',
+                description: 'Run LLMs entirely in the browser',
+                technologies: ['WebAssembly', 'LLM', 'AI'],
+                outcome: 'Deploy zero-server AI apps',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 32,
+                file: '30-rest-api-client-interceptors.html',
+                name: 'REST API Client with Interceptors',
+                description: 'Advanced HTTP client with request/response interceptors',
+                technologies: ['Fetch API', 'Interceptors', 'Auth'],
+                outcome: 'Build robust API clients',
+                complexity: 2,
+                size: '12K'
+            },
+            {
+                id: 33,
+                file: '31-oauth-pkce-flow.html',
+                name: 'OAuth 2.0 PKCE Flow',
+                description: 'Implement OAuth PKCE for single-page apps',
+                technologies: ['OAuth', 'PKCE', 'Authentication'],
+                outcome: 'Secure SPA authentication',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 34,
+                file: '32-websocket-exponential-backoff.html',
+                name: 'WebSocket with Backoff',
+                description: 'Resilient WebSocket client with reconnection logic',
+                technologies: ['WebSocket', 'Retry Logic'],
+                outcome: 'Build reliable real-time apps',
+                complexity: 2,
+                size: '11K'
+            },
+            {
+                id: 35,
+                file: '33-circuit-breaker-pattern.html',
+                name: 'Circuit Breaker Pattern',
+                description: 'Implement circuit breaker for fault tolerance',
+                technologies: ['Design Patterns', 'Resilience'],
+                outcome: 'Build fault-tolerant systems',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 36,
+                file: '34-mcp-integration.html',
+                name: 'Model Context Protocol (MCP)',
+                description: 'Integrate with MCP standard for AI services',
+                technologies: ['MCP', 'AI Integration', 'Protocol'],
+                outcome: 'Connect AI systems to tools',
+                complexity: 2,
+                size: '15K'
+            },
+            {
+                id: 37,
+                file: '35-plugin-architecture.html',
+                name: 'Plugin Architecture',
+                description: 'Build extensible apps with plugin system',
+                technologies: ['Design Patterns', 'Registry'],
+                outcome: 'Create extensible applications',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 38,
+                file: '36-wordpress-hook-system.html',
+                name: 'WordPress-Style Hook System',
+                description: 'Implement WordPress-like actions and filters',
+                technologies: ['Event System', 'Hooks'],
+                outcome: 'Build extensible event systems',
+                complexity: 1,
+                size: '8.3K'
+            },
+            {
+                id: 39,
+                file: '37-observable-store-pattern.html',
+                name: 'Observable Store Pattern',
+                description: 'Reactive state management with observables',
+                technologies: ['State Management', 'Reactive'],
+                outcome: 'Manage application state',
+                complexity: 1,
+                size: '7.0K'
+            },
+            {
+                id: 40,
+                file: '38-function-calling-tool-use.html',
+                name: 'Function Calling & Tool Use',
+                description: 'Implement AI function calling pattern',
+                technologies: ['AI', 'Function Calling', 'Tools'],
+                outcome: 'Build AI agent systems',
+                complexity: 2,
+                size: '9.8K'
+            },
+            {
+                id: 41,
+                file: '39-music-visualizer.html',
+                name: 'Music Visualizer (Web Audio + 3D)',
+                description: 'Combine Web Audio API with 3D visualization',
+                technologies: ['Audio API', '3D', 'Canvas'],
+                outcome: 'Create multimedia experiences',
+                complexity: 2,
+                size: '12K'
+            },
+            {
+                id: 42,
+                file: '40-neural-network-visualizer.html',
+                name: 'Neural Network Visualizer (Compact)',
+                description: 'Lightweight neural network visualization',
+                technologies: ['Canvas', 'ML Visualization'],
+                outcome: 'Visualize ML concepts',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 43,
+                file: '41-chess-ai-minimax.html',
+                name: 'Chess AI with Minimax',
+                description: 'Chess game demonstrating minimax algorithm',
+                technologies: ['Game AI', 'Minimax', 'Algorithm'],
+                outcome: 'Learn game AI algorithms',
+                complexity: 2,
+                size: '12K'
+            },
+            {
+                id: 44,
+                file: '42-weather-globe.html',
+                name: 'Weather Globe with Climate Zones',
+                description: '3D globe showing climate zone visualization',
+                technologies: ['3D', 'Data Viz', 'Geography'],
+                outcome: 'Create geographic visualizations',
+                complexity: 2,
+                size: '9.1K'
+            },
+            {
+                id: 45,
+                file: '43-glassmorphism-ui.html',
+                name: 'Glassmorphism UI Effect',
+                description: 'Modern glassmorphism design pattern',
+                technologies: ['CSS', 'Backdrop Filter', 'UI'],
+                outcome: 'Create modern UI designs',
+                complexity: 1,
+                size: '6.4K'
+            },
+            {
+                id: 46,
+                file: '44-web-components-shadow-dom.html',
+                name: 'Web Components with Shadow DOM',
+                description: 'Build reusable web components',
+                technologies: ['Web Components', 'Shadow DOM'],
+                outcome: 'Create reusable UI components',
+                complexity: 2,
+                size: '12K'
+            },
+            {
+                id: 47,
+                file: '45-smart-form-validation.html',
+                name: 'Smart Form Validation System',
+                description: 'Advanced form validation with real-time feedback',
+                technologies: ['Forms', 'Validation', 'UX'],
+                outcome: 'Build robust form systems',
+                complexity: 2,
+                size: '13K'
+            },
+            {
+                id: 48,
+                file: '46-canvas-particle-systems.html',
+                name: 'Canvas Particle Systems',
+                description: 'Create various particle effects with Canvas',
+                technologies: ['Canvas', 'Particles', 'Animation'],
+                outcome: 'Master particle effects',
+                complexity: 2,
+                size: '9.8K'
+            },
+            {
+                id: 49,
+                file: '47-webgl-shader-effects.html',
+                name: 'WebGL Shader Effects',
+                description: 'Advanced shader programming techniques',
+                technologies: ['WebGL', 'GLSL', 'Shaders'],
+                outcome: 'Learn shader programming',
+                complexity: 2,
+                size: '11K'
+            },
+            {
+                id: 50,
+                file: '48-jwt-token-manager.html',
+                name: 'JWT Token Manager',
+                description: 'Complete JWT authentication flow',
+                technologies: ['JWT', 'Authentication', 'Security'],
+                outcome: 'Implement secure auth',
+                complexity: 2,
+                size: '14K'
+            },
+            {
+                id: 51,
+                file: '49-progressive-enhancement.html',
+                name: 'Progressive Enhancement Pattern',
+                description: 'Build accessible apps that work without JavaScript',
+                technologies: ['Progressive Enhancement', 'A11y'],
+                outcome: 'Create accessible web apps',
+                complexity: 2,
+                size: '14K'
             }
         ];
 
         // State
         let currentExample = null;
         let filteredExamples = [...examples];
-        let activeFilters = new Set();
-        let theme = 'dark';
-
-        // Get all unique technologies
-        const allTechnologies = [...new Set(examples.flatMap(ex => ex.technologies))].sort();
 
         // Initialize
         function init() {
-            renderFilterTags();
             renderExamples();
             updateStats();
-            loadTheme();
         }
 
-        // Render Filter Tags
-        function renderFilterTags() {
-            const container = document.getElementById('filterTags');
-            container.innerHTML = `
-                <div class="filter-tag ${activeFilters.size === 0 ? 'active' : ''}" onclick="clearFilters()">
-                    All
-                </div>
-                ${allTechnologies.map(tech => `
-                    <div class="filter-tag ${activeFilters.has(tech) ? 'active' : ''}" onclick="toggleFilter('${tech}')">
-                        ${tech}
+        // Render Examples List
+        function renderExamples() {
+            const list = document.getElementById('exampleList');
+
+            if (filteredExamples.length === 0) {
+                list.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <div>No examples found</div>
                     </div>
-                `).join('')}
-            `;
-        }
-
-        // Toggle Filter
-        function toggleFilter(tech) {
-            if (activeFilters.has(tech)) {
-                activeFilters.delete(tech);
-            } else {
-                activeFilters.add(tech);
+                `;
+                return;
             }
-            filterExamples();
+
+            list.innerHTML = filteredExamples.map(example => `
+                <div class="example-item ${currentExample?.id === example.id ? 'active' : ''}"
+                     onclick="selectExample(${example.id})">
+                    <div class="example-header">
+                        <div class="example-number">#${example.id}</div>
+                    </div>
+                    <div class="example-title">${example.name}</div>
+                    <div class="example-description">${example.description}</div>
+                    <div class="example-meta">
+                        ${example.technologies.slice(0, 3).map(tech =>
+                            `<span class="meta-tag">${tech}</span>`
+                        ).join('')}
+                        ${example.technologies.length > 3 ?
+                            `<span class="meta-tag">+${example.technologies.length - 3} more</span>` : ''}
+                    </div>
+                    <div class="complexity">
+                        ${getComplexityDots(example.complexity)}
+                        <span>${getComplexityLabel(example.complexity)}</span>
+                        <span style="margin-left: auto; opacity: 0.6;">${example.size}</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Clear Filters
-        function clearFilters() {
-            activeFilters.clear();
-            document.getElementById('searchInput').value = '';
-            filterExamples();
+        // Get Complexity Dots
+        function getComplexityDots(complexity) {
+            let dots = '';
+            for (let i = 1; i <= 5; i++) {
+                dots += `<div class="complexity-dot ${i <= complexity ? 'filled' : ''}"></div>`;
+            }
+            return dots;
+        }
+
+        // Get Complexity Label
+        function getComplexityLabel(complexity) {
+            const labels = {
+                1: 'Beginner',
+                2: 'Intermediate',
+                3: 'Advanced',
+                4: 'Expert',
+                5: 'Master'
+            };
+            return labels[complexity] || 'Unknown';
+        }
+
+        // Select Example
+        function selectExample(id) {
+            const example = examples.find(ex => ex.id === id);
+            if (!example) return;
+
+            currentExample = example;
+
+            // Update UI
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('iframeContainer').classList.add('active');
+            document.getElementById('iframeTitle').textContent = example.name;
+            document.getElementById('openNewTab').href = example.file;
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            // Load iframe
+            const iframe = document.getElementById('exampleFrame');
+            iframe.src = example.file;
+
+            iframe.onload = () => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            };
+
+            // Update active state
+            renderExamples();
         }
 
         // Filter Examples
@@ -995,189 +1090,37 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             filteredExamples = examples.filter(example => {
-                // Search filter
-                const matchesSearch = !searchTerm ||
-                    example.name.toLowerCase().includes(searchTerm) ||
-                    example.description.toLowerCase().includes(searchTerm) ||
-                    example.technologies.some(tech => tech.toLowerCase().includes(searchTerm)) ||
-                    example.category.toLowerCase().includes(searchTerm);
-
-                // Technology filter
-                const matchesTech = activeFilters.size === 0 ||
-                    example.technologies.some(tech => activeFilters.has(tech));
-
-                return matchesSearch && matchesTech;
+                return example.name.toLowerCase().includes(searchTerm) ||
+                       example.description.toLowerCase().includes(searchTerm) ||
+                       example.technologies.some(tech => tech.toLowerCase().includes(searchTerm)) ||
+                       example.outcome.toLowerCase().includes(searchTerm) ||
+                       getComplexityLabel(example.complexity).toLowerCase().includes(searchTerm);
             });
 
             renderExamples();
-            renderFilterTags();
             updateStats();
-            updateResultsInfo();
-        }
-
-        // Update Results Info
-        function updateResultsInfo() {
-            const info = document.getElementById('resultsInfo');
-            const searchTerm = document.getElementById('searchInput').value;
-
-            if (filteredExamples.length === examples.length) {
-                info.textContent = '';
-            } else {
-                let message = `Showing ${filteredExamples.length} of ${examples.length} examples`;
-                if (searchTerm) {
-                    message += ` matching "${searchTerm}"`;
-                }
-                if (activeFilters.size > 0) {
-                    message += ` with ${Array.from(activeFilters).join(', ')}`;
-                }
-                info.textContent = message;
-            }
         }
 
         // Update Stats
         function updateStats() {
-            document.getElementById('visibleCount').textContent = filteredExamples.length;
-        }
-
-        // Render Examples Grid
-        function renderExamples() {
-            const grid = document.getElementById('examplesGrid');
-            grid.innerHTML = filteredExamples.map(example => `
-                <div class="example-card" onclick="openExample(${example.id})" style="--card-gradient: ${example.gradient}">
-                    <div class="card-icon" style="background: ${example.gradient}">
-                        <span style="font-size: 3.5rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
-                            ${example.icon}
-                        </span>
-                        <div class="card-number">#${example.id}</div>
-                    </div>
-                    <h3 class="card-title">${example.name}</h3>
-                    <p class="card-description">${example.description}</p>
-                    <div class="card-meta">
-                        <div class="card-size">
-                            📁 ${example.size}
-                        </div>
-                        <div class="card-category">
-                            ${example.category}
-                        </div>
-                    </div>
-                    <div class="card-tech">
-                        ${example.technologies.map(tech => `
-                            <span class="tech-tag">${tech}</span>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Open Example
-        function openExample(id) {
-            const example = examples.find(ex => ex.id === id);
-            if (!example) return;
-
-            currentExample = example;
-
-            // Update viewer
-            document.getElementById('viewerTitle').textContent = example.name;
-            document.getElementById('viewerMode').classList.add('active');
-
-            // Show loading spinner
-            document.getElementById('loadingSpinner').style.display = 'block';
-
-            // Load iframe
-            const iframe = document.getElementById('viewerIframe');
-            iframe.src = example.file;
-
-            // Hide spinner when loaded
-            iframe.onload = () => {
-                document.getElementById('loadingSpinner').style.display = 'none';
-            };
-
-            // Update navigation buttons
-            updateNavigationButtons();
-
-            // Render quick nav
-            renderQuickNav();
-        }
-
-        // Close Viewer
-        function closeViewer() {
-            document.getElementById('viewerMode').classList.remove('active');
-            document.getElementById('viewerIframe').src = '';
-            document.getElementById('quickNav').classList.remove('active');
-            currentExample = null;
-        }
-
-        // Navigate Example
-        function navigateExample(direction) {
-            if (!currentExample) return;
-
-            const currentIndex = filteredExamples.findIndex(ex => ex.id === currentExample.id);
-            const newIndex = currentIndex + direction;
-
-            if (newIndex >= 0 && newIndex < filteredExamples.length) {
-                openExample(filteredExamples[newIndex].id);
-            }
-        }
-
-        // Update Navigation Buttons
-        function updateNavigationButtons() {
-            const currentIndex = filteredExamples.findIndex(ex => ex.id === currentExample.id);
-
-            document.getElementById('prevBtn').disabled = currentIndex === 0;
-            document.getElementById('nextBtn').disabled = currentIndex === filteredExamples.length - 1;
-        }
-
-        // Toggle Quick Nav
-        function toggleQuickNav() {
-            document.getElementById('quickNav').classList.toggle('active');
-        }
-
-        // Render Quick Nav
-        function renderQuickNav() {
-            const nav = document.getElementById('quickNav');
-            nav.innerHTML = filteredExamples.map(example => `
-                <div class="quick-nav-item ${example.id === currentExample.id ? 'active' : ''}"
-                     onclick="openExample(${example.id})">
-                    ${example.icon} ${example.name}
-                </div>
-            `).join('');
-        }
-
-        // Theme Toggle
-        function toggleTheme() {
-            theme = theme === 'dark' ? 'light' : 'dark';
-            applyTheme();
-            localStorage.setItem('theme', theme);
-        }
-
-        function applyTheme() {
-            if (theme === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
-                document.getElementById('theme-icon').textContent = '☀️';
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                document.getElementById('theme-icon').textContent = '🌙';
-            }
-        }
-
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                theme = savedTheme;
-                applyTheme();
-            }
+            const total = examples.length;
+            const showing = filteredExamples.length;
+            document.getElementById('exampleCount').textContent =
+                showing === total ? `${total} total` : `${showing} of ${total}`;
         }
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
-            if (!document.getElementById('viewerMode').classList.contains('active')) return;
+            if (!currentExample) return;
 
-            if (e.key === 'Escape') {
-                closeViewer();
-            } else if (e.key === 'ArrowLeft') {
-                navigateExample(-1);
-            } else if (e.key === 'ArrowRight') {
-                navigateExample(1);
+            const currentIndex = filteredExamples.findIndex(ex => ex.id === currentExample.id);
+
+            if (e.key === 'ArrowDown' && currentIndex < filteredExamples.length - 1) {
+                e.preventDefault();
+                selectExample(filteredExamples[currentIndex + 1].id);
+            } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+                e.preventDefault();
+                selectExample(filteredExamples[currentIndex - 1].id);
             }
         });
 
