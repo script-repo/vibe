@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client with Exponential Backoff</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 30px; }
+        .panel {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .status.connected { background: #065f46; color: #d1fae5; }
+        .status.disconnected { background: #991b1b; color: #fee2e2; }
+        .status.connecting { background: #92400e; color: #fef3c7; }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        button.disconnect { background: #ef4444; color: white; }
+        input {
+            width: 70%;
+            padding: 12px;
+            border: 2px solid #3d3d3d;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            margin-right: 10px;
+        }
+        .messages {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+        .message.sent { border-left: 3px solid #4ade80; }
+        .message.received { border-left: 3px solid #3b82f6; }
+        .message.system { border-left: 3px solid #f59e0b; }
+        .timestamp {
+            color: #888;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebSocket Client with Exponential Backoff Reconnection</h1>
+
+        <div class="panel">
+            <div class="status disconnected" id="status">Disconnected</div>
+            <button onclick="ws.connect()">Connect</button>
+            <button class="disconnect" onclick="ws.disconnect()">Disconnect</button>
+            <button onclick="ws.simulateDisconnect()">Simulate Network Failure</button>
+        </div>
+
+        <div class="panel">
+            <h2>Send Message</h2>
+            <input type="text" id="messageInput" placeholder="Enter message..." onkeypress="if(event.key==='Enter') ws.send()">
+            <button onclick="ws.send()">Send</button>
+        </div>
+
+        <div class="panel">
+            <h2>Messages</h2>
+            <div class="messages" id="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        class RobustWebSocket {
+            constructor(url) {
+                this.url = url;
+                this.ws = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.reconnectDelay = 1000; // Start at 1 second
+                this.shouldReconnect = false;
+                this.listeners = {};
+                this.heartbeatInterval = null;
+            }
+
+            connect() {
+                if (this.ws?.readyState === WebSocket.OPEN) {
+                    this.addMessage('system', 'Already connected');
+                    return;
+                }
+
+                this.shouldReconnect = true;
+                this.updateStatus('connecting', 'Connecting...');
+
+                try {
+                    // For demo purposes, we'll simulate WebSocket behavior
+                    this.simulateWebSocket();
+
+                    this.addMessage('system', `Connecting to ${this.url}`);
+                } catch (error) {
+                    this.addMessage('system', `Connection error: ${error.message}`);
+                    this.handleReconnect();
+                }
+            }
+
+            simulateWebSocket() {
+                // Simulate WebSocket connection
+                this.ws = {
+                    readyState: WebSocket.CONNECTING,
+                    send: (data) => {
+                        if (this.ws.readyState === WebSocket.OPEN) {
+                            this.addMessage('sent', data);
+                            // Echo back after delay
+                            setTimeout(() => {
+                                if (this.ws?.readyState === WebSocket.OPEN) {
+                                    this.handleMessage(`Echo: ${data}`);
+                                }
+                            }, 500);
+                        }
+                    },
+                    close: () => {
+                        this.ws.readyState = WebSocket.CLOSED;
+                        this.handleClose();
+                    }
+                };
+
+                // Simulate connection success after delay
+                setTimeout(() => {
+                    if (this.ws) {
+                        this.ws.readyState = WebSocket.OPEN;
+                        this.handleOpen();
+                    }
+                }, 1000);
+            }
+
+            handleOpen() {
+                this.reconnectAttempts = 0;
+                this.reconnectDelay = 1000;
+                this.updateStatus('connected', `Connected (Attempt 1/${this.maxReconnectAttempts})`);
+                this.addMessage('system', 'Connected successfully');
+                this.startHeartbeat();
+
+                this.emit('open');
+            }
+
+            handleMessage(data) {
+                this.addMessage('received', data);
+                this.emit('message', data);
+            }
+
+            handleClose() {
+                this.updateStatus('disconnected', 'Disconnected');
+                this.addMessage('system', 'Connection closed');
+                this.stopHeartbeat();
+
+                if (this.shouldReconnect) {
+                    this.handleReconnect();
+                }
+
+                this.emit('close');
+            }
+
+            handleReconnect() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    this.addMessage('system', `Max reconnection attempts (${this.maxReconnectAttempts}) reached`);
+                    this.shouldReconnect = false;
+                    return;
+                }
+
+                this.reconnectAttempts++;
+
+                // Exponential backoff: delay = 1000 × 2^(attempt-1)
+                const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+
+                this.addMessage('system',
+                    `Reconnecting in ${delay/1000}s (Attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+                );
+
+                this.updateStatus('connecting',
+                    `Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+                );
+
+                setTimeout(() => {
+                    if (this.shouldReconnect) {
+                        this.connect();
+                    }
+                }, delay);
+            }
+
+            disconnect() {
+                this.shouldReconnect = false;
+                this.reconnectAttempts = 0;
+
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+
+                this.updateStatus('disconnected', 'Disconnected');
+                this.addMessage('system', 'Manually disconnected');
+            }
+
+            send() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+
+                if (!message) return;
+
+                if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                    this.addMessage('system', 'Not connected. Cannot send message.');
+                    return;
+                }
+
+                this.ws.send(message);
+                input.value = '';
+            }
+
+            simulateDisconnect() {
+                if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                    this.addMessage('system', 'Not connected');
+                    return;
+                }
+
+                this.addMessage('system', 'Simulating network failure...');
+                this.ws.close();
+            }
+
+            startHeartbeat() {
+                this.heartbeatInterval = setInterval(() => {
+                    if (this.ws?.readyState === WebSocket.OPEN) {
+                        // Send heartbeat ping
+                        this.addMessage('system', 'Heartbeat ping sent');
+                    }
+                }, 30000); // Every 30 seconds
+            }
+
+            stopHeartbeat() {
+                if (this.heartbeatInterval) {
+                    clearInterval(this.heartbeatInterval);
+                    this.heartbeatInterval = null;
+                }
+            }
+
+            on(event, callback) {
+                if (!this.listeners[event]) {
+                    this.listeners[event] = [];
+                }
+                this.listeners[event].push(callback);
+            }
+
+            emit(event, data) {
+                if (this.listeners[event]) {
+                    this.listeners[event].forEach(callback => callback(data));
+                }
+            }
+
+            updateStatus(type, message) {
+                const status = document.getElementById('status');
+                status.className = `status ${type}`;
+                status.textContent = message;
+            }
+
+            addMessage(type, content) {
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+
+                const timestamp = new Date().toLocaleTimeString();
+                messageDiv.innerHTML = `
+                    <span class="timestamp">[${timestamp}]</span> ${content}
+                `;
+
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        // Initialize WebSocket client
+        const ws = new RobustWebSocket('wss://demo.example.com/socket');
+
+        // Add event listeners
+        ws.on('open', () => console.log('WebSocket opened'));
+        ws.on('message', (data) => console.log('Message received:', data));
+        ws.on('close', () => console.log('WebSocket closed'));
+    </script>
+</body>
+</html>

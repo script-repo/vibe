@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Form Validation System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        input.error {
+            border-color: #ef4444;
+        }
+        input.valid {
+            border-color: #4ade80;
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .success-icon, .error-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            display: none;
+        }
+        .form-group {
+            position: relative;
+        }
+        input.valid ~ .success-icon {
+            display: block;
+        }
+        input.error ~ .error-icon {
+            display: block;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        .success-message.show {
+            display: block;
+        }
+        .aria-live {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Registration Form</h1>
+
+        <form id="registrationForm" novalidate>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" aria-describedby="username-error">
+                <span class="success-icon">✓</span>
+                <span class="error-icon">✗</span>
+                <div class="error-message" id="username-error" role="alert"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" aria-describedby="email-error">
+                <span class="success-icon">✓</span>
+                <span class="error-icon">✗</span>
+                <div class="error-message" id="email-error" role="alert"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" aria-describedby="password-error">
+                <span class="success-icon">✓</span>
+                <span class="error-icon">✗</span>
+                <div class="error-message" id="password-error" role="alert"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" aria-describedby="confirm-error">
+                <span class="success-icon">✓</span>
+                <span class="error-icon">✗</span>
+                <div class="error-message" id="confirm-error" role="alert"></div>
+            </div>
+
+            <button type="submit">Register</button>
+
+            <div class="success-message" id="successMessage">
+                Registration successful! ✓
+            </div>
+        </form>
+
+        <div class="aria-live" aria-live="polite" aria-atomic="true" id="ariaAnnouncer"></div>
+    </div>
+
+    <script>
+        // Composable validators
+        const validators = {
+            required: (value) => ({
+                valid: value.trim().length > 0,
+                message: 'This field is required'
+            }),
+
+            minLength: (min) => (value) => ({
+                valid: value.length >= min,
+                message: `Must be at least ${min} characters`
+            }),
+
+            maxLength: (max) => (value) => ({
+                valid: value.length <= max,
+                message: `Must be no more than ${max} characters`
+            }),
+
+            email: (value) => ({
+                valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+                message: 'Please enter a valid email address'
+            }),
+
+            pattern: (regex, message) => (value) => ({
+                valid: regex.test(value),
+                message: message
+            }),
+
+            match: (fieldId) => (value) => {
+                const matchField = document.getElementById(fieldId);
+                return {
+                    valid: value === matchField.value,
+                    message: 'Passwords do not match'
+                };
+            },
+
+            custom: (fn, message) => (value) => ({
+                valid: fn(value),
+                message: message
+            })
+        };
+
+        // Form validation configuration
+        const validationRules = {
+            username: [
+                validators.required,
+                validators.minLength(3),
+                validators.maxLength(20),
+                validators.pattern(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores allowed')
+            ],
+            email: [
+                validators.required,
+                validators.email
+            ],
+            password: [
+                validators.required,
+                validators.minLength(8),
+                validators.custom(
+                    (value) => /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value),
+                    'Must contain uppercase, lowercase, and number'
+                )
+            ],
+            confirmPassword: [
+                validators.required,
+                validators.match('password')
+            ]
+        };
+
+        class FormValidator {
+            constructor(formId, rules) {
+                this.form = document.getElementById(formId);
+                this.rules = rules;
+                this.fields = {};
+
+                this.init();
+            }
+
+            init() {
+                // Set up validation for each field
+                Object.keys(this.rules).forEach(fieldName => {
+                    const input = this.form.elements[fieldName];
+                    if (input) {
+                        this.fields[fieldName] = { input, valid: false };
+
+                        // Validate on blur
+                        input.addEventListener('blur', () => {
+                            this.validateField(fieldName);
+                        });
+
+                        // Validate on input (after first blur)
+                        let hasBlurred = false;
+                        input.addEventListener('blur', () => { hasBlurred = true; }, { once: true });
+                        input.addEventListener('input', () => {
+                            if (hasBlurred) {
+                                this.validateField(fieldName);
+                            }
+                        });
+                    }
+                });
+
+                // Handle form submission
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+            }
+
+            validateField(fieldName) {
+                const { input } = this.fields[fieldName];
+                const value = input.value;
+                const fieldRules = this.rules[fieldName];
+
+                let isValid = true;
+                let errorMessage = '';
+
+                // Run all validators for this field
+                for (const validator of fieldRules) {
+                    const result = validator(value);
+                    if (!result.valid) {
+                        isValid = false;
+                        errorMessage = result.message;
+                        break;
+                    }
+                }
+
+                this.fields[fieldName].valid = isValid;
+                this.updateFieldUI(fieldName, isValid, errorMessage);
+
+                return isValid;
+            }
+
+            updateFieldUI(fieldName, isValid, errorMessage) {
+                const { input } = this.fields[fieldName];
+                const errorDiv = document.getElementById(`${fieldName}-error`);
+
+                if (isValid) {
+                    input.classList.remove('error');
+                    input.classList.add('valid');
+                    input.setAttribute('aria-invalid', 'false');
+                    if (errorDiv) {
+                        errorDiv.textContent = '';
+                        errorDiv.classList.remove('show');
+                    }
+                } else {
+                    input.classList.remove('valid');
+                    input.classList.add('error');
+                    input.setAttribute('aria-invalid', 'true');
+                    if (errorDiv) {
+                        errorDiv.textContent = errorMessage;
+                        errorDiv.classList.add('show');
+                        this.announceError(errorMessage);
+                    }
+                }
+            }
+
+            announceError(message) {
+                const announcer = document.getElementById('ariaAnnouncer');
+                announcer.textContent = message;
+            }
+
+            validateAll() {
+                let allValid = true;
+
+                Object.keys(this.rules).forEach(fieldName => {
+                    const isValid = this.validateField(fieldName);
+                    if (!isValid) allValid = false;
+                });
+
+                return allValid;
+            }
+
+            handleSubmit() {
+                if (this.validateAll()) {
+                    // Get form data
+                    const formData = new FormData(this.form);
+                    const data = Object.fromEntries(formData);
+
+                    console.log('Form submitted:', data);
+
+                    // Show success message
+                    document.getElementById('successMessage').classList.add('show');
+
+                    // Announce success for screen readers
+                    this.announceError('Registration successful!');
+
+                    // Reset form
+                    setTimeout(() => {
+                        this.form.reset();
+                        Object.values(this.fields).forEach(({ input }) => {
+                            input.classList.remove('valid', 'error');
+                        });
+                        document.getElementById('successMessage').classList.remove('show');
+                    }, 3000);
+                } else {
+                    this.announceError('Please fix the errors in the form');
+                }
+            }
+        }
+
+        // Initialize form validation
+        const formValidator = new FormValidator('registrationForm', validationRules);
+    </script>
+</body>
+</html>

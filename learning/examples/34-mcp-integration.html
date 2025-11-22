@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Context Protocol (MCP) Integration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: white; text-align: center; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        h2 { color: #667eea; margin-bottom: 15px; }
+        .section { margin: 20px 0; }
+        .section h3 { color: #333; margin-bottom: 10px; font-size: 16px; }
+        .resource-list, .tool-list { display: grid; gap: 10px; }
+        .item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .item-name { font-weight: bold; color: #667eea; }
+        .item-desc { color: #666; font-size: 14px; margin-top: 5px; }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Model Context Protocol (MCP) Integration</h1>
+
+        <div class="panel">
+            <h2>MCP Server Connection</h2>
+            <p>MCP standardizes how AI systems integrate with external services (2024+ standard)</p>
+            <button onclick="mcp.connect()">Connect to MCP Server</button>
+            <button onclick="mcp.disconnect()">Disconnect</button>
+            <div id="connectionStatus" class="status info">Not connected</div>
+        </div>
+
+        <div class="panel">
+            <h2>Resources (Data Sources)</h2>
+            <div class="section">
+                <h3>Available Resources</h3>
+                <div class="resource-list" id="resources">
+                    <div class="item">
+                        <div class="item-name">document://config.json</div>
+                        <div class="item-desc">Application configuration file</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-name">database://users</div>
+                        <div class="item-desc">User database records</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-name">file://docs/README.md</div>
+                        <div class="item-desc">Project documentation</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="mcp.readResource('document://config.json')">Read Config</button>
+            <div id="resourceOutput"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Tools (Actions AI Can Invoke)</h2>
+            <div class="section">
+                <h3>Available Tools</h3>
+                <div class="tool-list">
+                    <div class="item">
+                        <div class="item-name">search(query: string)</div>
+                        <div class="item-desc">Search through documents and data</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-name">transform(data: any, operation: string)</div>
+                        <div class="item-desc">Transform data using specified operation</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-name">query_database(sql: string)</div>
+                        <div class="item-desc">Execute database query</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="mcp.invokeTool('search', {query: 'user authentication'})">Test Search Tool</button>
+            <div id="toolOutput"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Prompts (Workflow Templates)</h2>
+            <div class="section">
+                <div class="item">
+                    <div class="item-name">code-review</div>
+                    <div class="item-desc">Template for reviewing code changes</div>
+                </div>
+                <div class="item">
+                    <div class="item-name">data-analysis</div>
+                    <div class="item-desc">Template for analyzing datasets</div>
+                </div>
+            </div>
+            <button onclick="mcp.executePrompt('code-review')">Execute Code Review Prompt</button>
+            <div id="promptOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // Model Context Protocol (MCP) Client Implementation
+        class MCPClient {
+            constructor() {
+                this.sessionId = null;
+                this.connected = false;
+                this.baseURL = 'https://mcp-server.example.com';
+            }
+
+            async connect() {
+                try {
+                    this.showStatus('connectionStatus', 'Connecting to MCP server...', 'info');
+
+                    // In production, would use HTTP/SSE transport:
+                    // const response = await fetch(`${this.baseURL}/mcp/initialize`, {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         'Content-Type': 'application/json'
+                    //     },
+                    //     body: JSON.stringify({
+                    //         protocol_version: '1.0',
+                    //         client_info: { name: 'web-app', version: '1.0.0' }
+                    //     })
+                    // });
+
+                    // Simulate connection
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    this.sessionId = 'mcp-session-' + Math.random().toString(36).substr(2, 9);
+                    this.connected = true;
+
+                    this.showStatus('connectionStatus',
+                        `Connected to MCP server (Session: ${this.sessionId})`,
+                        'success'
+                    );
+
+                } catch (error) {
+                    this.showStatus('connectionStatus',
+                        `Connection failed: ${error.message}`,
+                        'error'
+                    );
+                }
+            }
+
+            disconnect() {
+                this.sessionId = null;
+                this.connected = false;
+                this.showStatus('connectionStatus', 'Disconnected from MCP server', 'info');
+            }
+
+            async readResource(uri) {
+                if (!this.connected) {
+                    this.showOutput('resourceOutput', 'Not connected to MCP server', 'error');
+                    return;
+                }
+
+                try {
+                    // MCP protocol: resources/read request
+                    const request = {
+                        jsonrpc: '2.0',
+                        method: 'resources/read',
+                        params: { uri },
+                        id: Date.now()
+                    };
+
+                    this.showOutput('resourceOutput',
+                        `Reading resource: ${uri}\n\nRequest:\n${JSON.stringify(request, null, 2)}`,
+                        'info'
+                    );
+
+                    // Simulate resource read
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const mockData = {
+                        'document://config.json': {
+                            app_name: 'MyApp',
+                            version: '1.0.0',
+                            features: ['auth', 'analytics', 'notifications']
+                        },
+                        'database://users': {
+                            total: 150,
+                            active: 142,
+                            recent: [
+                                { id: 1, name: 'Alice', status: 'active' },
+                                { id: 2, name: 'Bob', status: 'active' }
+                            ]
+                        },
+                        'file://docs/README.md': '# MyApp\n\nWelcome to MyApp documentation...'
+                    };
+
+                    const response = {
+                        jsonrpc: '2.0',
+                        result: {
+                            contents: [
+                                {
+                                    uri,
+                                    mimeType: 'application/json',
+                                    text: JSON.stringify(mockData[uri], null, 2)
+                                }
+                            ]
+                        },
+                        id: request.id
+                    };
+
+                    this.showOutput('resourceOutput',
+                        `Resource data:\n\n${JSON.stringify(response.result, null, 2)}`,
+                        'success'
+                    );
+
+                } catch (error) {
+                    this.showOutput('resourceOutput', `Error: ${error.message}`, 'error');
+                }
+            }
+
+            async invokeTool(name, args) {
+                if (!this.connected) {
+                    this.showOutput('toolOutput', 'Not connected to MCP server', 'error');
+                    return;
+                }
+
+                try {
+                    // MCP protocol: tools/call request
+                    const request = {
+                        jsonrpc: '2.0',
+                        method: 'tools/call',
+                        params: {
+                            name,
+                            arguments: args
+                        },
+                        id: Date.now()
+                    };
+
+                    this.showOutput('toolOutput',
+                        `Invoking tool: ${name}\n\nRequest:\n${JSON.stringify(request, null, 2)}`,
+                        'info'
+                    );
+
+                    // Simulate tool execution
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    const mockResults = {
+                        search: {
+                            results: [
+                                { title: 'User Authentication Guide', relevance: 0.95 },
+                                { title: 'OAuth Implementation', relevance: 0.87 },
+                                { title: 'Session Management', relevance: 0.76 }
+                            ],
+                            total: 3
+                        }
+                    };
+
+                    const response = {
+                        jsonrpc: '2.0',
+                        result: {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: JSON.stringify(mockResults[name], null, 2)
+                                }
+                            ]
+                        },
+                        id: request.id
+                    };
+
+                    this.showOutput('toolOutput',
+                        `Tool result:\n\n${JSON.stringify(response.result, null, 2)}`,
+                        'success'
+                    );
+
+                } catch (error) {
+                    this.showOutput('toolOutput', `Error: ${error.message}`, 'error');
+                }
+            }
+
+            async executePrompt(name) {
+                if (!this.connected) {
+                    this.showOutput('promptOutput', 'Not connected to MCP server', 'error');
+                    return;
+                }
+
+                try {
+                    // MCP protocol: prompts/get request
+                    const request = {
+                        jsonrpc: '2.0',
+                        method: 'prompts/get',
+                        params: { name },
+                        id: Date.now()
+                    };
+
+                    this.showOutput('promptOutput',
+                        `Executing prompt: ${name}\n\nRequest:\n${JSON.stringify(request, null, 2)}`,
+                        'info'
+                    );
+
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const response = {
+                        jsonrpc: '2.0',
+                        result: {
+                            description: 'Code review workflow template',
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: {
+                                        type: 'text',
+                                        text: 'Please review the following code changes for security, performance, and best practices...'
+                                    }
+                                }
+                            ]
+                        },
+                        id: request.id
+                    };
+
+                    this.showOutput('promptOutput',
+                        `Prompt template:\n\n${JSON.stringify(response.result, null, 2)}`,
+                        'success'
+                    );
+
+                } catch (error) {
+                    this.showOutput('promptOutput', `Error: ${error.message}`, 'error');
+                }
+            }
+
+            showStatus(elementId, message, type) {
+                const element = document.getElementById(elementId);
+                element.textContent = message;
+                element.className = `status ${type}`;
+            }
+
+            showOutput(elementId, content, type) {
+                const element = document.getElementById(elementId);
+                element.innerHTML = `<div class="code">${content}</div>`;
+            }
+        }
+
+        // Initialize MCP client
+        const mcp = new MCPClient();
+    </script>
+</body>
+</html>

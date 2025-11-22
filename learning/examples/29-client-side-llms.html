@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client-Side LLM (Zero Server Cost)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: white; text-align: center; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .status {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+        button:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .response {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+        }
+        .info { color: #666; font-size: 13px; margin-top: 10px; }
+        select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Client-Side LLM (Zero Server Cost)</h1>
+
+        <div class="panel">
+            <h2>Model Selection</h2>
+            <select id="modelSelect">
+                <option value="webllm">WebLLM (Full LLM in browser with WebGPU)</option>
+                <option value="transformers">Transformers.js (HuggingFace models)</option>
+                <option value="embeddings">TensorFlow.js (Sentence embeddings)</option>
+            </select>
+
+            <div id="status" class="status">Select a model and click "Load Model" to begin</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+
+            <button onclick="app.loadModel()" id="loadBtn">Load Model</button>
+            <button onclick="app.unloadModel()" id="unloadBtn" disabled>Unload Model</button>
+
+            <div class="info">
+                Note: Models are cached in your browser after first download.
+                Initial load may take a few minutes depending on model size.
+            </div>
+        </div>
+
+        <div class="panel" id="chatPanel" style="display: none;">
+            <h2>Chat (Completely Offline)</h2>
+            <textarea id="promptInput" placeholder="Enter your prompt..."></textarea>
+            <button onclick="app.generate()" id="generateBtn" style="margin-top: 10px;">Generate</button>
+            <div id="response"></div>
+        </div>
+
+        <div class="panel" id="embeddingsPanel" style="display: none;">
+            <h2>Semantic Similarity</h2>
+            <textarea id="text1" placeholder="Enter first text..."></textarea>
+            <textarea id="text2" placeholder="Enter second text..." style="margin-top: 10px;"></textarea>
+            <button onclick="app.compareSimilarity()" style="margin-top: 10px;">Compare Similarity</button>
+            <div id="similarityResult"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        class ClientSideLLM {
+            constructor() {
+                this.model = null;
+                this.modelType = null;
+                this.isLoaded = false;
+            }
+
+            updateStatus(message, progress = null) {
+                document.getElementById('status').textContent = message;
+                if (progress !== null) {
+                    const bar = document.getElementById('progressBar');
+                    bar.style.width = `${progress}%`;
+                    bar.textContent = `${Math.round(progress)}%`;
+                }
+            }
+
+            async loadModel() {
+                const modelType = document.getElementById('modelSelect').value;
+                this.modelType = modelType;
+
+                document.getElementById('loadBtn').disabled = true;
+                this.updateStatus('Loading model...', 0);
+
+                try {
+                    if (modelType === 'webllm') {
+                        await this.loadWebLLM();
+                    } else if (modelType === 'transformers') {
+                        await this.loadTransformers();
+                    } else if (modelType === 'embeddings') {
+                        await this.loadEmbeddings();
+                    }
+
+                    this.isLoaded = true;
+                    document.getElementById('unloadBtn').disabled = false;
+                    this.updateStatus('Model loaded successfully! Ready to use offline.', 100);
+
+                    // Show appropriate panel
+                    if (modelType === 'embeddings') {
+                        document.getElementById('embeddingsPanel').style.display = 'block';
+                        document.getElementById('chatPanel').style.display = 'none';
+                    } else {
+                        document.getElementById('chatPanel').style.display = 'block';
+                        document.getElementById('embeddingsPanel').style.display = 'none';
+                    }
+                } catch (error) {
+                    this.updateStatus(`Error: ${error.message}`, 0);
+                    document.getElementById('loadBtn').disabled = false;
+                }
+            }
+
+            async loadWebLLM() {
+                this.updateStatus('WebLLM requires WebGPU support. This is a demo showing the pattern.', 50);
+
+                // Simulate loading
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // In production, you would use:
+                // import { CreateMLCEngine } from "@mlc-ai/web-llm";
+                // this.model = await CreateMLCEngine("Llama-3.1-8B-Instruct-q4f32_1-MLC");
+
+                this.model = {
+                    type: 'webllm-demo',
+                    generate: async (prompt) => {
+                        return `[WebLLM Demo Response]\n\nThis is a simulated response. In production, WebLLM would:\n1. Run a full LLM (like Llama 3.1) entirely in your browser\n2. Use WebGPU for GPU acceleration\n3. Work completely offline after initial load\n4. Cache the model in IndexedDB\n\nYour prompt was: "${prompt}"\n\nTo use real WebLLM, install: npm install @mlc-ai/web-llm`;
+                    }
+                };
+            }
+
+            async loadTransformers() {
+                this.updateStatus('Loading Transformers.js (demo mode)...', 50);
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // In production:
+                // import { pipeline } from '@xenova/transformers';
+                // this.model = await pipeline('text-generation', 'Xenova/gpt2');
+
+                this.model = {
+                    type: 'transformers-demo',
+                    generate: async (prompt) => {
+                        return `[Transformers.js Demo Response]\n\nThis demonstrates the pattern. Real implementation would:\n1. Load HuggingFace models via ONNX Runtime\n2. Support various tasks: text generation, classification, embeddings\n3. Run completely in browser\n4. Cache models for offline use\n\nYour prompt: "${prompt}"\n\nTo use real Transformers.js: npm install @xenova/transformers`;
+                    }
+                };
+            }
+
+            async loadEmbeddings() {
+                this.updateStatus('Loading TensorFlow.js embeddings model...', 50);
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Simulated embedding model
+                this.model = {
+                    type: 'embeddings',
+                    embed: async (text) => {
+                        // Simulate embeddings with random normalized vectors
+                        const embedding = Array.from({ length: 512 }, () => Math.random() - 0.5);
+                        const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+                        return embedding.map(val => val / norm);
+                    }
+                };
+            }
+
+            async generate() {
+                if (!this.isLoaded) {
+                    alert('Please load a model first');
+                    return;
+                }
+
+                const prompt = document.getElementById('promptInput').value.trim();
+                if (!prompt) {
+                    alert('Please enter a prompt');
+                    return;
+                }
+
+                const responseDiv = document.getElementById('response');
+                responseDiv.className = 'response';
+                responseDiv.textContent = 'Generating...';
+
+                document.getElementById('generateBtn').disabled = true;
+
+                try {
+                    const response = await this.model.generate(prompt);
+                    responseDiv.textContent = response;
+                } catch (error) {
+                    responseDiv.textContent = `Error: ${error.message}`;
+                } finally {
+                    document.getElementById('generateBtn').disabled = false;
+                }
+            }
+
+            async compareSimilarity() {
+                if (!this.isLoaded) {
+                    alert('Please load the embeddings model first');
+                    return;
+                }
+
+                const text1 = document.getElementById('text1').value.trim();
+                const text2 = document.getElementById('text2').value.trim();
+
+                if (!text1 || !text2) {
+                    alert('Please enter both texts');
+                    return;
+                }
+
+                const resultDiv = document.getElementById('similarityResult');
+                resultDiv.className = 'response';
+                resultDiv.textContent = 'Computing similarity...';
+
+                try {
+                    const emb1 = await this.model.embed(text1);
+                    const emb2 = await this.model.embed(text2);
+
+                    // Cosine similarity
+                    const similarity = emb1.reduce((sum, val, i) => sum + val * emb2[i], 0);
+
+                    resultDiv.innerHTML = `
+<strong>Similarity Score:</strong> ${(similarity * 100).toFixed(2)}%
+
+<strong>Text 1:</strong> "${text1}"
+<strong>Text 2:</strong> "${text2}"
+
+<strong>Interpretation:</strong>
+${similarity > 0.8 ? 'Very similar' : similarity > 0.6 ? 'Moderately similar' : similarity > 0.4 ? 'Somewhat similar' : 'Not very similar'}
+
+Note: This uses simulated embeddings. Real implementation would use TensorFlow.js Universal Sentence Encoder.
+                    `;
+                } catch (error) {
+                    resultDiv.textContent = `Error: ${error.message}`;
+                }
+            }
+
+            unloadModel() {
+                this.model = null;
+                this.isLoaded = false;
+                this.modelType = null;
+
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('unloadBtn').disabled = true;
+                document.getElementById('chatPanel').style.display = 'none';
+                document.getElementById('embeddingsPanel').style.display = 'none';
+
+                this.updateStatus('Model unloaded', 0);
+            }
+        }
+
+        window.app = new ClientSideLLM();
+    </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural 3D Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 250px;
+        }
+        h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #4ade80;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+        <h3>Procedural Generation</h3>
+        <button onclick="app.generateTerrain()">Generate Terrain</button>
+        <button onclick="app.generatePlanet()">Generate Planet</button>
+        <button onclick="app.generateForest()">Generate Forest</button>
+        <button onclick="app.generateMountains()">Generate Mountains</button>
+        <div class="info">
+            Click and drag to rotate<br>
+            Scroll to zoom<br>
+            Each generation is unique
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Simplex Noise Implementation
+        class SimplexNoise {
+            constructor(seed = Math.random()) {
+                this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
+                             [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+                             [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+                this.p = [];
+                for(let i = 0; i < 256; i++) {
+                    this.p[i] = Math.floor(seed * 256);
+                    seed = (seed * 9301 + 49297) % 233280;
+                    seed /= 233280;
+                }
+                this.perm = [];
+                for(let i = 0; i < 512; i++) {
+                    this.perm[i] = this.p[i & 255];
+                }
+            }
+
+            dot(g, x, y, z) {
+                return g[0] * x + g[1] * y + g[2] * z;
+            }
+
+            noise(xin, yin, zin) {
+                let n0, n1, n2, n3;
+                let F3 = 1.0 / 3.0;
+                let s = (xin + yin + zin) * F3;
+                let i = Math.floor(xin + s);
+                let j = Math.floor(yin + s);
+                let k = Math.floor(zin + s);
+
+                let G3 = 1.0 / 6.0;
+                let t = (i + j + k) * G3;
+                let X0 = i - t;
+                let Y0 = j - t;
+                let Z0 = k - t;
+                let x0 = xin - X0;
+                let y0 = yin - Y0;
+                let z0 = zin - Z0;
+
+                let i1, j1, k1, i2, j2, k2;
+                if(x0 >= y0) {
+                    if(y0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=1; k2=0; }
+                    else if(x0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=0; k2=1; }
+                    else { i1=0; j1=0; k1=1; i2=1; j2=0; k2=1; }
+                } else {
+                    if(y0 < z0) { i1=0; j1=0; k1=1; i2=0; j2=1; k2=1; }
+                    else if(x0 < z0) { i1=0; j1=1; k1=0; i2=0; j2=1; k2=1; }
+                    else { i1=0; j1=1; k1=0; i2=1; j2=1; k2=0; }
+                }
+
+                let x1 = x0 - i1 + G3;
+                let y1 = y0 - j1 + G3;
+                let z1 = z0 - k1 + G3;
+                let x2 = x0 - i2 + 2.0 * G3;
+                let y2 = y0 - j2 + 2.0 * G3;
+                let z2 = z0 - k2 + 2.0 * G3;
+                let x3 = x0 - 1.0 + 3.0 * G3;
+                let y3 = y0 - 1.0 + 3.0 * G3;
+                let z3 = z0 - 1.0 + 3.0 * G3;
+
+                let ii = i & 255;
+                let jj = j & 255;
+                let kk = k & 255;
+                let gi0 = this.perm[ii + this.perm[jj + this.perm[kk]]] % 12;
+                let gi1 = this.perm[ii + i1 + this.perm[jj + j1 + this.perm[kk + k1]]] % 12;
+                let gi2 = this.perm[ii + i2 + this.perm[jj + j2 + this.perm[kk + k2]]] % 12;
+                let gi3 = this.perm[ii + 1 + this.perm[jj + 1 + this.perm[kk + 1]]] % 12;
+
+                let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
+                if(t0 < 0) n0 = 0.0;
+                else {
+                    t0 *= t0;
+                    n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0, z0);
+                }
+
+                let t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
+                if(t1 < 0) n1 = 0.0;
+                else {
+                    t1 *= t1;
+                    n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1, z1);
+                }
+
+                let t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
+                if(t2 < 0) n2 = 0.0;
+                else {
+                    t2 *= t2;
+                    n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2, z2);
+                }
+
+                let t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
+                if(t3 < 0) n3 = 0.0;
+                else {
+                    t3 *= t3;
+                    n3 = t3 * t3 * this.dot(this.grad3[gi3], x3, y3, z3);
+                }
+
+                return 32.0 * (n0 + n1 + n2 + n3);
+            }
+
+            // Multi-octave noise for natural-looking randomness
+            octaveNoise(x, y, z, octaves, persistence) {
+                let total = 0;
+                let frequency = 1;
+                let amplitude = 1;
+                let maxValue = 0;
+
+                for(let i = 0; i < octaves; i++) {
+                    total += this.noise(x * frequency, y * frequency, z * frequency) * amplitude;
+                    maxValue += amplitude;
+                    amplitude *= persistence;
+                    frequency *= 2;
+                }
+
+                return total / maxValue;
+            }
+        }
+
+        class ProceduralApp {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setClearColor(0x000814);
+                this.camera.position.z = 5;
+
+                this.noise = new SimplexNoise();
+                this.currentMesh = null;
+
+                this.setupLights();
+                this.setupControls();
+                this.generateTerrain();
+                this.animate();
+
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            setupLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5, 5, 5);
+                this.scene.add(directionalLight);
+            }
+
+            setupControls() {
+                let isDragging = false;
+                let previousMousePosition = { x: 0, y: 0 };
+
+                this.canvas.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (isDragging && this.currentMesh) {
+                        const deltaX = e.clientX - previousMousePosition.x;
+                        const deltaY = e.clientY - previousMousePosition.y;
+
+                        this.currentMesh.rotation.y += deltaX * 0.01;
+                        this.currentMesh.rotation.x += deltaY * 0.01;
+
+                        previousMousePosition = { x: e.clientX, y: e.clientY };
+                    }
+                });
+
+                this.canvas.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    this.camera.position.z += e.deltaY * 0.01;
+                    this.camera.position.z = Math.max(2, Math.min(20, this.camera.position.z));
+                });
+            }
+
+            clearScene() {
+                if (this.currentMesh) {
+                    this.scene.remove(this.currentMesh);
+                    this.currentMesh.geometry.dispose();
+                    this.currentMesh.material.dispose();
+                }
+            }
+
+            generateTerrain() {
+                this.clearScene();
+                this.noise = new SimplexNoise();
+
+                const geometry = new THREE.PlaneGeometry(10, 10, 100, 100);
+                const positions = geometry.attributes.position.array;
+
+                // Apply multi-octave noise to create natural terrain
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i] / 2;
+                    const y = positions[i + 1] / 2;
+                    const height = this.noise.octaveNoise(x, y, 0, 4, 0.5);
+                    positions[i + 2] = height * 2;
+                }
+
+                geometry.computeVertexNormals();
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x2d5016,
+                    wireframe: false,
+                    flatShading: true
+                });
+
+                this.currentMesh = new THREE.Mesh(geometry, material);
+                this.currentMesh.rotation.x = -Math.PI / 3;
+                this.scene.add(this.currentMesh);
+            }
+
+            generatePlanet() {
+                this.clearScene();
+                this.noise = new SimplexNoise();
+
+                const geometry = new THREE.IcosahedronGeometry(2, 5);
+                const positions = geometry.attributes.position.array;
+
+                // Deform sphere with noise for realistic planet surface
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i];
+                    const y = positions[i + 1];
+                    const z = positions[i + 2];
+
+                    const length = Math.sqrt(x*x + y*y + z*z);
+                    const noise = this.noise.octaveNoise(x, y, z, 6, 0.5);
+                    const scale = 1 + noise * 0.3;
+
+                    positions[i] = (x / length) * 2 * scale;
+                    positions[i + 1] = (y / length) * 2 * scale;
+                    positions[i + 2] = (z / length) * 2 * scale;
+                }
+
+                geometry.computeVertexNormals();
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x4a90e2,
+                    wireframe: false,
+                    flatShading: true
+                });
+
+                this.currentMesh = new THREE.Mesh(geometry, material);
+                this.scene.add(this.currentMesh);
+            }
+
+            generateForest() {
+                this.clearScene();
+                this.noise = new SimplexNoise();
+
+                const group = new THREE.Group();
+
+                // Generate random trees
+                for (let i = 0; i < 50; i++) {
+                    const x = (Math.random() - 0.5) * 10;
+                    const z = (Math.random() - 0.5) * 10;
+                    const tree = this.createTree();
+                    tree.position.set(x, 0, z);
+                    group.add(tree);
+                }
+
+                this.currentMesh = group;
+                this.scene.add(this.currentMesh);
+            }
+
+            createTree() {
+                const tree = new THREE.Group();
+
+                // Trunk
+                const trunkHeight = 0.5 + Math.random() * 0.5;
+                const trunkGeometry = new THREE.CylinderGeometry(0.05, 0.08, trunkHeight, 8);
+                const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.y = trunkHeight / 2;
+                tree.add(trunk);
+
+                // Foliage (multiple cones for natural look)
+                const foliageLevels = 3;
+                for (let i = 0; i < foliageLevels; i++) {
+                    const size = 0.4 - i * 0.1;
+                    const foliageGeometry = new THREE.ConeGeometry(size, size * 1.5, 8);
+                    const foliageMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x2d5016
+                    });
+                    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+                    foliage.position.y = trunkHeight + i * 0.3;
+                    tree.add(foliage);
+                }
+
+                return tree;
+            }
+
+            generateMountains() {
+                this.clearScene();
+                this.noise = new SimplexNoise();
+
+                const geometry = new THREE.PlaneGeometry(10, 10, 80, 80);
+                const positions = geometry.attributes.position.array;
+
+                // Create dramatic mountain peaks
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i] / 3;
+                    const y = positions[i + 1] / 3;
+
+                    // Multiple octaves with higher amplitude for peaks
+                    let height = this.noise.octaveNoise(x, y, 0, 6, 0.5);
+                    height = Math.pow(Math.abs(height), 1.5) * Math.sign(height);
+
+                    positions[i + 2] = height * 3;
+                }
+
+                geometry.computeVertexNormals();
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x8b7355,
+                    wireframe: false,
+                    flatShading: true
+                });
+
+                this.currentMesh = new THREE.Mesh(geometry, material);
+                this.currentMesh.rotation.x = -Math.PI / 3;
+                this.scene.add(this.currentMesh);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                if (this.currentMesh) {
+                    this.currentMesh.rotation.y += 0.002;
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        // Initialize app
+        let app;
+        window.addEventListener('DOMContentLoaded', () => {
+            app = new ProceduralApp();
+        });
+    </script>
+</body>
+</html>

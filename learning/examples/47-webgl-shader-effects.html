@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Shader Effects</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        canvas { display: block; width: 100%; height: 100vh; }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h2 { margin-bottom: 15px; color: #4ade80; }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 6px;
+            background: #4ade80;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #22c55e; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <h2>Shader Effects</h2>
+        <button onclick="shaders.setShader('waves')">Waves</button>
+        <button onclick="shaders.setShader('plasma')">Plasma</button>
+        <button onclick="shaders.setShader('mandelbrot')">Mandelbrot</button>
+        <button onclick="shaders.setShader('noise')">Noise</button>
+    </div>
+
+    <script>
+        class ShaderEffects {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.gl = this.canvas.getContext('webgl');
+
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+
+                this.currentShader = 'waves';
+                this.startTime = Date.now();
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+
+                this.initShaders();
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            initShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 position;
+                    void main() {
+                        gl_Position = vec4(position, 0.0, 1.0);
+                    }
+                `;
+
+                // Compile shaders for each effect
+                this.shaders = {
+                    waves: this.createProgram(vertexShaderSource, this.wavesFragmentShader()),
+                    plasma: this.createProgram(vertexShaderSource, this.plasmaFragmentShader()),
+                    mandelbrot: this.createProgram(vertexShaderSource, this.mandelbrotFragmentShader()),
+                    noise: this.createProgram(vertexShaderSource, this.noiseFragmentShader())
+                };
+
+                // Create full-screen quad
+                const vertices = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
+
+                this.buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+            }
+
+            wavesFragmentShader() {
+                return `
+                    precision mediump float;
+                    uniform float time;
+                    uniform vec2 resolution;
+
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / resolution;
+                        vec3 color = 0.5 + 0.5 * cos(time + uv.xyx + vec3(0, 2, 4));
+
+                        // Add wave distortion
+                        float wave = sin(uv.x * 10.0 + time) * 0.1 + sin(uv.y * 10.0 + time) * 0.1;
+                        color += wave;
+
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+            }
+
+            plasmaFragmentShader() {
+                return `
+                    precision mediump float;
+                    uniform float time;
+                    uniform vec2 resolution;
+
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / resolution * 2.0 - 1.0;
+                        uv.x *= resolution.x / resolution.y;
+
+                        float v = 0.0;
+                        v += sin((uv.x + time));
+                        v += sin((uv.y + time) / 2.0);
+                        v += sin((uv.x + uv.y + time) / 2.0);
+
+                        vec2 c = uv + vec2(sin(time / 3.0), cos(time / 2.0));
+                        v += sin(sqrt(c.x * c.x + c.y * c.y + 1.0) + time);
+
+                        v = v / 2.0;
+
+                        vec3 color = vec3(
+                            sin(v * 3.14159),
+                            sin(v * 3.14159 + 2.0),
+                            sin(v * 3.14159 + 4.0)
+                        );
+
+                        gl_FragColor = vec4(color * 0.5 + 0.5, 1.0);
+                    }
+                `;
+            }
+
+            mandelbrotFragmentShader() {
+                return `
+                    precision mediump float;
+                    uniform float time;
+                    uniform vec2 resolution;
+
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / resolution;
+                        uv = uv * 4.0 - 2.0;
+
+                        float zoom = 1.0 + sin(time * 0.5) * 0.5;
+                        uv *= zoom;
+
+                        vec2 c = uv;
+                        vec2 z = vec2(0.0);
+
+                        float iterations = 0.0;
+                        const float maxIterations = 100.0;
+
+                        for (float i = 0.0; i < 100.0; i++) {
+                            if (i >= maxIterations) break;
+
+                            z = vec2(
+                                z.x * z.x - z.y * z.y,
+                                2.0 * z.x * z.y
+                            ) + c;
+
+                            if (length(z) > 2.0) break;
+
+                            iterations = i;
+                        }
+
+                        float value = iterations / maxIterations;
+                        vec3 color = vec3(value);
+
+                        // Add color cycling
+                        color = 0.5 + 0.5 * cos(value * 6.28 + time + vec3(0, 2, 4));
+
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+            }
+
+            noiseFragmentShader() {
+                return `
+                    precision mediump float;
+                    uniform float time;
+                    uniform vec2 resolution;
+
+                    float random(vec2 st) {
+                        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+                    }
+
+                    float noise(vec2 st) {
+                        vec2 i = floor(st);
+                        vec2 f = fract(st);
+
+                        float a = random(i);
+                        float b = random(i + vec2(1.0, 0.0));
+                        float c = random(i + vec2(0.0, 1.0));
+                        float d = random(i + vec2(1.0, 1.0));
+
+                        vec2 u = f * f * (3.0 - 2.0 * f);
+
+                        return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+                    }
+
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / resolution;
+
+                        float n = 0.0;
+                        float amplitude = 1.0;
+                        float frequency = 1.0;
+
+                        // Multi-octave noise
+                        for (int i = 0; i < 5; i++) {
+                            n += noise(uv * frequency + time * 0.5) * amplitude;
+                            frequency *= 2.0;
+                            amplitude *= 0.5;
+                        }
+
+                        vec3 color = vec3(n);
+                        color = 0.5 + 0.5 * cos(n * 6.28 + time + vec3(0, 2, 4));
+
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+            }
+
+            createProgram(vertexSource, fragmentSource) {
+                const gl = this.gl;
+
+                // Compile vertex shader
+                const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertexShader, vertexSource);
+                gl.compileShader(vertexShader);
+
+                // Compile fragment shader
+                const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragmentShader, fragmentSource);
+                gl.compileShader(fragmentShader);
+
+                // Link program
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+
+                return program;
+            }
+
+            setShader(name) {
+                this.currentShader = name;
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                const gl = this.gl;
+                const program = this.shaders[this.currentShader];
+
+                gl.useProgram(program);
+
+                // Set uniforms
+                const timeLocation = gl.getUniformLocation(program, 'time');
+                const resolutionLocation = gl.getUniformLocation(program, 'resolution');
+
+                const time = (Date.now() - this.startTime) / 1000;
+                gl.uniform1f(timeLocation, time);
+                gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height);
+
+                // Set position attribute
+                const positionLocation = gl.getAttribLocation(program, 'position');
+                gl.enableVertexAttribArray(positionLocation);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+                // Draw
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        const shaders = new ShaderEffects();
+    </script>
+</body>
+</html>

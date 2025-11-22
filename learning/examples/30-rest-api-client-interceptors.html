@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced REST API Client with Interceptors</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 { color: #667eea; margin-bottom: 15px; font-size: 18px; }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .log {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-left: 3px solid #667eea;
+            background: white;
+        }
+        .log-request { border-left-color: #3b82f6; }
+        .log-response { border-left-color: #10b981; }
+        .log-error { border-left-color: #ef4444; }
+        input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 5px 0;
+            width: 100%;
+        }
+        .token-display {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced REST API Client with Request Interceptors</h1>
+
+        <div class="panel">
+            <h2>Authentication</h2>
+            <input type="text" id="tokenInput" placeholder="Enter access token (or click Login to simulate)">
+            <button onclick="client.login()">Simulate Login</button>
+            <button onclick="client.logout()">Logout</button>
+            <div class="token-display" id="tokenDisplay">No token set</div>
+        </div>
+
+        <div class="panel">
+            <h2>API Requests</h2>
+            <button onclick="client.testRequest('/api/user')">GET /api/user</button>
+            <button onclick="client.testRequest('/api/data')">GET /api/data</button>
+            <button onclick="client.testExpiredToken()">Test Expired Token (401)</button>
+            <button onclick="client.clearLog()">Clear Log</button>
+        </div>
+
+        <div class="panel">
+            <h2>Request Log (with Interceptors)</h2>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Advanced API Client with Interceptor Pattern
+        class APIClient {
+            constructor() {
+                this.baseURL = 'https://api.example.com';
+                this.accessToken = localStorage.getItem('access_token');
+                this.refreshToken = localStorage.getItem('refresh_token');
+                this.requestInterceptors = [];
+                this.responseInterceptors = [];
+
+                this.setupDefaultInterceptors();
+                this.updateTokenDisplay();
+            }
+
+            // Add request interceptor
+            addRequestInterceptor(interceptor) {
+                this.requestInterceptors.push(interceptor);
+            }
+
+            // Add response interceptor
+            addResponseInterceptor(interceptor) {
+                this.responseInterceptors.push(interceptor);
+            }
+
+            setupDefaultInterceptors() {
+                // Request interceptor: Add auth token
+                this.addRequestInterceptor((config) => {
+                    this.log('request', `Interceptor: Adding auth token to ${config.url}`);
+                    if (this.accessToken) {
+                        config.headers['Authorization'] = `Bearer ${this.accessToken}`;
+                    }
+                    return config;
+                });
+
+                // Request interceptor: Log all requests
+                this.addRequestInterceptor((config) => {
+                    this.log('request', `${config.method} ${config.url}`);
+                    return config;
+                });
+
+                // Response interceptor: Handle 401 errors
+                this.addResponseInterceptor(async (response, config) => {
+                    if (response.status === 401) {
+                        this.log('error', 'Received 401 Unauthorized - attempting token refresh');
+
+                        // Attempt to refresh token
+                        const refreshed = await this.refreshAccessToken();
+
+                        if (refreshed) {
+                            this.log('response', 'Token refreshed successfully - retrying request');
+
+                            // Retry the original request with new token
+                            return this.request(config);
+                        } else {
+                            this.log('error', 'Token refresh failed - logging out');
+                            this.logout();
+                            throw new Error('Session expired');
+                        }
+                    }
+                    return response;
+                });
+
+                // Response interceptor: Log all responses
+                this.addResponseInterceptor((response) => {
+                    this.log('response', `${response.status} ${response.statusText}`);
+                    return response;
+                });
+            }
+
+            async request(config) {
+                // Apply request interceptors
+                for (const interceptor of this.requestInterceptors) {
+                    config = await interceptor(config);
+                }
+
+                // Make the actual request
+                try {
+                    let response = await fetch(config.url, {
+                        method: config.method,
+                        headers: config.headers,
+                        body: config.body
+                    });
+
+                    // Apply response interceptors
+                    for (const interceptor of this.responseInterceptors) {
+                        response = await interceptor(response, config);
+                    }
+
+                    return response;
+
+                } catch (error) {
+                    this.log('error', `Request failed: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            async get(url) {
+                return this.request({
+                    url: `${this.baseURL}${url}`,
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+
+            async refreshAccessToken() {
+                if (!this.refreshToken) {
+                    return false;
+                }
+
+                try {
+                    // Simulate refresh token request
+                    this.log('request', 'POST /auth/refresh');
+
+                    // In real implementation:
+                    // const response = await fetch(`${this.baseURL}/auth/refresh`, {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({ refresh_token: this.refreshToken })
+                    // });
+
+                    // Simulate successful refresh
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const newToken = 'new_access_token_' + Math.random().toString(36).substr(2, 9);
+                    this.accessToken = newToken;
+                    localStorage.setItem('access_token', newToken);
+                    this.updateTokenDisplay();
+
+                    return true;
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            login() {
+                // Simulate login
+                const accessToken = 'access_token_' + Math.random().toString(36).substr(2, 9);
+                const refreshToken = 'refresh_token_' + Math.random().toString(36).substr(2, 9);
+
+                this.accessToken = accessToken;
+                this.refreshToken = refreshToken;
+
+                localStorage.setItem('access_token', accessToken);
+                localStorage.setItem('refresh_token', refreshToken);
+
+                this.log('response', 'Login successful - tokens stored');
+                this.updateTokenDisplay();
+            }
+
+            logout() {
+                this.accessToken = null;
+                this.refreshToken = null;
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+
+                this.log('response', 'Logged out - tokens cleared');
+                this.updateTokenDisplay();
+            }
+
+            updateTokenDisplay() {
+                const display = document.getElementById('tokenDisplay');
+                if (this.accessToken) {
+                    display.textContent = `Access Token: ${this.accessToken}\nRefresh Token: ${this.refreshToken}`;
+                } else {
+                    display.textContent = 'No token set';
+                }
+            }
+
+            async testRequest(endpoint) {
+                try {
+                    // Simulate API request
+                    await this.get(endpoint);
+                    this.log('response', `Success: ${endpoint} returned data`);
+                } catch (error) {
+                    this.log('error', error.message);
+                }
+            }
+
+            async testExpiredToken() {
+                this.log('request', 'Simulating expired token scenario...');
+
+                // Simulate a 401 response
+                const config = {
+                    url: `${this.baseURL}/api/protected`,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                };
+
+                // Apply request interceptors
+                for (const interceptor of this.requestInterceptors) {
+                    await interceptor(config);
+                }
+
+                // Simulate 401 response
+                const mockResponse = {
+                    status: 401,
+                    statusText: 'Unauthorized',
+                    ok: false
+                };
+
+                // Apply response interceptors (including auto-refresh)
+                for (const interceptor of this.responseInterceptors) {
+                    await interceptor(mockResponse, config);
+                }
+            }
+
+            log(type, message) {
+                const logDiv = document.getElementById('log');
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+
+                const timestamp = new Date().toLocaleTimeString();
+                entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+
+                logDiv.insertBefore(entry, logDiv.firstChild);
+            }
+
+            clearLog() {
+                document.getElementById('log').innerHTML = '';
+            }
+        }
+
+        // Initialize client
+        const client = new APIClient();
+
+        // Add custom interceptor example
+        client.addRequestInterceptor((config) => {
+            config.headers['X-Custom-Header'] = 'CustomValue';
+            client.log('request', 'Interceptor: Added custom header');
+            return config;
+        });
+    </script>
+</body>
+</html>

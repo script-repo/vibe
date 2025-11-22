@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Visualizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 30px; }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        #canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Neural Network Visualizer</h1>
+
+        <div class="panel">
+            <canvas id="canvas" width="800" height="500"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>Controls</h2>
+            <button onclick="nn.train()">Train (1 Epoch)</button>
+            <button onclick="nn.trainMultiple(10)">Train (10 Epochs)</button>
+            <button onclick="nn.reset()">Reset Network</button>
+            <button onclick="nn.predict()">Test Prediction</button>
+        </div>
+
+        <div class="panel">
+            <h2>Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="epoch">0</div>
+                    <div class="metric-label">Epoch</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="loss">1.000</div>
+                    <div class="metric-label">Loss</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="accuracy">0%</div>
+                    <div class="metric-label">Accuracy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Neural Network Implementation
+        class NeuralNetwork {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                // Network architecture: 2 -> 3 -> 1
+                this.layers = [2, 3, 1];
+                this.weights = [];
+                this.biases = [];
+                this.activations = [];
+
+                this.learningRate = 0.1;
+                this.epoch = 0;
+                this.loss = 1.0;
+
+                this.initializeWeights();
+                this.draw();
+            }
+
+            initializeWeights() {
+                this.weights = [];
+                this.biases = [];
+
+                for (let i = 0; i < this.layers.length - 1; i++) {
+                    const w = [];
+                    const b = [];
+
+                    for (let j = 0; j < this.layers[i + 1]; j++) {
+                        const neuronWeights = [];
+                        for (let k = 0; k < this.layers[i]; k++) {
+                            neuronWeights.push(Math.random() * 2 - 1);
+                        }
+                        w.push(neuronWeights);
+                        b.push(Math.random() * 2 - 1);
+                    }
+
+                    this.weights.push(w);
+                    this.biases.push(b);
+                }
+            }
+
+            sigmoid(x) {
+                return 1 / (1 + Math.exp(-x));
+            }
+
+            sigmoidDerivative(x) {
+                return x * (1 - x);
+            }
+
+            forward(input) {
+                this.activations = [input];
+
+                let current = input;
+
+                for (let i = 0; i < this.weights.length; i++) {
+                    const next = [];
+
+                    for (let j = 0; j < this.weights[i].length; j++) {
+                        let sum = this.biases[i][j];
+                        for (let k = 0; k < current.length; k++) {
+                            sum += current[k] * this.weights[i][j][k];
+                        }
+                        next.push(this.sigmoid(sum));
+                    }
+
+                    this.activations.push(next);
+                    current = next;
+                }
+
+                return current;
+            }
+
+            backward(target) {
+                const deltas = [];
+
+                // Output layer error
+                const outputError = [];
+                const output = this.activations[this.activations.length - 1];
+
+                for (let i = 0; i < output.length; i++) {
+                    outputError.push((target[i] - output[i]) * this.sigmoidDerivative(output[i]));
+                }
+                deltas.push(outputError);
+
+                // Hidden layer errors
+                for (let i = this.weights.length - 2; i >= 0; i--) {
+                    const error = [];
+                    const layer = this.activations[i + 1];
+
+                    for (let j = 0; j < layer.length; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < deltas[0].length; k++) {
+                            sum += deltas[0][k] * this.weights[i + 1][k][j];
+                        }
+                        error.push(sum * this.sigmoidDerivative(layer[j]));
+                    }
+
+                    deltas.unshift(error);
+                }
+
+                // Update weights and biases
+                for (let i = 0; i < this.weights.length; i++) {
+                    for (let j = 0; j < this.weights[i].length; j++) {
+                        for (let k = 0; k < this.weights[i][j].length; k++) {
+                            this.weights[i][j][k] += this.learningRate * deltas[i][j] * this.activations[i][k];
+                        }
+                        this.biases[i][j] += this.learningRate * deltas[i][j];
+                    }
+                }
+            }
+
+            train() {
+                // XOR training data
+                const trainingData = [
+                    { input: [0, 0], target: [0] },
+                    { input: [0, 1], target: [1] },
+                    { input: [1, 0], target: [1] },
+                    { input: [1, 1], target: [0] }
+                ];
+
+                let totalLoss = 0;
+
+                for (const data of trainingData) {
+                    const output = this.forward(data.input);
+                    this.backward(data.target);
+
+                    // Calculate loss
+                    totalLoss += Math.pow(data.target[0] - output[0], 2);
+                }
+
+                this.loss = totalLoss / trainingData.length;
+                this.epoch++;
+
+                this.draw();
+                this.updateMetrics();
+            }
+
+            trainMultiple(epochs) {
+                for (let i = 0; i < epochs; i++) {
+                    this.train();
+                }
+            }
+
+            predict() {
+                const testCases = [
+                    [0, 0],
+                    [0, 1],
+                    [1, 0],
+                    [1, 1]
+                ];
+
+                console.log('XOR Predictions:');
+                for (const input of testCases) {
+                    const output = this.forward(input);
+                    console.log(`${input[0]} XOR ${input[1]} = ${output[0].toFixed(3)}`);
+                }
+
+                this.draw();
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                const layerSpacing = this.canvas.width / (this.layers.length + 1);
+                const nodePositions = [];
+
+                // Calculate node positions
+                for (let i = 0; i < this.layers.length; i++) {
+                    const layerNodes = [];
+                    const nodeSpacing = this.canvas.height / (this.layers[i] + 1);
+
+                    for (let j = 0; j < this.layers[i]; j++) {
+                        layerNodes.push({
+                            x: layerSpacing * (i + 1),
+                            y: nodeSpacing * (j + 1)
+                        });
+                    }
+
+                    nodePositions.push(layerNodes);
+                }
+
+                // Draw connections
+                for (let i = 0; i < this.weights.length; i++) {
+                    for (let j = 0; j < this.weights[i].length; j++) {
+                        for (let k = 0; k < this.weights[i][j].length; k++) {
+                            const from = nodePositions[i][k];
+                            const to = nodePositions[i + 1][j];
+                            const weight = this.weights[i][j][k];
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(from.x, from.y);
+                            this.ctx.lineTo(to.x, to.y);
+
+                            // Color based on weight (green positive, red negative)
+                            const color = weight > 0 ? `rgba(34, 197, 94, ${Math.abs(weight)})` : `rgba(239, 68, 68, ${Math.abs(weight)})`;
+                            this.ctx.strokeStyle = color;
+                            this.ctx.lineWidth = Math.abs(weight) * 3;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw nodes
+                for (let i = 0; i < nodePositions.length; i++) {
+                    for (let j = 0; j < nodePositions[i].length; j++) {
+                        const pos = nodePositions[i][j];
+                        const activation = this.activations[i]?.[j] || 0;
+
+                        this.ctx.beginPath();
+                        this.ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                        this.ctx.fillStyle = `rgba(102, 126, 234, ${activation})`;
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#667eea';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.stroke();
+
+                        // Draw activation value
+                        this.ctx.fillStyle = '#000';
+                        this.ctx.font = '12px monospace';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(activation.toFixed(2), pos.x, pos.y);
+                    }
+                }
+            }
+
+            updateMetrics() {
+                document.getElementById('epoch').textContent = this.epoch;
+                document.getElementById('loss').textContent = this.loss.toFixed(3);
+
+                // Calculate accuracy on training data
+                const testData = [
+                    { input: [0, 0], target: 0 },
+                    { input: [0, 1], target: 1 },
+                    { input: [1, 0], target: 1 },
+                    { input: [1, 1], target: 0 }
+                ];
+
+                let correct = 0;
+                for (const data of testData) {
+                    const output = this.forward(data.input)[0];
+                    if (Math.round(output) === data.target) correct++;
+                }
+
+                const accuracy = (correct / testData.length) * 100;
+                document.getElementById('accuracy').textContent = `${accuracy.toFixed(0)}%`;
+            }
+
+            reset() {
+                this.epoch = 0;
+                this.loss = 1.0;
+                this.initializeWeights();
+                this.activations = [[0, 0], [0, 0, 0], [0]];
+                this.draw();
+                this.updateMetrics();
+            }
+        }
+
+        const nn = new NeuralNetwork();
+    </script>
+</body>
+</html>
