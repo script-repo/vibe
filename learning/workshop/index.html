@@ -64,6 +64,9 @@
     <div class="main-content">
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarMinimize()" title="Minimize sidebar">
+          ◀
+        </button>
         <div class="hour-section">
           <div class="hour-title">⚡ Hour 1: Foundations</div>
           <div class="exercise-item" data-exercise="0">
@@ -112,6 +115,9 @@
           </div>
         </div>
       </aside>
+      <button class="sidebar-toggle-floating" id="sidebarFloatingToggle" onclick="toggleSidebarMinimize()" title="Show exercises">
+        📋 Exercises
+      </button>
 
       <!-- Workspace -->
       <div class="workspace">

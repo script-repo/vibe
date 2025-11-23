@@ -313,6 +313,27 @@ function toggleInstructions() {
   }
 }
 
+/**
+ * Toggles the sidebar (exercise list) minimize/maximize
+ */
+function toggleSidebarMinimize() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+
+  if (sidebar) {
+    // Don't minimize if on mobile (it's already an overlay)
+    if (deviceInfo.isMobile && window.innerWidth <= 768) {
+      return;
+    }
+
+    sidebar.classList.toggle('minimized');
+    if (sidebarToggle) {
+      sidebarToggle.textContent = sidebar.classList.contains('minimized') ? '▶' : '◀';
+      sidebarToggle.title = sidebar.classList.contains('minimized') ? 'Show sidebar' : 'Minimize sidebar';
+    }
+  }
+}
+
 // Pop-out window references
 let editorWindow = null;
 let previewWindow = null;
