@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your First Modern Web App - 4-Hour Workshop</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+
+<body>
+  <!-- Welcome Screen -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-content">
+      <h1>🚀 Build Your First Modern Web App</h1>
+      <p>A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from scratch.
+      </p>
+
+      <div class="welcome-features">
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <h3>8 Exercises</h3>
+          <p>Progressive learning with real-time coding</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎨</div>
+          <h3>Modern UI</h3>
+          <p>Glassmorphism, animations, and responsive design</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔧</div>
+          <h3>Full Stack</h3>
+          <p>Front-end, architecture, and APIs</p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" onclick="startWorkshop()">Start Workshop 🎯</button>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <span style="font-size: 1.5rem;">💻</span>
+        <h1>Web App Workshop</h1>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      <div class="timer" id="timer">0:00</div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="hour-section">
+          <div class="hour-title">⚡ Hour 1: Foundations</div>
+          <div class="exercise-item" data-exercise="0">
+            <div class="exercise-title">1.1 Hello Beautiful World</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="1">
+            <div class="exercise-title">1.2 Make It Interactive</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🎨 Hour 2: Components</div>
+          <div class="exercise-item" data-exercise="2">
+            <div class="exercise-title">2.1 Build Components</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="3">
+            <div class="exercise-title">2.2 Visual Magic</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🏗️ Hour 3: Architecture</div>
+          <div class="exercise-item" data-exercise="4">
+            <div class="exercise-title">3.1 Plugin System</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="5">
+            <div class="exercise-title">3.2 API Integration</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🚀 Hour 4: Advanced</div>
+          <div class="exercise-item" data-exercise="6">
+            <div class="exercise-title">4.1 Real-time Updates</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="7">
+            <div class="exercise-title">4.2 Your Masterpiece</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Workspace -->
+      <div class="workspace">
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+          <h2>Loading...</h2>
+          <p>Please wait...</p>
+        </div>
+
+        <!-- Editor & Preview -->
+        <div class="editor-preview">
+          <div class="editor-container">
+            <div class="editor-header">
+              <span class="editor-title">📝 Code Editor</span>
+              <div class="editor-actions">
+                <button class="btn btn-primary" onclick="runCode()">Run Code ▶️</button>
+                <button class="btn" onclick="resetCode()">Reset</button>
+              </div>
+            </div>
+            <textarea class="editor" id="editor" spellcheck="false"></textarea>
+          </div>
+
+          <div class="preview-container">
+            <div class="preview-header">
+              <span class="preview-title">👁️ Live Preview</span>
+            </div>
+            <iframe class="preview" id="preview" sandbox="allow-scripts"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn hint-btn" onclick="showHint()">
+        💡 Show Hint
+      </button>
+      <div style="display: flex; gap: 1rem;">
+        <button class="btn" onclick="previousExercise()">⬅️ Previous</button>
+        <button class="btn" onclick="showSolution()">Show Solution</button>
+        <button class="btn btn-success" onclick="checkSolution()">Check ✓</button>
+        <button class="btn btn-primary" onclick="nextExercise()">Next ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="hintModal">
+    <div class="modal-content">
+      <h3>💡 Hint</h3>
+      <p id="hintText"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('hintModal')">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="solutionModal">
+    <div class="modal-content">
+      <h3>✨ Solution</h3>
+      <pre><code id="solutionCode"></code></pre>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('solutionModal')">Close</button>
+        <button class="btn btn-primary" onclick="copySolution()">Copy to Editor</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="summaryModal">
+    <div class="modal-content summary-content">
+      <h3>🎉 Workshop Complete!</h3>
+      <div id="summaryContent"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('summaryModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript Modules -->
+  <script src="data/exercises.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
