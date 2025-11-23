@@ -2095,10 +2095,21 @@
     // Functions
     // ========================================
     function startWorkshop() {
-      document.getElementById('welcomeScreen').style.display = 'none';
-      startTime = Date.now();
-      startTimer();
-      loadExercise(0);
+      try {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        if (welcomeScreen) {
+          welcomeScreen.style.display = 'none';
+        }
+        startTime = Date.now();
+        startTimer();
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          loadExercise(0);
+        }, 10);
+      } catch (error) {
+        console.error('Error starting workshop:', error);
+        alert('Error starting workshop. Please refresh the page and try again.');
+      }
     }
 
     function startTimer() {
@@ -2114,43 +2125,68 @@
     }
 
     function loadExercise(index) {
-      if (index < 0 || index >= exercises.length) return;
-
-      currentExercise = index;
-      const exercise = exercises[index];
-
-      // Update sidebar
-      document.querySelectorAll('.exercise-item').forEach((item, i) => {
-        item.classList.remove('active');
-        if (i === index) {
-          item.classList.add('active');
-          item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      try {
+        if (index < 0 || index >= exercises.length) {
+          console.error('Invalid exercise index:', index);
+          return;
         }
-        if (completedExercises.has(i)) {
-          item.classList.add('completed');
+
+        currentExercise = index;
+        const exercise = exercises[index];
+
+        if (!exercise) {
+          console.error('Exercise not found at index:', index);
+          return;
         }
-      });
 
-      // Update progress
-      const progress = (completedExercises.size / exercises.length) * 100;
-      document.getElementById('progressBar').style.width = progress + '%';
+        // Update sidebar
+        document.querySelectorAll('.exercise-item').forEach((item, i) => {
+          item.classList.remove('active');
+          if (i === index) {
+            item.classList.add('active');
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          if (completedExercises.has(i)) {
+            item.classList.add('completed');
+          }
+        });
 
-      // Update instructions
-      const instructionsHTML = `
-        <h2>${exercise.title}</h2>
-        <p>${exercise.description}</p>
-        <h3>Objectives:</h3>
-        <ul>
-          ${exercise.objectives.map(obj => `<li>${obj}</li>`).join('')}
-        </ul>
-      `;
-      document.getElementById('instructions').innerHTML = instructionsHTML;
+        // Update progress
+        const progress = (completedExercises.size / exercises.length) * 100;
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+          progressBar.style.width = progress + '%';
+        }
 
-      // Load starter code
-      document.getElementById('editor').value = exercise.starterCode;
+        // Update instructions
+        const instructionsHTML = `
+          <h2>${exercise.title}</h2>
+          <p>${exercise.description}</p>
+          <h3>Objectives:</h3>
+          <ul>
+            ${exercise.objectives.map(obj => `<li>${obj}</li>`).join('')}
+          </ul>
+        `;
+        const instructionsElement = document.getElementById('instructions');
+        if (instructionsElement) {
+          instructionsElement.innerHTML = instructionsHTML;
+        } else {
+          console.error('Instructions element not found');
+        }
 
-      // Run code automatically
-      runCode();
+        // Load starter code
+        const editorElement = document.getElementById('editor');
+        if (editorElement) {
+          editorElement.value = exercise.starterCode;
+        } else {
+          console.error('Editor element not found');
+        }
+
+        // Run code automatically
+        runCode();
+      } catch (error) {
+        console.error('Error loading exercise:', error);
+      }
     }
 
     function runCode() {
