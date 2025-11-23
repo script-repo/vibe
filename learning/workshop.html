@@ -1031,7 +1031,7 @@
 
     // TODO: Update count and display when clicked
 
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1118,7 +1118,7 @@
         countElement.classList.remove('pulse');
       }, 300);
     });
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Use `let count = 0` to store the count, `document.getElementById()` to get elements, and `addEventListener('click', ...)` to handle button clicks.",
@@ -1196,7 +1196,7 @@
       // TODO: Append to body
       // TODO: Auto-remove after 3 seconds
     }
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1263,7 +1263,7 @@
   <script>
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
+      toast.className = \`toast ${type}\`;
       toast.textContent = message;
 
       document.body.appendChild(toast);
@@ -1272,7 +1272,7 @@
         toast.remove();
       }, 3000);
     }
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Use `document.createElement('div')` to create the toast, set its className and textContent, then `document.body.appendChild(toast)` to add it. Use `setTimeout()` to remove it after 3 seconds.",
@@ -1324,7 +1324,7 @@
 
     // TODO: Animation loop with requestAnimationFrame
 
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1358,7 +1358,7 @@
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 3 - 1.5;
         this.speedY = Math.random() * 3 - 1.5;
-        this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        this.color = \`hsl(${Math.random() * 360}, 70%, 60%)\`;
       }
 
       update() {
@@ -1411,7 +1411,7 @@
     }
 
     animate();
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Create a Particle class with x, y, speedX, speedY properties. In the animate() function, clear the canvas, update all particles, draw them, then call requestAnimationFrame(animate).",
@@ -1463,7 +1463,7 @@
 
     // TODO: Initialize all plugins
 
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1503,7 +1503,7 @@
       initAll() {
         this.plugins.forEach(plugin => {
           plugin.init();
-          this.log(`✓ ${plugin.name} loaded`);
+          this.log(\`✓ ${plugin.name} loaded\`);
         });
       }
 
@@ -1540,7 +1540,7 @@
     });
 
     registry.initAll();
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Create a PluginRegistry class with a plugins array, a register() method to add plugins, and an initAll() method that calls init() on each plugin.",
@@ -1616,7 +1616,7 @@
     }
 
     fetchUsers();
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1680,11 +1680,11 @@
         users.forEach(user => {
           const card = document.createElement('div');
           card.className = 'user-card';
-          card.innerHTML = `
+          card.innerHTML = \`
             <h3>${user.name}</h3>
             <p>${user.email}</p>
             <p>${user.company.name}</p>
-          `;
+          \`;
           grid.appendChild(card);
         });
       } catch (error) {
@@ -1693,7 +1693,7 @@
     }
 
     fetchUsers();
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Use `await fetch(url)` to get the response, then `await response.json()` to parse it. Loop through the users array and create card elements for each one.",
@@ -1779,7 +1779,7 @@
     // TODO: Use setInterval to update every second
     // TODO: Add random changes to values
     // TODO: Show trend indicators
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -1870,7 +1870,7 @@
     }
 
     setInterval(updateStats, 1000);
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "Use `setInterval(function, 1000)` to run updates every second. Add random values to your variables and update the textContent of elements. Use emojis or symbols for trend indicators.",
@@ -1919,7 +1919,7 @@
     // TODO: Add your JavaScript
     // Combine: state management, API calls, animations
     // Show off everything you've learned!
-  </script>
+  <\/script>
 </body>
 </html>`,
         solution: `<!DOCTYPE html>
@@ -2062,7 +2062,7 @@
         posts.forEach(post => {
           const card = document.createElement('div');
           card.className = 'data-card';
-          card.innerHTML = `<strong>${post.title.slice(0, 30)}...</strong>`;
+          card.innerHTML = \`<strong>${post.title.slice(0, 30)}...</strong>\`;
           grid.appendChild(card);
         });
       } catch (error) {
@@ -2071,7 +2071,7 @@
     }
 
     loadData();
-  </script>
+  <\/script>
 </body>
 </html>`,
         hint: "This is your chance to shine! Combine glassmorphism cards, animated counters, API data fetching, and smooth transitions. Make it personal - add your own stats, data, and style!",
