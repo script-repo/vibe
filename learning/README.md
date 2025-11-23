@@ -8,11 +8,44 @@ A comprehensive learning resource for building modern, modular web applications 
 
 **New to single-file web apps?** Start here:
 
-1. **Choose your path:** Browse [Learning Paths](#-learning-paths) below
-2. **Follow the guide:** Each path is 2-4 weeks of structured learning
-3. **Use the snippets:** Copy code from [snippets/](./snippets/)
-4. **Reference docs:** Deep dive into [reference/](./reference/) when needed
-5. **Study examples:** Explore [examples/](./examples/) for working code
+1. **Take the workshop:** [**4-Hour Interactive Workshop →**](./workshop.html) - Best way to get started!
+2. **Choose your path:** Browse [Learning Paths](#-learning-paths) below
+3. **Follow the guide:** Each path is 2-4 weeks of structured learning
+4. **Use the snippets:** Copy code from [snippets/](./snippets/)
+5. **Reference docs:** Deep dive into [reference/](./reference/) when needed
+6. **Study examples:** Explore [examples/](./examples/) for working code
+
+---
+
+## 🚀 4-Hour Interactive Workshop (NEW!)
+
+**Perfect for beginners!** Learn by building in our hands-on workshop.
+
+🎓 **[Start Workshop →](./workshop.html)** | 📖 **[Workshop Guide →](./WORKSHOP.md)**
+
+**What you'll build:**
+- Beautiful UI with glassmorphism effects
+- Interactive components and animations
+- Canvas particle system
+- Plugin architecture
+- API-powered dashboard
+- Your own personal masterpiece!
+
+**Features:**
+- ✅ 8 progressive exercises (30 min each)
+- ✅ Live code editor with instant preview
+- ✅ Hints and solutions included
+- ✅ Progress tracking
+- ✅ No installation needed - just open and start!
+
+**Best for:**
+- Complete beginners to web development
+- Those who prefer hands-on learning
+- Group workshops and classrooms
+- Quick introduction before the longer paths
+
+**Time:** 4 hours (can be split into sessions)
+**Level:** Beginner-friendly, no prerequisites
 
 ---
 
