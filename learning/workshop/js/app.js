@@ -313,6 +313,306 @@ function toggleInstructions() {
   }
 }
 
+// Pop-out window references
+let editorWindow = null;
+let previewWindow = null;
+let editorSyncInterval = null;
+let previewSyncInterval = null;
+
+/**
+ * Toggles editor pop-out window
+ */
+function toggleEditorPopout() {
+  const editorPopoutBtn = document.getElementById('editorPopoutBtn');
+
+  if (editorWindow && !editorWindow.closed) {
+    // Close existing window
+    editorWindow.close();
+    editorWindow = null;
+    if (editorSyncInterval) {
+      clearInterval(editorSyncInterval);
+      editorSyncInterval = null;
+    }
+    editorPopoutBtn.classList.remove('popped-out');
+    editorPopoutBtn.title = 'Pop out editor';
+
+    // Show editor in main window
+    const editorContainer = document.getElementById('editorContainer');
+    if (editorContainer) {
+      editorContainer.style.display = 'flex';
+    }
+  } else {
+    // Open new window
+    const width = 800;
+    const height = 600;
+    const left = window.screenX + 100;
+    const top = window.screenY + 100;
+
+    editorWindow = window.open('', 'Editor',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+
+    if (editorWindow) {
+      const currentCode = document.getElementById('editor').value;
+
+      editorWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Code Editor - Workshop</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              background: #0f172a;
+              color: #f1f5f9;
+              display: flex;
+              flex-direction: column;
+              height: 100vh;
+            }
+            .header {
+              padding: 1rem;
+              background: rgba(139, 92, 246, 0.1);
+              border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .title {
+              font-size: 1.125rem;
+              font-weight: 600;
+            }
+            .btn {
+              padding: 0.5rem 1rem;
+              background: #8b5cf6;
+              border: none;
+              border-radius: 6px;
+              color: white;
+              cursor: pointer;
+              font-size: 0.875rem;
+              transition: background 0.3s ease;
+            }
+            .btn:hover {
+              background: #7c3aed;
+            }
+            .editor {
+              flex: 1;
+              padding: 1rem;
+              font-family: 'Courier New', Consolas, monospace;
+              font-size: 14px;
+              line-height: 1.6;
+              background: rgba(0, 0, 0, 0.3);
+              color: #e0e7ff;
+              border: none;
+              resize: none;
+              outline: none;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <span class="title">📝 Code Editor</span>
+            <button class="btn" onclick="window.close()">Close Window</button>
+          </div>
+          <textarea class="editor" id="popoutEditor" spellcheck="false">${currentCode}</textarea>
+          <script>
+            // Sync changes back to main window
+            const editor = document.getElementById('popoutEditor');
+            editor.addEventListener('input', () => {
+              if (window.opener && !window.opener.closed) {
+                const mainEditor = window.opener.document.getElementById('editor');
+                if (mainEditor) {
+                  mainEditor.value = editor.value;
+                  // Trigger run code in main window
+                  if (window.opener.runCode) {
+                    window.opener.runCode();
+                  }
+                }
+              }
+            });
+
+            // Handle window close
+            window.addEventListener('beforeunload', () => {
+              if (window.opener && !window.opener.closed && window.opener.toggleEditorPopout) {
+                window.opener.toggleEditorPopout();
+              }
+            });
+          </script>
+        </body>
+        </html>
+      `);
+
+      editorWindow.document.close();
+
+      // Sync changes from main to pop-out
+      editorSyncInterval = setInterval(() => {
+        if (editorWindow && !editorWindow.closed) {
+          const mainEditor = document.getElementById('editor');
+          const popoutEditor = editorWindow.document.getElementById('popoutEditor');
+          if (mainEditor && popoutEditor && mainEditor.value !== popoutEditor.value) {
+            // Only sync if user isn't typing in pop-out
+            if (editorWindow.document.activeElement !== popoutEditor) {
+              popoutEditor.value = mainEditor.value;
+            }
+          }
+        } else {
+          clearInterval(editorSyncInterval);
+          editorSyncInterval = null;
+        }
+      }, 500);
+
+      editorPopoutBtn.classList.add('popped-out');
+      editorPopoutBtn.title = 'Close pop-out editor';
+
+      // Hide editor in main window
+      const editorContainer = document.getElementById('editorContainer');
+      if (editorContainer) {
+        editorContainer.style.display = 'none';
+      }
+
+      // Focus new window
+      editorWindow.focus();
+    }
+  }
+}
+
+/**
+ * Toggles preview pop-out window
+ */
+function togglePreviewPopout() {
+  const previewPopoutBtn = document.getElementById('previewPopoutBtn');
+
+  if (previewWindow && !previewWindow.closed) {
+    // Close existing window
+    previewWindow.close();
+    previewWindow = null;
+    if (previewSyncInterval) {
+      clearInterval(previewSyncInterval);
+      previewSyncInterval = null;
+    }
+    previewPopoutBtn.classList.remove('popped-out');
+    previewPopoutBtn.title = 'Pop out preview';
+
+    // Show preview in main window
+    const previewContainer = document.getElementById('previewContainer');
+    if (previewContainer) {
+      previewContainer.style.display = 'flex';
+    }
+  } else {
+    // Open new window
+    const width = 800;
+    const height = 600;
+    const left = window.screenX + 920;
+    const top = window.screenY + 100;
+
+    previewWindow = window.open('', 'Preview',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+
+    if (previewWindow) {
+      const currentPreview = document.getElementById('preview').srcdoc || '';
+
+      previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Live Preview - Workshop</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              background: #0f172a;
+              color: #f1f5f9;
+              display: flex;
+              flex-direction: column;
+              height: 100vh;
+            }
+            .header {
+              padding: 1rem;
+              background: rgba(139, 92, 246, 0.1);
+              border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .title {
+              font-size: 1.125rem;
+              font-weight: 600;
+            }
+            .btn {
+              padding: 0.5rem 1rem;
+              background: #8b5cf6;
+              border: none;
+              border-radius: 6px;
+              color: white;
+              cursor: pointer;
+              font-size: 0.875rem;
+              transition: background 0.3s ease;
+            }
+            .btn:hover {
+              background: #7c3aed;
+            }
+            .preview {
+              flex: 1;
+              background: white;
+              border: none;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <span class="title">👁️ Live Preview</span>
+            <button class="btn" onclick="window.close()">Close Window</button>
+          </div>
+          <iframe class="preview" id="popoutPreview" sandbox="allow-scripts"></iframe>
+          <script>
+            // Set initial content
+            document.getElementById('popoutPreview').srcdoc = \`${currentPreview.replace(/`/g, '\\`')}\`;
+
+            // Handle window close
+            window.addEventListener('beforeunload', () => {
+              if (window.opener && !window.opener.closed && window.opener.togglePreviewPopout) {
+                window.opener.togglePreviewPopout();
+              }
+            });
+          </script>
+        </body>
+        </html>
+      `);
+
+      previewWindow.document.close();
+
+      // Sync updates from main to pop-out
+      previewSyncInterval = setInterval(() => {
+        if (previewWindow && !previewWindow.closed) {
+          const mainPreview = document.getElementById('preview');
+          const popoutPreview = previewWindow.document.getElementById('popoutPreview');
+          if (mainPreview && popoutPreview) {
+            const mainContent = mainPreview.srcdoc || '';
+            const popoutContent = popoutPreview.srcdoc || '';
+            if (mainContent !== popoutContent) {
+              popoutPreview.srcdoc = mainContent;
+            }
+          }
+        } else {
+          clearInterval(previewSyncInterval);
+          previewSyncInterval = null;
+        }
+      }, 500);
+
+      previewPopoutBtn.classList.add('popped-out');
+      previewPopoutBtn.title = 'Close pop-out preview';
+
+      // Hide preview in main window
+      const previewContainer = document.getElementById('previewContainer');
+      if (previewContainer) {
+        previewContainer.style.display = 'none';
+      }
+
+      // Focus new window
+      previewWindow.focus();
+    }
+  }
+}
+
 /**
  * Toggles fullscreen mode
  */

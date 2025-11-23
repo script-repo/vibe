@@ -130,13 +130,17 @@
             <p>Please wait...</p>
           </div>
         </div>
+        <button class="instructions-toggle-floating" id="floatingToggle" onclick="toggleInstructions()" title="Show Instructions">
+          📖 Show Instructions
+        </button>
 
         <!-- Editor & Preview -->
         <div class="editor-preview">
-          <div class="editor-container">
+          <div class="editor-container" id="editorContainer">
             <div class="editor-header">
               <span class="editor-title">📝 Code Editor</span>
               <div class="editor-actions">
+                <button class="popout-btn" id="editorPopoutBtn" onclick="toggleEditorPopout()" title="Pop out editor">⇱</button>
                 <button class="btn btn-primary" onclick="runCode()">Run Code ▶️</button>
                 <button class="btn" onclick="resetCode()">Reset</button>
               </div>
@@ -144,9 +148,10 @@
             <textarea class="editor" id="editor" spellcheck="false"></textarea>
           </div>
 
-          <div class="preview-container">
+          <div class="preview-container" id="previewContainer">
             <div class="preview-header">
               <span class="preview-title">👁️ Live Preview</span>
+              <button class="popout-btn" id="previewPopoutBtn" onclick="togglePreviewPopout()" title="Pop out preview">⇱</button>
             </div>
             <iframe class="preview" id="preview" sandbox="allow-scripts"></iframe>
           </div>

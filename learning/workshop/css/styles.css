@@ -267,14 +267,21 @@ body.fullscreen .container {
   height: 50%;
   overflow-y: auto;
   position: relative;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition: height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
 }
 
 .instructions.minimized {
-  max-height: 0;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
   padding: 0;
   overflow: hidden;
   border-bottom: none;
+  opacity: 0;
+}
+
+.instructions.minimized .instructions-header {
+  display: none;
 }
 
 .instructions-header {
@@ -306,6 +313,59 @@ body.fullscreen .container {
 
 .control-btn:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* Floating toggle button when minimized */
+.instructions-toggle-floating {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(139, 92, 246, 0.9);
+  border: 1px solid var(--primary);
+  border-top: none;
+  color: var(--text);
+  padding: 0.25rem 1rem;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.instructions-toggle-floating:hover {
+  background: rgba(139, 92, 246, 1);
+  padding-bottom: 0.5rem;
+}
+
+.workspace:has(.instructions.minimized) .instructions-toggle-floating {
+  display: block;
+}
+
+/* Pop-out buttons */
+.popout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+.popout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.popout-btn.popped-out {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: var(--primary);
 }
 
 .video-container video {
