@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,8 +52,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.8; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
     }
 
     .container {
@@ -437,6 +445,7 @@
         opacity: 0;
         transform: translateY(-20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -494,6 +503,7 @@
         opacity: 0;
         transform: translateX(100px);
       }
+
       to {
         opacity: 1;
         transform: translateX(0);
@@ -655,12 +665,14 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Welcome Screen -->
   <div class="welcome-screen" id="welcomeScreen">
     <div class="welcome-content">
       <h1>🚀 Build Your First Modern Web App</h1>
-      <p>A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from scratch.</p>
+      <p>A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from scratch.
+      </p>
 
       <div class="welcome-features">
         <div class="feature">
@@ -940,8 +952,8 @@
         hint: "Use `backdrop-filter: blur(10px)` for glassmorphism and `linear-gradient()` for backgrounds. Don't forget to set semi-transparent backgrounds with `rgba()`!",
         validation: (code) => {
           return code.includes('backdrop-filter') &&
-                 code.includes('linear-gradient') &&
-                 code.includes('rgba');
+            code.includes('linear-gradient') &&
+            code.includes('rgba');
         }
       },
       // Exercise 1.2
@@ -1124,8 +1136,8 @@
         hint: "Use `let count = 0` to store the count, `document.getElementById()` to get elements, and `addEventListener('click', ...)` to handle button clicks.",
         validation: (code) => {
           return code.includes('addEventListener') &&
-                 code.includes('textContent') &&
-                 (code.includes('let') || code.includes('var'));
+            code.includes('textContent') &&
+            (code.includes('let') || code.includes('var'));
         }
       },
       // Additional exercises will be added similarly...
@@ -1263,7 +1275,7 @@
   <script>
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = \`toast ${type}\`;
+      toast.className = \`toast \${type}\`;
       toast.textContent = message;
 
       document.body.appendChild(toast);
@@ -1278,8 +1290,8 @@
         hint: "Use `document.createElement('div')` to create the toast, set its className and textContent, then `document.body.appendChild(toast)` to add it. Use `setTimeout()` to remove it after 3 seconds.",
         validation: (code) => {
           return code.includes('createElement') &&
-                 code.includes('appendChild') &&
-                 code.includes('setTimeout');
+            code.includes('appendChild') &&
+            code.includes('setTimeout');
         }
       },
       // Continuing with more exercises...
@@ -1358,7 +1370,7 @@
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 3 - 1.5;
         this.speedY = Math.random() * 3 - 1.5;
-        this.color = \`hsl(${Math.random() * 360}, 70%, 60%)\`;
+        this.color = \`hsl(\${Math.random() * 360}, 70%, 60%)\`;
       }
 
       update() {
@@ -1417,8 +1429,8 @@
         hint: "Create a Particle class with x, y, speedX, speedY properties. In the animate() function, clear the canvas, update all particles, draw them, then call requestAnimationFrame(animate).",
         validation: (code) => {
           return code.includes('requestAnimationFrame') &&
-                 code.includes('class') &&
-                 code.includes('mousemove');
+            code.includes('class') &&
+            code.includes('mousemove');
         }
       },
       // More exercises (5-8) follow the same pattern...
@@ -1503,7 +1515,7 @@
       initAll() {
         this.plugins.forEach(plugin => {
           plugin.init();
-          this.log(\`✓ ${plugin.name} loaded\`);
+          this.log(\`✓ \${plugin.name} loaded\`);
         });
       }
 
@@ -1546,8 +1558,8 @@
         hint: "Create a PluginRegistry class with a plugins array, a register() method to add plugins, and an initAll() method that calls init() on each plugin.",
         validation: (code) => {
           return code.includes('class') &&
-                 code.includes('register') &&
-                 code.includes('init');
+            code.includes('register') &&
+            code.includes('init');
         }
       },
       {
@@ -1676,19 +1688,6 @@
 
         document.getElementById('loading').style.display = 'none';
 
-        const grid = document.getElementById('userGrid');
-        users.forEach(user => {
-          const card = document.createElement('div');
-          card.className = 'user-card';
-          card.innerHTML = \`
-            <h3>${user.name}</h3>
-            <p>${user.email}</p>
-            <p>${user.company.name}</p>
-          \`;
-          grid.appendChild(card);
-        });
-      } catch (error) {
-        document.getElementById('loading').textContent = 'Error loading users';
       }
     }
 
@@ -1699,8 +1698,8 @@
         hint: "Use `await fetch(url)` to get the response, then `await response.json()` to parse it. Loop through the users array and create card elements for each one.",
         validation: (code) => {
           return code.includes('fetch') &&
-                 code.includes('await') &&
-                 code.includes('forEach');
+            code.includes('await') &&
+            code.includes('forEach');
         }
       },
       {
@@ -1876,7 +1875,7 @@
         hint: "Use `setInterval(function, 1000)` to run updates every second. Add random values to your variables and update the textContent of elements. Use emojis or symbols for trend indicators.",
         validation: (code) => {
           return code.includes('setInterval') &&
-                 code.includes('textContent');
+            code.includes('textContent');
         }
       },
       {
@@ -2062,7 +2061,7 @@
         posts.forEach(post => {
           const card = document.createElement('div');
           card.className = 'data-card';
-          card.innerHTML = \`<strong>${post.title.slice(0, 30)}...</strong>\`;
+          card.innerHTML = \`<strong>\${post.title.slice(0, 30)}...</strong>\`;
           grid.appendChild(card);
         });
       } catch (error) {
@@ -2077,8 +2076,8 @@
         hint: "This is your chance to shine! Combine glassmorphism cards, animated counters, API data fetching, and smooth transitions. Make it personal - add your own stats, data, and style!",
         validation: (code) => {
           return code.includes('backdrop-filter') ||
-                 code.includes('fetch') ||
-                 code.includes('animation');
+            code.includes('fetch') ||
+            code.includes('animation');
         }
       }
     ];
@@ -2316,4 +2315,5 @@
     });
   </script>
 </body>
+
 </html>
