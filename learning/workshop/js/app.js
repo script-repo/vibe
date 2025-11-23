@@ -12,10 +12,37 @@ let completedExercises = new Set();
 // ========================================
 
 /**
- * Starts the workshop
+ * Starts the workshop flow by showing the info modal
  */
 function startWorkshop() {
+  console.log('Starting workshop flow...');
+  const modal = document.getElementById('workshopInfoModal');
+  if (!modal) {
+    console.error('Workshop info modal not found!');
+    alert('Error: Workshop info modal not found. Please refresh.');
+    return;
+  }
+  showModal('workshopInfoModal');
+
+  // Play intro audio
+  const audio = document.getElementById('workshopIntroAudio');
+  if (audio) {
+    audio.currentTime = 0;
+    audio.play().catch(e => console.log('Audio autoplay blocked (user interaction needed):', e));
+  }
+}
+
+/**
+ * Actually starts the workshop after the info modal
+ */
+function proceedToWorkshop() {
+  console.log('Proceeding to workshop...');
+
+  // Stop audio
+  stopAudio();
+
   try {
+    closeModal('workshopInfoModal');
     hideWelcomeScreen();
     startTimer();
 
@@ -26,6 +53,40 @@ function startWorkshop() {
   } catch (error) {
     console.error('Error starting workshop:', error);
     alert('Error starting workshop. Please refresh the page and try again.');
+  }
+}
+
+// ========================================
+// Audio Control Functions
+// ========================================
+
+function toggleAudio() {
+  const audio = document.getElementById('workshopIntroAudio');
+  if (audio) {
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  }
+}
+
+function stopAudio() {
+  const audio = document.getElementById('workshopIntroAudio');
+  if (audio) {
+    audio.pause();
+    audio.currentTime = 0;
+  }
+}
+
+function toggleMute() {
+  const audio = document.getElementById('workshopIntroAudio');
+  const btn = document.getElementById('muteBtn');
+  if (audio) {
+    audio.muted = !audio.muted;
+    if (btn) {
+      btn.textContent = audio.muted ? '🔇' : '🔊';
+    }
   }
 }
 
@@ -52,6 +113,13 @@ function loadExercise(index) {
     updateSidebar(index, completedExercises);
     updateProgress((completedExercises.size / exercises.length) * 100);
     updateInstructions(exercise);
+
+    // Scroll instructions to top
+    const instructionsPanel = document.getElementById('instructions');
+    if (instructionsPanel) {
+      instructionsPanel.scrollTop = 0;
+    }
+
     updateEditor(exercise.starterCode);
 
     // Run code automatically

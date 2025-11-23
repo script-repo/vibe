@@ -14,7 +14,8 @@
   <div class="welcome-screen" id="welcomeScreen">
     <div class="welcome-content">
       <h1>🚀 Build Your First Modern Web App</h1>
-      <p>A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from scratch.
+      <p>A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from
+        scratch.
       </p>
 
       <div class="welcome-features">
@@ -179,6 +180,75 @@
       <div id="summaryContent"></div>
       <div class="modal-actions">
         <button class="btn btn-primary" onclick="closeModal('summaryModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="workshopInfoModal">
+    <div class="modal-content summary-content">
+      <h3>📘 Workshop Overview</h3>
+
+      <div class="audio-controls"
+        style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 8px;">
+        <audio id="workshopIntroAudio" src="media/Workshop-intro.m4a"></audio>
+        <span style="color: var(--text-dim); margin-right: auto; font-size: 0.9rem;">🎧 Intro Audio</span>
+        <button class="btn" onclick="toggleAudio()" title="Play/Pause">⏯️</button>
+        <button class="btn" onclick="stopAudio()" title="Stop">⏹️</button>
+        <button class="btn" onclick="toggleMute()" id="muteBtn" title="Mute">🔊</button>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 0; margin-bottom: 1.5rem; justify-content: center;">
+        <button class="btn btn-primary btn-large" style="margin-top: 0; width: 100%;"
+          onclick="proceedToWorkshop()">Let's
+          Start!
+          🚀</button>
+      </div>
+
+      <div class="summary-section">
+        <h4>👥 Target Persona</h4>
+        <p>This workshop is designed for:</p>
+        <ul>
+          <li><strong>Aspiring Frontend Developers</strong> who want to move beyond basic HTML/CSS.</li>
+          <li><strong>Designers</strong> looking to bring their creations to life with code.</li>
+          <li><strong>Backend Developers</strong> wanting to understand modern frontend aesthetics and
+            interactivity.</li>
+        </ul>
+      </div>
+
+      <div class="summary-section">
+        <h4>🤔 The Reasoning</h4>
+        <p>Modern web development isn't just about making things work—it's about making them feel
+          <strong>alive</strong>. We believe that learning by building "premium" interfaces from the start sets a
+          higher standard for quality and user experience.
+        </p>
+      </div>
+
+      <div class="summary-section">
+        <h4>🎯 Outcomes</h4>
+        <ul>
+          <li>Mastery of <strong>Glassmorphism</strong> and modern CSS aesthetic trends.</li>
+          <li>Ability to build <strong>Reusable Components</strong> and scalable architecture.</li>
+          <li>Understanding of <strong>State Management</strong> in vanilla JavaScript.</li>
+          <li>Confidence in using the <strong>Canvas API</strong> for interactive visuals.</li>
+        </ul>
+      </div>
+
+      <div class="summary-section">
+        <h4>🧠 The Strategy</h4>
+        <p>We use a <strong>"Visual-First"</strong> approach. Instead of boring console logs, every concept is
+          immediately applied to a visual element. You'll see the impact of your code instantly, reinforcing the
+          learning loop through positive visual feedback.</p>
+      </div>
+
+      <div class="summary-section">
+        <h4>📚 Format & Modules</h4>
+        <p>The 4-hour curriculum is split into 4 distinct hours:</p>
+        <ul>
+          <li><strong>Hour 1: Foundations</strong> - CSS Gradients, Glass Effects, DOM Basics.</li>
+          <li><strong>Hour 2: Components</strong> - Building a UI Kit, Canvas Particles.</li>
+          <li><strong>Hour 3: Architecture</strong> - Plugin Systems, API Integration.</li>
+          <li><strong>Hour 4: Advanced</strong> - Real-time Updates, Complete App Assembly.</li>
+        </ul>
       </div>
     </div>
   </div>

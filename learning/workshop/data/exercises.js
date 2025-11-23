@@ -13,6 +13,12 @@ const exercises = [
 
     preamble: `
       <div class="preamble">
+        <div class="video-container" style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <video controls style="width: 100%; display: block;">
+            <source src="media/Excercise-1.1-Hello_Beautiful_World.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
         <h3>Welcome to Modern Web Development!</h3>
         <p>In this first exercise, you'll learn the foundational techniques that make modern websites visually stunning. We'll explore <strong>glassmorphism</strong> - a design trend that creates frosted-glass effects - and CSS gradients that add depth and vibrancy to your designs.</p>
 
@@ -178,6 +184,12 @@ const exercises = [
 
     preamble: `
       <div class="preamble">
+        <div class="video-container" style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <video controls style="width: 100%; display: block;">
+            <source src="media/Exercise-1.2-Making_a_Webpage_Interactive.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
         <h3>Bringing Your Page to Life with JavaScript</h3>
         <p>Now that you've mastered beautiful static designs, it's time to make them interactive! JavaScript is the programming language that powers all interactive features on the web. In this exercise, you'll learn the fundamentals of DOM manipulation and event handling.</p>
 
@@ -406,6 +418,12 @@ const exercises = [
 
     preamble: `
       <div class="preamble">
+        <div class="video-container" style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <video controls style="width: 100%; display: block;">
+            <source src="media/Exercise-2.1-Building_Reusable_Components.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
         <h3>The Power of Reusable Components</h3>
         <p>Professional web developers don't copy-paste code - they create reusable functions and components! In this exercise, you'll build a toast notification system that can be used throughout your application. This teaches you the fundamental principle of <strong>DRY (Don't Repeat Yourself)</strong>.</p>
 
