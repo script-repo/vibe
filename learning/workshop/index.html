@@ -55,12 +55,18 @@
         <div class="progress-fill" id="progressBar"></div>
       </div>
       <div class="timer" id="timer">0:00</div>
+      <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" aria-label="Toggle fullscreen" title="Toggle Fullscreen">
+        ⛶
+      </button>
     </header>
 
     <!-- Main Content -->
     <div class="main-content">
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarMinimize()" title="Minimize sidebar">
+          ◀
+        </button>
         <div class="hour-section">
           <div class="hour-title">⚡ Hour 1: Foundations</div>
           <div class="exercise-item" data-exercise="0">
@@ -109,21 +115,38 @@
           </div>
         </div>
       </aside>
+      <button class="sidebar-toggle-floating" id="sidebarFloatingToggle" onclick="toggleSidebarMinimize()" title="Show exercises">
+        📋 Exercises
+      </button>
 
       <!-- Workspace -->
       <div class="workspace">
         <!-- Instructions -->
         <div class="instructions" id="instructions">
-          <h2>Loading...</h2>
-          <p>Please wait...</p>
+          <div class="instructions-header" id="instructionsHeader">
+            <span style="font-weight: 600; color: var(--text);">📖 Instructions</span>
+            <div class="instructions-controls">
+              <button class="control-btn" id="minimizeBtn" onclick="toggleInstructions()" title="Minimize/Maximize Instructions">
+                <span id="minimizeIcon">−</span>
+              </button>
+            </div>
+          </div>
+          <div id="instructionsContent">
+            <h2>Loading...</h2>
+            <p>Please wait...</p>
+          </div>
         </div>
+        <button class="instructions-toggle-floating" id="floatingToggle" onclick="toggleInstructions()" title="Show Instructions">
+          📖 Show Instructions
+        </button>
 
         <!-- Editor & Preview -->
         <div class="editor-preview">
-          <div class="editor-container">
+          <div class="editor-container" id="editorContainer">
             <div class="editor-header">
               <span class="editor-title">📝 Code Editor</span>
               <div class="editor-actions">
+                <button class="popout-btn" id="editorPopoutBtn" onclick="toggleEditorPopout()" title="Pop out editor">⇱</button>
                 <button class="btn btn-primary" onclick="runCode()">Run Code ▶️</button>
                 <button class="btn" onclick="resetCode()">Reset</button>
               </div>
@@ -131,9 +154,10 @@
             <textarea class="editor" id="editor" spellcheck="false"></textarea>
           </div>
 
-          <div class="preview-container">
+          <div class="preview-container" id="previewContainer">
             <div class="preview-header">
               <span class="preview-title">👁️ Live Preview</span>
+              <button class="popout-btn" id="previewPopoutBtn" onclick="togglePreviewPopout()" title="Pop out preview">⇱</button>
             </div>
             <iframe class="preview" id="preview" sandbox="allow-scripts"></iframe>
           </div>
