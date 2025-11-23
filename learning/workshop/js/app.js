@@ -7,6 +7,14 @@
 let currentExercise = 0;
 let completedExercises = new Set();
 
+// Device detection
+const deviceInfo = {
+  isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+  isTablet: /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent),
+  isPortrait: () => window.innerHeight > window.innerWidth,
+  isLandscape: () => window.innerWidth > window.innerHeight
+};
+
 // ========================================
 // Core Functions
 // ========================================
@@ -245,12 +253,61 @@ function previousExercise() {
 // Event Listeners
 // ========================================
 
+// ========================================
+// Mobile-specific Functions
+// ========================================
+
+/**
+ * Toggles sidebar on mobile devices
+ */
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.classList.toggle('open');
+  }
+}
+
+/**
+ * Closes sidebar on mobile devices
+ */
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar && deviceInfo.isMobile) {
+    sidebar.classList.remove('open');
+  }
+}
+
+/**
+ * Applies device-specific classes to body
+ */
+function applyDeviceClasses() {
+  if (deviceInfo.isMobile) {
+    document.body.classList.add('is-mobile');
+  }
+  if (deviceInfo.isTablet) {
+    document.body.classList.add('is-tablet');
+  }
+
+  // Update orientation class
+  if (deviceInfo.isPortrait()) {
+    document.body.classList.add('is-portrait');
+    document.body.classList.remove('is-landscape');
+  } else {
+    document.body.classList.add('is-landscape');
+    document.body.classList.remove('is-portrait');
+  }
+}
+
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply device-specific classes
+  applyDeviceClasses();
+
   // Exercise navigation from sidebar
   document.querySelectorAll('.exercise-item').forEach((item, index) => {
     item.addEventListener('click', () => {
       loadExercise(index);
+      closeSidebar(); // Close sidebar on mobile after selection
     });
   });
 
@@ -273,16 +330,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        runCode();
+  // Keyboard shortcuts (disabled on mobile for better UX)
+  if (!deviceInfo.isMobile) {
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runCode();
+        }
+        if (e.key === 'h') {
+          e.preventDefault();
+          showHint();
+        }
       }
-      if (e.key === 'h') {
-        e.preventDefault();
-        showHint();
+    });
+  }
+
+  // Handle orientation changes
+  window.addEventListener('orientationchange', () => {
+    setTimeout(applyDeviceClasses, 100);
+  });
+
+  // Handle resize events (for responsive updates)
+  window.addEventListener('resize', () => {
+    applyDeviceClasses();
+  });
+
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('mobileMenuBtn');
+
+    if (deviceInfo.isMobile && sidebar && sidebar.classList.contains('open')) {
+      // Check if click is outside sidebar and menu button
+      if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+        closeSidebar();
       }
     }
   });
