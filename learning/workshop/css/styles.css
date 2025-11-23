@@ -461,6 +461,30 @@ header {
 }
 
 /* ========================================
+   Mobile Menu Button
+   ======================================== */
+.mobile-menu-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.hamburger-icon {
+  display: block;
+}
+
+/* ========================================
    Responsive Design
    ======================================== */
 @media (max-width: 1024px) {
@@ -483,29 +507,243 @@ header {
   }
 }
 
+/* ========================================
+   Mobile Devices (Tablets & Phones)
+   ======================================== */
 @media (max-width: 768px) {
-  .sidebar {
-    position: absolute;
-    left: -280px;
-    top: 0;
-    bottom: 0;
-    z-index: 100;
-    transition: left 0.3s ease;
+  /* Show mobile menu button */
+  .mobile-menu-btn {
+    display: block;
   }
 
-  .sidebar.open {
-    left: 0;
+  /* Header adjustments */
+  header {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .logo h1 {
+    font-size: 1rem;
+  }
+
+  .logo span {
+    font-size: 1.25rem !important;
   }
 
   .progress-bar {
     display: none;
   }
 
-  header {
+  .timer {
+    font-size: 0.875rem;
+    min-width: 60px;
+  }
+
+  /* Sidebar as overlay */
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    width: 280px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  /* Instructions panel - reduce height */
+  .instructions {
+    height: auto;
+    max-height: 35vh;
     padding: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .instructions h2 {
+    font-size: 1.25rem;
+  }
+
+  .instructions h3 {
+    font-size: 1rem;
+  }
+
+  .instructions h4 {
+    font-size: 0.9rem;
+  }
+
+  .video-container video {
+    max-height: 200px;
+  }
+
+  /* Editor & Preview adjustments */
+  .editor-preview {
+    flex-direction: column;
+  }
+
+  .editor-container,
+  .preview-container {
+    min-height: 250px;
+  }
+
+  .editor {
+    font-size: 12px;
+    padding: 0.75rem;
+  }
+
+  .editor-header,
+  .preview-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .editor-title,
+  .preview-title {
+    font-size: 0.75rem;
+  }
+
+  .editor-actions {
+    gap: 0.25rem;
+  }
+
+  .editor-actions .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* Action bar - stack buttons */
+  .action-bar {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .action-bar > div {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+
+  .action-bar .btn {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .hint-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ========================================
+   Mobile Portrait Specific
+   ======================================== */
+@media (max-width: 768px) and (orientation: portrait) {
+  body.is-mobile.is-portrait .instructions {
+    max-height: 30vh;
+  }
+
+  body.is-mobile.is-portrait .editor-container,
+  body.is-mobile.is-portrait .preview-container {
+    min-height: 200px;
+  }
+
+  body.is-mobile.is-portrait .welcome-content h1 {
+    font-size: 2rem;
+  }
+
+  body.is-mobile.is-portrait .welcome-content p {
+    font-size: 1rem;
+  }
+
+  body.is-mobile.is-portrait .welcome-features {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ========================================
+   Mobile Landscape Specific
+   ======================================== */
+@media (max-width: 768px) and (orientation: landscape) {
+  body.is-mobile.is-landscape .instructions {
+    max-height: 40vh;
+  }
+
+  body.is-mobile.is-landscape .editor-preview {
+    flex-direction: row;
+  }
+
+  body.is-mobile.is-landscape .editor-container,
+  body.is-mobile.is-landscape .preview-container {
+    flex: 1;
+    border-right: 1px solid var(--glass-border);
+  }
+
+  body.is-mobile.is-landscape .preview-container {
+    border-top: none;
+  }
+
+  body.is-mobile.is-landscape .action-bar {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  body.is-mobile.is-landscape .action-bar > div {
+    width: auto;
+  }
+
+  body.is-mobile.is-landscape .hint-btn {
+    width: auto;
+  }
+}
+
+/* ========================================
+   Small Phones
+   ======================================== */
+@media (max-width: 480px) {
+  .logo h1 {
+    display: none;
+  }
+
+  .timer {
+    font-size: 0.75rem;
   }
 
   .instructions {
-    max-height: 30vh;
+    padding: 0.75rem;
+    max-height: 25vh;
+  }
+
+  .instructions h2 {
+    font-size: 1.125rem;
+  }
+
+  .editor,
+  .preview {
+    font-size: 11px;
+  }
+
+  .action-bar .btn {
+    font-size: 0.7rem;
+    padding: 0.5rem 0.5rem;
+  }
+}
+
+/* ========================================
+   Tablet Landscape
+   ======================================== */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .instructions {
+    height: 40%;
   }
 }
