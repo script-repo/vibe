@@ -1263,7 +1263,7 @@
   <script>
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = \`toast \${type}\`;
+      toast.className = `toast ${type}`;
       toast.textContent = message;
 
       document.body.appendChild(toast);
@@ -1358,7 +1358,7 @@
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 3 - 1.5;
         this.speedY = Math.random() * 3 - 1.5;
-        this.color = \`hsl(\${Math.random() * 360}, 70%, 60%)\`;
+        this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
       }
 
       update() {
@@ -1503,7 +1503,7 @@
       initAll() {
         this.plugins.forEach(plugin => {
           plugin.init();
-          this.log(\`✓ \${plugin.name} loaded\`);
+          this.log(`✓ ${plugin.name} loaded`);
         });
       }
 
@@ -1680,11 +1680,11 @@
         users.forEach(user => {
           const card = document.createElement('div');
           card.className = 'user-card';
-          card.innerHTML = \`
-            <h3>\${user.name}</h3>
-            <p>\${user.email}</p>
-            <p>\${user.company.name}</p>
-          \`;
+          card.innerHTML = `
+            <h3>${user.name}</h3>
+            <p>${user.email}</p>
+            <p>${user.company.name}</p>
+          `;
           grid.appendChild(card);
         });
       } catch (error) {
@@ -2062,7 +2062,7 @@
         posts.forEach(post => {
           const card = document.createElement('div');
           card.className = 'data-card';
-          card.innerHTML = \`<strong>\${post.title.slice(0, 30)}...</strong>\`;
+          card.innerHTML = `<strong>${post.title.slice(0, 30)}...</strong>`;
           grid.appendChild(card);
         });
       } catch (error) {
@@ -2109,7 +2109,7 @@
         const seconds = elapsed % 60;
 
         document.getElementById('timer').textContent =
-          \`\${hours}:\${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}\`;
+          `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       }, 1000);
     }
 
@@ -2136,14 +2136,14 @@
       document.getElementById('progressBar').style.width = progress + '%';
 
       // Update instructions
-      const instructionsHTML = \`
-        <h2>\${exercise.title}</h2>
-        <p>\${exercise.description}</p>
+      const instructionsHTML = `
+        <h2>${exercise.title}</h2>
+        <p>${exercise.description}</p>
         <h3>Objectives:</h3>
         <ul>
-          \${exercise.objectives.map(obj => \`<li>\${obj}</li>\`).join('')}
+          ${exercise.objectives.map(obj => `<li>${obj}</li>`).join('')}
         </ul>
-      \`;
+      `;
       document.getElementById('instructions').innerHTML = instructionsHTML;
 
       // Load starter code
@@ -2230,7 +2230,7 @@
 
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
-      toast.className = \`toast \${type}\`;
+      toast.className = `toast ${type}`;
       toast.textContent = message;
 
       document.body.appendChild(toast);
