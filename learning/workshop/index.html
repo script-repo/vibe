@@ -55,6 +55,9 @@
         <div class="progress-fill" id="progressBar"></div>
       </div>
       <div class="timer" id="timer">0:00</div>
+      <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" aria-label="Toggle fullscreen" title="Toggle Fullscreen">
+        ⛶
+      </button>
     </header>
 
     <!-- Main Content -->
@@ -114,8 +117,18 @@
       <div class="workspace">
         <!-- Instructions -->
         <div class="instructions" id="instructions">
-          <h2>Loading...</h2>
-          <p>Please wait...</p>
+          <div class="instructions-header" id="instructionsHeader">
+            <span style="font-weight: 600; color: var(--text);">📖 Instructions</span>
+            <div class="instructions-controls">
+              <button class="control-btn" id="minimizeBtn" onclick="toggleInstructions()" title="Minimize/Maximize Instructions">
+                <span id="minimizeIcon">−</span>
+              </button>
+            </div>
+          </div>
+          <div id="instructionsContent">
+            <h2>Loading...</h2>
+            <p>Please wait...</p>
+          </div>
         </div>
 
         <!-- Editor & Preview -->

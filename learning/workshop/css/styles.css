@@ -128,6 +128,37 @@ header {
   text-align: right;
 }
 
+.fullscreen-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Fullscreen mode styles */
+body.fullscreen {
+  overflow: hidden;
+}
+
+body.fullscreen .container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+}
+
 /* ========================================
    Main Layout
    ======================================== */
@@ -233,9 +264,48 @@ header {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--glass-border);
   padding: 2rem;
-  padding: 2rem;
   height: 50%;
   overflow-y: auto;
+  position: relative;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.instructions.minimized {
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-bottom: none;
+}
+
+.instructions-header {
+  display: none;
+  position: sticky;
+  top: 0;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.5rem 1rem;
+  margin: -2rem -2rem 1rem -2rem;
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+.instructions-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .video-container video {
@@ -511,9 +581,17 @@ header {
    Mobile Devices (Tablets & Phones)
    ======================================== */
 @media (max-width: 768px) {
-  /* Show mobile menu button */
-  .mobile-menu-btn {
+  /* Show mobile menu button and fullscreen button */
+  .mobile-menu-btn,
+  .fullscreen-btn {
     display: block;
+  }
+
+  /* Show instructions header on mobile */
+  .instructions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   /* Header adjustments */
@@ -672,11 +750,18 @@ header {
    ======================================== */
 @media (max-width: 768px) and (orientation: landscape) {
   body.is-mobile.is-landscape .instructions {
-    max-height: 40vh;
+    max-height: 35vh;
+  }
+
+  body.is-mobile.is-landscape .instructions.minimized {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border-bottom: none;
   }
 
   body.is-mobile.is-landscape .editor-preview {
-    flex-direction: row;
+    flex-direction: row !important;
   }
 
   body.is-mobile.is-landscape .editor-container,
@@ -687,6 +772,7 @@ header {
 
   body.is-mobile.is-landscape .preview-container {
     border-top: none;
+    border-right: none;
   }
 
   body.is-mobile.is-landscape .action-bar {
@@ -700,6 +786,38 @@ header {
 
   body.is-mobile.is-landscape .hint-btn {
     width: auto;
+  }
+}
+
+/* ========================================
+   Tablet Landscape - Side by Side
+   ======================================== */
+@media (min-width: 481px) and (max-width: 1024px) and (orientation: landscape) {
+  .editor-preview {
+    flex-direction: row !important;
+  }
+
+  .editor-container,
+  .preview-container {
+    flex: 1;
+    border-right: 1px solid var(--glass-border);
+  }
+
+  .preview-container {
+    border-top: none;
+    border-right: none;
+  }
+
+  .instructions {
+    max-height: 35vh;
+  }
+
+  .instructions.minimized {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border-bottom: none;
+    transition: max-height 0.3s ease, padding 0.3s ease;
   }
 }
 

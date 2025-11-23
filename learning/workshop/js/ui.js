@@ -66,9 +66,9 @@ function updateInstructions(exercise) {
     </ul>
   `;
 
-  const instructionsElement = document.getElementById('instructions');
-  if (instructionsElement) {
-    instructionsElement.innerHTML = instructionsHTML;
+  const instructionsContent = document.getElementById('instructionsContent');
+  if (instructionsContent) {
+    instructionsContent.innerHTML = instructionsHTML;
   }
 }
 

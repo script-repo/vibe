@@ -298,6 +298,71 @@ function applyDeviceClasses() {
   }
 }
 
+/**
+ * Toggles the instructions panel (minimize/maximize)
+ */
+function toggleInstructions() {
+  const instructions = document.getElementById('instructions');
+  const minimizeIcon = document.getElementById('minimizeIcon');
+
+  if (instructions) {
+    instructions.classList.toggle('minimized');
+    if (minimizeIcon) {
+      minimizeIcon.textContent = instructions.classList.contains('minimized') ? '+' : '−';
+    }
+  }
+}
+
+/**
+ * Toggles fullscreen mode
+ */
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+      !document.mozFullScreenElement && !document.msFullscreenElement) {
+    // Enter fullscreen
+    const elem = document.documentElement;
+
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) { // Safari
+      elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) { // Firefox
+      elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) { // IE/Edge
+      elem.msRequestFullscreen();
+    }
+
+    document.body.classList.add('fullscreen');
+
+    // Update button icon
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (fullscreenBtn) {
+      fullscreenBtn.textContent = '⛶';
+      fullscreenBtn.title = 'Exit Fullscreen';
+    }
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { // Safari
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) { // Firefox
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) { // IE/Edge
+      document.msExitFullscreen();
+    }
+
+    document.body.classList.remove('fullscreen');
+
+    // Update button icon
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (fullscreenBtn) {
+      fullscreenBtn.textContent = '⛶';
+      fullscreenBtn.title = 'Enter Fullscreen';
+    }
+  }
+}
+
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
   // Apply device-specific classes
@@ -368,6 +433,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Handle fullscreen change events
+  const fullscreenChangeHandler = () => {
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
+      // Exited fullscreen
+      document.body.classList.remove('fullscreen');
+      if (fullscreenBtn) {
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.title = 'Enter Fullscreen';
+      }
+    } else {
+      // Entered fullscreen
+      document.body.classList.add('fullscreen');
+      if (fullscreenBtn) {
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.title = 'Exit Fullscreen';
+      }
+    }
+  };
+
+  document.addEventListener('fullscreenchange', fullscreenChangeHandler);
+  document.addEventListener('webkitfullscreenchange', fullscreenChangeHandler);
+  document.addEventListener('mozfullscreenchange', fullscreenChangeHandler);
+  document.addEventListener('MSFullscreenChange', fullscreenChangeHandler);
 });
 
 // ========================================
