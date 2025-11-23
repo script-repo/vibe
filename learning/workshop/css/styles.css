@@ -344,7 +344,9 @@ body.fullscreen .container {
 }
 
 .instructions-header {
-  display: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: sticky;
   top: 0;
   background: rgba(15, 23, 42, 0.95);
@@ -704,13 +706,6 @@ body.fullscreen .container {
   .mobile-menu-btn,
   .fullscreen-btn {
     display: block;
-  }
-
-  /* Show instructions header on mobile */
-  .instructions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
 
   /* Header adjustments */
