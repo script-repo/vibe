@@ -616,7 +616,7 @@
                 };
             }
 
-            init3D() {
+            init3D() { console.log('DEBUG: init3D called');
                 const container = document.getElementById('canvas-container');
                 const width = 700;
                 const height = 700;
@@ -626,7 +626,7 @@
                 this.scene.background = new THREE.Color(0x1a1a2e);
 
                 // Camera
-                this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                this.camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
                 this.camera.position.set(12, 16, 12);
                 this.camera.lookAt(0, 0, 0);
 
@@ -663,7 +663,7 @@
                 this.scene.add(rimLight);
             }
 
-            createBoard() {
+            createBoard() { console.log('DEBUG: createBoard called');
                 const boardGroup = new THREE.Group();
                 const squareSize = 2;
                 const boardSize = 8;
@@ -949,7 +949,7 @@
                 return group;
             }
 
-            createPieces() {
+            createPieces() { console.log('DEBUG: createPieces called');
                 // Clear existing pieces
                 Object.values(this.pieceMeshes).forEach(piece => {
                     this.scene.remove(piece);
@@ -977,8 +977,8 @@
                 }
             }
 
-            setupEventListeners() {
-                this.renderer.domElement.addEventListener('click', (e) => this.onMouseClick(e));
+            setupEventListeners() { console.log('DEBUG: setupEventListeners called');
+                window.addEventListener('click', (e) => this.onMouseClick(e));
                 this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
             }
 
@@ -1007,7 +1007,7 @@
                 this.renderer.domElement.style.cursor = 'default';
             }
 
-            onMouseClick(event) {
+            onMouseClick(event) { console.log('DEBUG: onMouseClick called');
                 if (this.gameOver) return;
 
                 const rect = this.renderer.domElement.getBoundingClientRect();
@@ -1129,19 +1129,17 @@
 
                 // Highlight last move
                 if (this.lastMove) {
-                    const [fromRow, fromCol] = this.lastMove.from;
                     const [toRow, toCol] = this.lastMove.to;
 
-                    [this.boardMeshes[fromRow * 8 + fromCol],
-                     this.boardMeshes[toRow * 8 + toCol]].forEach(square => {
-                        square.material = new THREE.MeshStandardMaterial({
-                            color: 0xffff00,
-                            metalness: 0.3,
-                            roughness: 0.7,
-                            emissive: 0xffff00,
-                            emissiveIntensity: 0.1
-                        });
+                    const toSquare = this.boardMeshes[toRow * 8 + toCol];
+                    toSquare.material = new THREE.MeshStandardMaterial({
+                        color: 0xffff00,
+                        metalness: 0.3,
+                        roughness: 0.7,
+                        emissive: 0xffff00,
+                        emissiveIntensity: 0.1
                     });
+                    this.highlightedSquares.push(toSquare);
                 }
 
                 // Highlight king in check
@@ -1841,14 +1839,22 @@
                 const historyEl = document.getElementById('moveHistory');
                 let html = '';
 
-                for (let i = 0; i < this.moveHistory.length; i += 2) {
-                    const moveNum = Math.floor(i / 2) + 1;
-                    const whiteMove = this.formatMove(this.moveHistory[i]);
-                    const blackMove = i + 1 < this.moveHistory.length ? this.formatMove(this.moveHistory[i + 1]) : '';
-                    html += `<div>${moveNum}. ${whiteMove} ${blackMove}</div>`;
+                // Only show the last move from each side
+                if (this.moveHistory.length > 0) {
+                    const lastMoveIndex = this.moveHistory.length - 1;
+                    const moveNum = Math.floor(lastMoveIndex / 2) + 1;
+                    
+                    // Check if we have a white move
+                    const whiteIndex = lastMoveIndex % 2 === 0 ? lastMoveIndex : lastMoveIndex - 1;
+                    const whiteMove = this.formatMove(this.moveHistory[whiteIndex]);
+                    
+                    // Check if we have a black move
+                    const blackMove = (lastMoveIndex % 2 === 1) ? this.formatMove(this.moveHistory[lastMoveIndex]) : '';
+                    
+                    html = `<div>${moveNum}. ${whiteMove} ${blackMove}</div>`;
                 }
 
-                historyEl.innerHTML = html;
+                historyEl.innerHTML = html || '<div>No moves yet</div>';
                 historyEl.scrollTop = historyEl.scrollHeight;
             }
 
