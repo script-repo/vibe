@@ -840,7 +840,7 @@ const exercises = [
   <div class="panel">
     <button id="up">👍</button>
     <button id="down">👎</button>
-    <input id="note" placeholder="Why?" />
+    <input id="note" placeholder="Add a comment here." />
   </div>
   <script>
     // TODO: compute TTFT + tokens/sec from mock events and capture feedback
@@ -863,7 +863,7 @@ const exercises = [
   <div class="panel">
     <button id="up">👍</button>
     <button id="down">👎</button>
-    <input id="note" placeholder="Why?" />
+    <input id="note" placeholder="Add a comment here." />
   </div>
   <pre id="feedback"></pre>
   <script>
