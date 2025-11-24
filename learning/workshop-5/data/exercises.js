@@ -734,38 +734,37 @@ const exercises = [
 <head><meta charset="UTF-8"><style>body{background:#0b1120;color:#e2e8f0;font-family:Inter,sans-serif;padding:2rem;} .panel{background:rgba(255,255,255,0.05);padding:1rem;border-radius:12px;margin-bottom:1rem;white-space:pre-wrap;}</style></head>
 <body>
   <h3>Multi-Agent Orchestration</h3>
-  <div class="panel" id="log">Loading agents...</div>
+  <div class="panel" id="log">Loading...</div>
   <script>
-    // TODO: Define an Agent class with name, prompt, and tools
-    // Hint: Use a constructor and an act() method
+    // TODO: Complete the Agent class
     class Agent {
       constructor(name, prompt, tools=[]) {
-        // TODO: Store name, prompt, tools as instance properties
+        this.name = name;
+        this.prompt = prompt;
+        this.tools = tools;
       }
       act(task) {
-        // TODO: Return a string describing what this agent would do
+        // TODO: Return a formatted string showing what this agent would do
         // Format: "[AgentName] prompt | tools: tool1, tool2 | task: taskDescription"
-        return '';
+        return 'Agent ' + this.name + ' received task: ' + task;
       }
     }
 
-    // TODO: Create an orchestration function that coordinates multiple agents
     function orchestrate(task) {
-      // TODO: Create a researcher agent with web-search and filesystem tools
-      const researcher = null; // Replace with: new Agent(...)
+      // TODO: Create two agents with different tools
+      const researcher = new Agent('Researcher', 'Research and plan', ['web-search']);
+      const builder = new Agent('Builder', 'Build and implement', ['database']);
 
-      // TODO: Create a builder agent with database and git tools
-      const builder = null; // Replace with: new Agent(...)
+      // TODO: Have both agents act on the task and collect results
+      const step1 = researcher.act(task);
+      const step2 = builder.act('Implement: ' + task);
 
-      // TODO: Have researcher act on the task
-      // TODO: Have builder act on "Implement: " + task
-
-      // TODO: Collect results and display in the log
-      document.getElementById('log').textContent = 'Agents created! Now orchestrate them...';
+      // Display results
+      document.getElementById('log').textContent = step1 + '\\n\\n' + step2;
     }
 
-    // TODO: Call orchestrate with a sample task
-    // orchestrate('Ship a Milvus-backed RAG chatbot with MCP tools.');
+    // Run a demo
+    orchestrate('Ship a Milvus-backed RAG chatbot with MCP tools.');
   </script>
 </body>
 </html>`,
