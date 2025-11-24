@@ -610,8 +610,44 @@ animate();
     description: "Work with various Three.js geometries like spheres, toruses, and custom shapes.",
     objectives: ["Create multiple geometries", "Group objects together", "Manipulate complex shapes"],
     starterCode: `<!DOCTYPE html>
-<html><body><script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script>// TODO: Create multiple geometries</script></body></html>`,
+<html><head><style>body{margin:0;overflow:hidden}</style></head>
+<body><script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+// Basic scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add lights
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
+
+// TODO: Create a group to hold multiple geometries
+// Hint: const group = new THREE.Group();
+
+// TODO: Create a sphere geometry
+// Hint: const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshStandardMaterial({color: 0xff0000}));
+
+// TODO: Create a torus geometry
+// Hint: const torus = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.2, 16, 100), new THREE.MeshStandardMaterial({color: 0x00ff00}));
+
+// TODO: Add geometries to the group and scene
+// Hint: group.add(sphere, torus); scene.add(group);
+
+camera.position.z = 5;
+
+function animate() {
+  requestAnimationFrame(animate);
+  // TODO: Rotate the group
+  // Hint: group.rotation.y += 0.01;
+  renderer.render(scene, camera);
+}
+animate();
+</script></body></html>`,
     solution: `<!DOCTYPE html>
 <html><body><script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>

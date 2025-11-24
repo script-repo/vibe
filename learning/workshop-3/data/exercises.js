@@ -271,45 +271,153 @@ body{padding:2rem;background:#1e293b;color:#fff;font-family:monospace;font-size:
 
   {
     title: "RAG System Basics",
-    preamble: `<div class="preamble"><h3>Retrieval Augmented Generation</h3><p>Build a simple RAG system with document search.</p></div>`,
-    description: "Implement basic document retrieval before AI generation.",
-    objectives: ["Store documents", "Search by keywords", "Provide context to AI"],
+    preamble: `<div class="preamble"><h3>Retrieval Augmented Generation (RAG)</h3>
+      <p>Build a RAG system that retrieves relevant documents using vector similarity, then provides context to an AI.</p>
+      <div class="key-concepts"><h4>Key Concepts:</h4><ul>
+        <li><strong>Embeddings</strong>: Converting text to numerical vectors</li>
+        <li><strong>Similarity</strong>: Finding documents similar to the query</li>
+        <li><strong>Context</strong>: Providing retrieved docs to the AI</li>
+      </ul></div>
+    </div>`,
+    description: "Implement document retrieval using vector similarity and provide relevant context to AI.",
+    objectives: ["Create document embeddings (simulated)", "Calculate similarity scores", "Retrieve top-k relevant documents", "Show how context is provided to AI"],
     starterCode: `<!DOCTYPE html>
-<html><body style="padding:2rem;background:#1e293b;color:#fff">
+<html><body style="padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif">
+  <h2>🔍 RAG Document Search</h2>
+  <input id="query" placeholder="Ask about AI or programming..." style="width:70%;padding:0.75rem;border-radius:8px;border:1px solid #444;background:#2d3748;color:#fff">
+  <button onclick="search()" style="padding:0.75rem 1.5rem;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer">Search</button>
+  <div id="result" style="margin-top:1.5rem"></div>
   <script>
+    // Document database with simulated embeddings (normally from an embedding model)
     const documents = [
-      {id: 1, content: "JavaScript is a programming language."},
-      {id: 2, content: "Python is great for data science."}
+      {id: 1, content: "JavaScript is a versatile programming language used for web development.", embedding: [0.8, 0.2, 0.1, 0.3, 0.7]},
+      {id: 2, content: "Python is excellent for data science, machine learning, and AI applications.", embedding: [0.1, 0.9, 0.8, 0.6, 0.4]},
+      {id: 3, content: "Machine learning models learn patterns from data to make predictions.", embedding: [0.2, 0.8, 0.9, 0.7, 0.3]},
+      {id: 4, content: "Three.js is a powerful 3D graphics library for creating interactive web experiences.", embedding: [0.7, 0.3, 0.1, 0.2, 0.8]},
+      {id: 5, content: "Neural networks are the foundation of deep learning and modern AI systems.", embedding: [0.1, 0.9, 0.9, 0.8, 0.5]}
     ];
-    // TODO: Search documents and provide context
+
+    // TODO: Implement a function to simulate query embedding
+    // Hint: For simplicity, generate a random vector or base it on keywords
+    function embedQuery(query) {
+      // Simple simulation: create vector based on keywords
+      const lower = query.toLowerCase();
+      return [
+        lower.includes('javascript') || lower.includes('web') ? 0.8 : 0.2,
+        lower.includes('python') || lower.includes('ai') || lower.includes('machine') ? 0.9 : 0.2,
+        lower.includes('learning') || lower.includes('neural') ? 0.9 : 0.1,
+        lower.includes('data') ? 0.7 : 0.3,
+        lower.includes('3d') || lower.includes('graphics') ? 0.8 : 0.3
+      ];
+    }
+
+    // TODO: Implement cosine similarity function
+    // Hint: dot product divided by magnitudes
+    function cosineSimilarity(vecA, vecB) {
+      // Calculate dot product and magnitudes
+      let dotProduct = 0, magA = 0, magB = 0;
+      for (let i = 0; i < vecA.length; i++) {
+        dotProduct += vecA[i] * vecB[i];
+        magA += vecA[i] * vecA[i];
+        magB += vecB[i] * vecB[i];
+      }
+      return dotProduct / (Math.sqrt(magA) * Math.sqrt(magB));
+    }
+
+    // TODO: Implement search function that finds top-k similar documents
+    function search() {
+      const query = document.getElementById('query').value;
+      if (!query) return;
+
+      // Step 1: Convert query to embedding
+      const queryEmbedding = embedQuery(query);
+
+      // Step 2: Calculate similarity scores for all documents
+      // TODO: Add your code here
+
+      // Step 3: Sort by similarity and get top 3
+      // TODO: Add your code here
+
+      // Step 4: Display results with similarity scores
+      // TODO: Add your code here
+
+      // Step 5: Show how this context would be sent to AI
+      // TODO: Add your code here
+    }
   </script>
 </body></html>`,
     solution: `<!DOCTYPE html>
 <html><body style="padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif">
-  <input id="query" placeholder="Ask a question...">
-  <button onclick="search()">Search</button>
-  <div id="result" style="margin-top:1rem"></div>
+  <h2>🔍 RAG Document Search</h2>
+  <input id="query" placeholder="Ask about AI or programming..." style="width:70%;padding:0.75rem;border-radius:8px;border:1px solid #444;background:#2d3748;color:#fff">
+  <button onclick="search()" style="padding:0.75rem 1.5rem;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer">Search</button>
+  <div id="result" style="margin-top:1.5rem"></div>
   <script>
     const documents = [
-      {id: 1, content: "JavaScript is a programming language for web development."},
-      {id: 2, content: "Python is great for data science and machine learning."},
-      {id: 3, content: "Three.js is a 3D graphics library for the web."}
+      {id: 1, content: "JavaScript is a versatile programming language used for web development.", embedding: [0.8, 0.2, 0.1, 0.3, 0.7]},
+      {id: 2, content: "Python is excellent for data science, machine learning, and AI applications.", embedding: [0.1, 0.9, 0.8, 0.6, 0.4]},
+      {id: 3, content: "Machine learning models learn patterns from data to make predictions.", embedding: [0.2, 0.8, 0.9, 0.7, 0.3]},
+      {id: 4, content: "Three.js is a powerful 3D graphics library for creating interactive web experiences.", embedding: [0.7, 0.3, 0.1, 0.2, 0.8]},
+      {id: 5, content: "Neural networks are the foundation of deep learning and modern AI systems.", embedding: [0.1, 0.9, 0.9, 0.8, 0.5]}
     ];
-    
+
+    function embedQuery(query) {
+      const lower = query.toLowerCase();
+      return [
+        lower.includes('javascript') || lower.includes('web') ? 0.8 : 0.2,
+        lower.includes('python') || lower.includes('ai') || lower.includes('machine') ? 0.9 : 0.2,
+        lower.includes('learning') || lower.includes('neural') ? 0.9 : 0.1,
+        lower.includes('data') ? 0.7 : 0.3,
+        lower.includes('3d') || lower.includes('graphics') ? 0.8 : 0.3
+      ];
+    }
+
+    function cosineSimilarity(vecA, vecB) {
+      let dotProduct = 0, magA = 0, magB = 0;
+      for (let i = 0; i < vecA.length; i++) {
+        dotProduct += vecA[i] * vecB[i];
+        magA += vecA[i] * vecA[i];
+        magB += vecB[i] * vecB[i];
+      }
+      return dotProduct / (Math.sqrt(magA) * Math.sqrt(magB));
+    }
+
     function search() {
-      const query = document.getElementById('query').value.toLowerCase();
-      const relevant = documents.filter(doc => doc.content.toLowerCase().includes(query));
-      let html = '<h3>Relevant Documents:</h3>';
-      relevant.forEach(doc => {
-        html += '<p style="background:rgba(255,255,255,0.1);padding:1rem;border-radius:8px;margin-bottom:0.5rem">' + doc.content + '</p>';
+      const query = document.getElementById('query').value;
+      if (!query) return;
+
+      const queryEmbedding = embedQuery(query);
+
+      const results = documents.map(doc => ({
+        ...doc,
+        similarity: cosineSimilarity(queryEmbedding, doc.embedding)
+      })).sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+
+      let html = '<h3>📊 Top Matching Documents:</h3>';
+      results.forEach((doc, i) => {
+        const percentage = (doc.similarity * 100).toFixed(1);
+        html += \`<div style="background:rgba(139,92,246,0.1);padding:1rem;border-radius:8px;margin-bottom:0.75rem;border-left:4px solid #8b5cf6">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+            <strong>Match #\${i+1}</strong>
+            <span style="background:#8b5cf6;padding:0.25rem 0.75rem;border-radius:12px;font-size:0.85rem">\${percentage}% similar</span>
+          </div>
+          <div>\${doc.content}</div>
+        </div>\`;
       });
-      if (relevant.length === 0) html += '<p>No relevant documents found.</p>';
+
+      const context = results.map(r => r.content).join('\\n\\n');
+      html += \`<div style="background:rgba(34,197,94,0.1);padding:1rem;border-radius:8px;margin-top:1rem;border-left:4px solid #22c55e">
+        <h4>🤖 Context for AI:</h4>
+        <p style="font-size:0.9rem;opacity:0.9">This context would be added to the AI prompt:</p>
+        <pre style="background:rgba(0,0,0,0.3);padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.85rem">\${context}</pre>
+      </div>\`;
+
       document.getElementById('result').innerHTML = html;
     }
   </script>
 </body></html>`,
-    hint: "Filter documents array based on whether content includes the search query. Display all matches.",
-    validation: (code) => code.includes('filter') && code.includes('includes') && code.includes('toLowerCase')
+    hint: "Use cosine similarity to find documents most similar to the query embedding. Sort by similarity score and take top 3.",
+    validation: (code) => code.includes('cosineSimilarity') && code.includes('embedding') && code.includes('similarity')
   },
 
   {
