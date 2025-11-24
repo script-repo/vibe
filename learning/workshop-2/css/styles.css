@@ -1,0 +1,981 @@
+/* ========================================
+   Variables & Reset
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --secondary: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --bg-dark: #0f172a;
+  --bg-darker: #020617;
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Animated background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
+  animation: pulse 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* ========================================
+   Layout
+   ======================================== */
+.container {
+  max-width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+header {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.progress-bar {
+  flex: 1;
+  max-width: 400px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0 2rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.timer {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 80px;
+  text-align: right;
+}
+
+.fullscreen-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Fullscreen mode styles */
+body.fullscreen {
+  overflow: hidden;
+}
+
+body.fullscreen .container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+}
+
+/* ========================================
+   Main Layout
+   ======================================== */
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ========================================
+   Sidebar
+   ======================================== */
+.sidebar {
+  width: 280px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--glass-border);
+  overflow-y: auto;
+  padding: 1.5rem;
+  transition: width 0.3s ease, padding 0.3s ease;
+  position: relative;
+}
+
+.sidebar.minimized {
+  width: 0 !important;
+  padding: 0;
+  overflow: hidden;
+  border-right: none;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Floating sidebar toggle when minimized */
+.sidebar-toggle-floating {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  background: rgba(139, 92, 246, 0.9);
+  border: 1px solid var(--primary);
+  border-left: none;
+  color: var(--text);
+  padding: 1rem 0.5rem;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  writing-mode: vertical-rl;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-toggle-floating:hover {
+  background: rgba(139, 92, 246, 1);
+  padding-left: 0.75rem;
+}
+
+.main-content:has(.sidebar.minimized) .sidebar-toggle-floating {
+  display: block;
+}
+
+.hour-section {
+  margin-bottom: 2rem;
+}
+
+.hour-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exercise-item {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.exercise-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--glass-border);
+  transform: translateX(4px);
+}
+
+.exercise-item.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--primary);
+}
+
+.exercise-item.completed {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--success);
+}
+
+.exercise-item.completed::after {
+  content: '✓';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--success);
+  font-weight: 700;
+}
+
+.exercise-title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.exercise-duration {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* ========================================
+   Workspace
+   ======================================== */
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========================================
+   Instructions Panel
+   ======================================== */
+.instructions {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 2rem;
+  height: 50%;
+  overflow-y: auto;
+  position: relative;
+  transition: height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+}
+
+.instructions.minimized {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0;
+  overflow: hidden;
+  border-bottom: none;
+  opacity: 0;
+}
+
+.instructions.minimized .instructions-header {
+  display: none;
+}
+
+.instructions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.5rem 1rem;
+  margin: -2rem -2rem 1rem -2rem;
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+.instructions-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Floating toggle button when minimized */
+.instructions-toggle-floating {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(139, 92, 246, 0.9);
+  border: 1px solid var(--primary);
+  border-top: none;
+  color: var(--text);
+  padding: 0.25rem 1rem;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.instructions-toggle-floating:hover {
+  background: rgba(139, 92, 246, 1);
+  padding-bottom: 0.5rem;
+}
+
+.workspace:has(.instructions.minimized) .instructions-toggle-floating {
+  display: block;
+}
+
+/* Pop-out buttons */
+.popout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+.popout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.popout-btn.popped-out {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: var(--primary);
+}
+
+.video-container video {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  background: black;
+}
+
+.instructions h2 {
+  font-size: 1.875rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #fff, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.instructions h3 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--primary);
+}
+
+.instructions h4 {
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary);
+}
+
+.instructions p {
+  line-height: 1.7;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.instructions ul,
+.instructions ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.instructions li {
+  margin-bottom: 0.5rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.instructions code {
+  background: rgba(139, 92, 246, 0.2);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: 'Courier New', monospace;
+  color: #c4b5fd;
+}
+
+.instructions pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--glass-border);
+}
+
+.instructions pre code {
+  background: none;
+  padding: 0;
+  color: #e0e7ff;
+}
+
+.instructions strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.instructions em {
+  color: var(--warning);
+  font-style: italic;
+}
+
+.preamble {
+  background: rgba(139, 92, 246, 0.1);
+  border-left: 4px solid var(--primary);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+}
+
+.key-concepts {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 4px solid var(--secondary);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+.common-pitfalls {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--warning);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+/* ========================================
+   Editor & Preview
+   ======================================== */
+.editor-preview {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.8);
+  border-right: 1px solid var(--glass-border);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.editor-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.editor-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editor {
+  flex: 1;
+  padding: 1rem;
+  font-family: 'Courier New', Consolas, Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: rgba(0, 0, 0, 0.3);
+  color: #e0e7ff;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+.preview-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.preview-header {
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.preview-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.preview {
+  flex: 1;
+  background: white;
+  border: none;
+}
+
+/* ========================================
+   Action Bar
+   ======================================== */
+.action-bar {
+  padding: 1rem 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hint-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ========================================
+   Scrollbar
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
+}
+
+/* ========================================
+   Mobile Menu Button
+   ======================================== */
+.mobile-menu-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.hamburger-icon {
+  display: block;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .editor-preview {
+    flex-direction: column;
+  }
+
+  .editor-container,
+  .preview-container {
+    flex: 1;
+    border-right: none;
+  }
+
+  .preview-container {
+    border-top: 1px solid var(--glass-border);
+  }
+}
+
+/* ========================================
+   Mobile Devices (Tablets & Phones)
+   ======================================== */
+@media (max-width: 768px) {
+  /* Show mobile menu button and fullscreen button */
+  .mobile-menu-btn,
+  .fullscreen-btn {
+    display: block;
+  }
+
+  /* Header adjustments */
+  header {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .logo h1 {
+    font-size: 1rem;
+  }
+
+  .logo span {
+    font-size: 1.25rem !important;
+  }
+
+  .progress-bar {
+    display: none;
+  }
+
+  .timer {
+    font-size: 0.875rem;
+    min-width: 60px;
+  }
+
+  /* Sidebar as overlay */
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    width: 280px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  /* Instructions panel - reduce height */
+  .instructions {
+    height: auto;
+    max-height: 35vh;
+    padding: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .instructions h2 {
+    font-size: 1.25rem;
+  }
+
+  .instructions h3 {
+    font-size: 1rem;
+  }
+
+  .instructions h4 {
+    font-size: 0.9rem;
+  }
+
+  .video-container video {
+    max-height: 200px;
+  }
+
+  /* Editor & Preview adjustments */
+  .editor-preview {
+    flex-direction: column;
+  }
+
+  .editor-container,
+  .preview-container {
+    min-height: 250px;
+  }
+
+  .editor {
+    font-size: 12px;
+    padding: 0.75rem;
+  }
+
+  .editor-header,
+  .preview-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .editor-title,
+  .preview-title {
+    font-size: 0.75rem;
+  }
+
+  .editor-actions {
+    gap: 0.25rem;
+  }
+
+  .editor-actions .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* Action bar - stack buttons */
+  .action-bar {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .action-bar > div {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+
+  .action-bar .btn {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .hint-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ========================================
+   Mobile Portrait Specific
+   ======================================== */
+@media (max-width: 768px) and (orientation: portrait) {
+  body.is-mobile.is-portrait .instructions {
+    max-height: 30vh;
+  }
+
+  body.is-mobile.is-portrait .editor-container,
+  body.is-mobile.is-portrait .preview-container {
+    min-height: 200px;
+  }
+
+  body.is-mobile.is-portrait .welcome-content h1 {
+    font-size: 2rem;
+  }
+
+  body.is-mobile.is-portrait .welcome-content p {
+    font-size: 1rem;
+  }
+
+  body.is-mobile.is-portrait .welcome-features {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ========================================
+   Mobile Landscape Specific
+   ======================================== */
+@media (max-width: 768px) and (orientation: landscape) {
+  body.is-mobile.is-landscape .instructions {
+    max-height: 35vh;
+  }
+
+  body.is-mobile.is-landscape .instructions.minimized {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border-bottom: none;
+  }
+
+  body.is-mobile.is-landscape .editor-preview {
+    flex-direction: row !important;
+  }
+
+  body.is-mobile.is-landscape .editor-container,
+  body.is-mobile.is-landscape .preview-container {
+    flex: 1;
+    border-right: 1px solid var(--glass-border);
+  }
+
+  body.is-mobile.is-landscape .preview-container {
+    border-top: none;
+    border-right: none;
+  }
+
+  body.is-mobile.is-landscape .action-bar {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  body.is-mobile.is-landscape .action-bar > div {
+    width: auto;
+  }
+
+  body.is-mobile.is-landscape .hint-btn {
+    width: auto;
+  }
+}
+
+/* ========================================
+   Tablet Landscape - Side by Side
+   ======================================== */
+@media (min-width: 481px) and (max-width: 1024px) and (orientation: landscape) {
+  .editor-preview {
+    flex-direction: row !important;
+  }
+
+  .editor-container,
+  .preview-container {
+    flex: 1;
+    border-right: 1px solid var(--glass-border);
+  }
+
+  .preview-container {
+    border-top: none;
+    border-right: none;
+  }
+
+  .instructions {
+    max-height: 35vh;
+  }
+
+  .instructions.minimized {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border-bottom: none;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+}
+
+/* ========================================
+   Small Phones
+   ======================================== */
+@media (max-width: 480px) {
+  .logo h1 {
+    display: none;
+  }
+
+  .timer {
+    font-size: 0.75rem;
+  }
+
+  .instructions {
+    padding: 0.75rem;
+    max-height: 25vh;
+  }
+
+  .instructions h2 {
+    font-size: 1.125rem;
+  }
+
+  .editor,
+  .preview {
+    font-size: 11px;
+  }
+
+  .action-bar .btn {
+    font-size: 0.7rem;
+    padding: 0.5rem 0.5rem;
+  }
+}
+
+/* ========================================
+   Tablet Landscape
+   ======================================== */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .instructions {
+    height: 40%;
+  }
+}
