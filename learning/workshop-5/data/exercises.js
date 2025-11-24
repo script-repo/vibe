@@ -169,7 +169,7 @@ const exercises = [
     ];
 
     function render() {
-      chat.innerHTML = transcript.map(m => `<div class="bubble ${m.role}"><strong>${m.role}</strong><br>${m.text}</div>`).join('');
+      chat.innerHTML = transcript.map(m => '<div class="bubble ' + m.role + '"><strong>' + m.role + '</strong><br>' + m.text + '</div>').join('');
       chat.scrollTop = chat.scrollHeight;
     }
 
@@ -310,7 +310,7 @@ const exercises = [
     }
 
     function renderWindow() {
-      windowEl.innerHTML = memory.window.map(m => `<li><strong>${m.role}:</strong> ${m.text}</li>`).join('');
+      windowEl.innerHTML = memory.window.map(m => '<li><strong>' + m.role + ':</strong> ' + m.text + '</li>').join('');
     }
 
     function renderPayload() {
@@ -395,7 +395,7 @@ const exercises = [
       weather_lookup: {
         description: 'Get weather by city',
         schema: { properties: { city: { type: 'string' } }, required: ['city'] },
-        handler: ({ city }) => ({ city, summary: `${city} is 72°F and clear` })
+        handler: ({ city }) => ({ city, summary: city + ' is 72°F and clear' })
       },
       sql_query: {
         description: 'Run a safe read-only query',
@@ -414,7 +414,7 @@ const exercises = [
     }
 
     function logMessage(kind, payload) {
-      log.innerHTML += `\n${kind.toUpperCase()}: ${JSON.stringify(payload, null, 2)}`;
+      log.innerHTML += '\\n' + kind.toUpperCase() + ': ' + JSON.stringify(payload, null, 2);
     }
 
     const toolCall = { name: 'weather_lookup', arguments: { city: 'Lisbon' } };
@@ -511,10 +511,8 @@ const exercises = [
     function render() {
       const q = document.getElementById('query').value;
       const hits = search(q);
-      const block = hits.map(h => `- (${h.id}) ${h.text} [tags: ${h.tags.join(', ')}]`).join('\n');
-      document.getElementById('results').innerHTML = `
-        <div class="card"><strong>Context Block</strong><pre>${block}</pre></div>
-      `;
+      const block = hits.map(h => '- (' + h.id + ') ' + h.text + ' [tags: ' + h.tags.join(', ') + ']').join('\\n');
+      document.getElementById('results').innerHTML = '<div class="card"><strong>Context Block</strong><pre>' + block + '</pre></div>';
     }
 
     document.getElementById('query').addEventListener('input', render);
@@ -596,17 +594,7 @@ const exercises = [
     };
 
     function renderConfig() {
-      document.getElementById('config').innerHTML = `
-        <label>Collection</label>
-        <input value="${state.collection}" id="collection" />
-        <label>Metric</label>
-        <select id="metric">
-          <option value="COSINE">COSINE</option>
-          <option value="L2">L2</option>
-        </select>
-        <label>Top K</label>
-        <input type="number" value="${state.topK}" id="topk" min="1" max="10" />
-      `;
+      document.getElementById('config').innerHTML = '<label>Collection</label><input value="' + state.collection + '" id="collection" /><label>Metric</label><select id="metric"><option value="COSINE">COSINE</option><option value="L2">L2</option></select><label>Top K</label><input type="number" value="' + state.topK + '" id="topk" min="1" max="10" />';
       document.getElementById('metric').value = state.metricType;
       document.getElementById('collection').addEventListener('input', e => { state.collection = e.target.value; renderResults(); });
       document.getElementById('metric').addEventListener('change', e => { state.metricType = e.target.value; renderResults(); });
@@ -624,14 +612,8 @@ const exercises = [
 
     function renderResults() {
       const hits = mockSearch();
-      const rows = hits.map(h => `<tr><td>${h.id}</td><td>${h.text}</td><td>${h.score.toFixed(2)}</td></tr>`).join('');
-      document.getElementById('results').innerHTML = `
-        <strong>Context Returned</strong>
-        <table>
-          <tr><th>ID</th><th>Chunk</th><th>Score</th></tr>
-          ${rows}
-        </table>
-      `;
+      const rows = hits.map(h => '<tr><td>' + h.id + '</td><td>' + h.text + '</td><td>' + h.score.toFixed(2) + '</td></tr>').join('');
+      document.getElementById('results').innerHTML = '<strong>Context Returned</strong><table><tr><th>ID</th><th>Chunk</th><th>Score</th></tr>' + rows + '</table>';
     }
 
     renderConfig();
@@ -709,12 +691,12 @@ const exercises = [
     ];
 
     function renderTable() {
-      const rows = servers.map(s => `<tr><td>${s.name}</td><td>${s.capability}</td><td><span class="badge">${s.status}</span></td></tr>`).join('');
-      document.getElementById('table').innerHTML = `<table><tr><th>Server</th><th>Capability</th><th>Status</th></tr>${rows}</table>`;
+      const rows = servers.map(s => '<tr><td>' + s.name + '</td><td>' + s.capability + '</td><td><span class="badge">' + s.status + '</span></td></tr>').join('');
+      document.getElementById('table').innerHTML = '<table><tr><th>Server</th><th>Capability</th><th>Status</th></tr>' + rows + '</table>';
     }
 
     function toToolRegistry() {
-      return servers.filter(s => s.status === 'connected').map(s => ({ name: `${s.name}_tool`, server: s.name }));
+      return servers.filter(s => s.status === 'connected').map(s => ({ name: s.name + '_tool', server: s.name }));
     }
 
     renderTable();
@@ -772,7 +754,7 @@ const exercises = [
         this.tools = tools;
       }
       act(task) {
-        return `[${this.name}] ${this.prompt} | tools: ${this.tools.join(', ')} | task: ${task}`;
+        return '[' + this.name + '] ' + this.prompt + ' | tools: ' + this.tools.join(', ') + ' | task: ' + task;
       }
     }
 
@@ -874,10 +856,7 @@ const exercises = [
       const totalTokens = events.filter(e => e.tokens).reduce((acc, e) => acc + e.tokens, 0);
       const ttft = first - start;
       const tps = totalTokens / ((end - start) / 1000);
-      metricsEl.innerHTML = `
-        <div class="metric"><strong>TTFT:</strong> ${ttft} ms</div>
-        <div class="metric"><strong>Tokens/sec:</strong> ${tps.toFixed(1)}</div>
-      `;
+      metricsEl.innerHTML = '<div class="metric"><strong>TTFT:</strong> ' + ttft + ' ms</div><div class="metric"><strong>Tokens/sec:</strong> ' + tps.toFixed(1) + '</div>';
     }
 
     const feedback = { score: null, note: '' };
@@ -899,5 +878,40 @@ const exercises = [
   }
 ];
 
+// Workshop summary data
+const workshopSummary = {
+  message: "Congratulations! You've mastered AI agent development!",
+  skillsLearned: [
+    "Streamlit-style Chat UI",
+    "Memory Management",
+    "Prompt Engineering",
+    "Tool Calling",
+    "Vector RAG with Milvus",
+    "MCP Server Integration",
+    "Multi-Agent Orchestration",
+    "RLHF & Observability"
+  ],
+  achievements: [
+    { icon: "🤖", title: "Agent Architect", description: "Built a production-ready agent system" },
+    { icon: "🧠", title: "RAG Expert", description: "Implemented vector search and retrieval" },
+    { icon: "🛠️", title: "Tool Master", description: "Integrated MCP servers and custom tools" },
+    { icon: "📊", title: "Observability Pro", description: "Tracked TTFT, tokens/sec, and RLHF feedback" }
+  ],
+  nextSteps: [
+    "Deploy your agent system with real AI APIs",
+    "Scale with production-grade Milvus clusters",
+    "Build custom MCP servers for your domain",
+    "Implement advanced multi-agent workflows",
+    "Add enterprise security and compliance"
+  ],
+  resources: [
+    { name: "Anthropic Claude API", url: "https://docs.anthropic.com/" },
+    { name: "Milvus Documentation", url: "https://milvus.io/docs" },
+    { name: "MCP Protocol Spec", url: "https://modelcontextprotocol.io/" },
+    { name: "Streamlit Docs", url: "https://docs.streamlit.io/" }
+  ]
+};
+
 // Expose exercises to the browser environment
 window.exercises = exercises;
+window.workshopSummary = workshopSummary;
