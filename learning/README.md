@@ -17,11 +17,12 @@ A comprehensive learning resource for building modern, modular web applications 
 
 ---
 
-## 🚀 4-Hour Interactive Workshop (NEW!)
+## 🚀 Interactive 4-Hour Workshops (NEW!)
 
+**Perfect for hands-on learners!** We now have workshops for each learning path:
+
+### 🌐 [Workshop 1: Web Fundamentals](./workshop/index.html)
 **Perfect for beginners!** Learn by building in our hands-on workshop.
-
-🎓 **[Start Workshop →](./workshop.html)** | 📖 **[Workshop Guide →](./WORKSHOP.md)**
 
 **What you'll build:**
 - Beautiful UI with glassmorphism effects
@@ -31,21 +32,65 @@ A comprehensive learning resource for building modern, modular web applications 
 - API-powered dashboard
 - Your own personal masterpiece!
 
-**Features:**
-- ✅ 8 progressive exercises (30 min each)
+**Time:** 4 hours | **Level:** Beginner-friendly, no prerequisites
+
+---
+
+### 🎨 [Workshop 2: 3D Graphics](./workshop-2/index.html)
+**Master 3D on the web!** Create stunning 3D visualizations and interactive experiences.
+
+**What you'll build:**
+- CSS 3D transforms and flip cards
+- Rotating 3D cubes
+- Three.js scenes with lights and materials
+- Complex 3D geometries
+- Interactive camera controls
+- Procedural terrain generation
+- Beautiful particle galaxy
+
+**Time:** 4 hours | **Level:** Intermediate | **Prerequisites:** Web Fundamentals workshop recommended
+
+---
+
+### 🤖 [Workshop 3: AI Integration](./workshop-3/index.html)
+**Build intelligent web apps!** Learn to integrate AI APIs and create smart features.
+
+**What you'll build:**
+- API integration with async/await
+- Beautiful chat interfaces
+- Streaming AI responses
+- Typewriter effects
+- Function calling patterns
+- Structured outputs parsing
+- RAG (Retrieval Augmented Generation) system
+- Complete AI chatbot
+
+**Time:** 4 hours | **Level:** Intermediate | **Prerequisites:** Web Fundamentals, understanding of async/await
+
+---
+
+### 🏗️ [Workshop 4: Software Architecture](./workshop-4/index.html)
+**Design scalable systems!** Master architecture patterns for extensible applications.
+
+**What you'll build:**
+- Event bus and pub/sub systems
+- Plugin registry and lifecycle management
+- WordPress-style action hooks
+- Filter hook chains
+- Middleware patterns
+- State management
+- Complete plugin architecture system
+
+**Time:** 4 hours | **Level:** Intermediate to Advanced | **Prerequisites:** Web Fundamentals, experience building multi-feature apps
+
+---
+
+**Workshop Features:**
+- ✅ 8 progressive exercises per workshop (30 min each)
 - ✅ Live code editor with instant preview
 - ✅ Hints and solutions included
 - ✅ Progress tracking
 - ✅ No installation needed - just open and start!
-
-**Best for:**
-- Complete beginners to web development
-- Those who prefer hands-on learning
-- Group workshops and classrooms
-- Quick introduction before the longer paths
-
-**Time:** 4 hours (can be split into sessions)
-**Level:** Beginner-friendly, no prerequisites
 
 ---
 
