@@ -6,6 +6,7 @@
 // Application state
 let currentExercise = 0;
 let completedExercises = new Set();
+let dataLoaded = false;
 
 // Device detection
 const deviceInfo = {
@@ -20,10 +21,38 @@ const deviceInfo = {
 // ========================================
 
 /**
+ * Initialize course data
+ */
+async function initializeCourseData() {
+  if (dataLoaded) return true;
+
+  try {
+    console.log('Loading course data...');
+    await loadCourseData();
+    dataLoaded = true;
+    console.log('Course data loaded successfully!');
+    return true;
+  } catch (error) {
+    console.error('Failed to load course data:', error);
+    return false;
+  }
+}
+
+/**
  * Starts the workshop flow by showing the info modal
  */
-function startWorkshop() {
+async function startWorkshop() {
   console.log('Starting workshop flow...');
+
+  // Ensure data is loaded
+  if (!dataLoaded) {
+    const loaded = await initializeCourseData();
+    if (!loaded) {
+      alert('Failed to load workshop data. Please refresh the page.');
+      return;
+    }
+  }
+
   const modal = document.getElementById('workshopInfoModal');
   if (!modal) {
     console.error('Workshop info modal not found!');
@@ -43,8 +72,17 @@ function startWorkshop() {
 /**
  * Actually starts the workshop after the info modal
  */
-function proceedToWorkshop() {
+async function proceedToWorkshop() {
   console.log('Proceeding to workshop...');
+
+  // Ensure data is loaded
+  if (!dataLoaded) {
+    const loaded = await initializeCourseData();
+    if (!loaded) {
+      alert('Failed to load workshop data. Please refresh the page.');
+      return;
+    }
+  }
 
   // Stop audio
   stopAudio();
@@ -685,7 +723,13 @@ function toggleFullscreen() {
 }
 
 // Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load course data on page load
+  await initializeCourseData();
+
+  // Build dynamic UI from loaded data
+  await initializeDynamicUI();
+
   // Apply device-specific classes
   applyDeviceClasses();
 

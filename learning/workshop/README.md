@@ -89,22 +89,32 @@ The workshop is built with modularity in mind:
 
 ## 🔧 Customization
 
-### Adding New Exercises
+### Course Data System (NEW!)
 
-Edit `data/exercises.js` and add a new exercise object:
+**The workshop now uses a JSON-based course data system!**
 
-```javascript
-{
-  title: "Your Exercise Title",
-  preamble: `<div class="preamble">Your detailed introduction</div>`,
-  description: "Brief description",
-  objectives: ["Objective 1", "Objective 2"],
-  starterCode: "...",
-  solution: "...",
-  hint: "Helpful hint",
-  validation: (code) => { /* validation logic */ }
-}
-```
+All course content is stored in `data/course-data.json`, making it easy to:
+- Create new courses with different content
+- Maintain and update course content
+- Translate courses to different languages
+- Add media files (videos and audio)
+
+**To create a new course:**
+
+1. Copy `data/course-template.json` as a starting point
+2. Follow the detailed guide in `COURSE-DATA-GUIDE.md`
+3. Update the JSON with your content
+4. Add your media files to the `media/` folder
+5. Point `data-loader.js` to your new JSON file
+
+**Key Features:**
+- ✅ Single JSON file contains all course content
+- ✅ Video placeholders for each exercise
+- ✅ Audio placeholder for intro popup
+- ✅ Modular structure for reusability
+- ✅ No code changes needed - just edit JSON
+
+See `COURSE-DATA-GUIDE.md` for complete documentation.
 
 ### Styling Customization
 
@@ -115,20 +125,6 @@ Modify CSS variables in `css/styles.css`:
   --primary: #8b5cf6;
   --secondary: #3b82f6;
   /* ... more variables */
-}
-```
-
-### Loading Data from JSON
-
-To load exercises from JSON instead of JS:
-
-1. Convert `exercises.js` to `exercises.json`
-2. In `app.js`, add fetch logic:
-
-```javascript
-async function loadExercises() {
-  const response = await fetch('data/exercises.json');
-  return await response.json();
 }
 ```
 
