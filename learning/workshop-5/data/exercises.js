@@ -832,6 +832,8 @@ const exercises = [
   <style>
     body { background:#0b1120; color:#e2e8f0; font-family:Inter,sans-serif; padding:2rem; }
     .panel { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }
+    button { background: transparent; border: 2px solid rgba(255,255,255,0.2); color: #e2e8f0; font-size: 1.5rem; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    button:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.1); }
   </style>
 </head>
 <body>
@@ -855,6 +857,8 @@ const exercises = [
     body { background:#0b1120; color:#e2e8f0; font-family:Inter,sans-serif; padding:2rem; }
     .panel { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }
     .metric { display: flex; gap: 0.5rem; align-items: center; }
+    button { background: transparent; border: 2px solid rgba(255,255,255,0.2); color: #e2e8f0; font-size: 1.5rem; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    button:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.1); }
   </style>
 </head>
 <body>
