@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Integration Workshop 5 - Streamlit Agents in 4 Hours</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+
+<body>
+  <!-- Welcome Screen -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-content">
+      <h1>🤖 Build a Streamlit-Style AI Agent Lab</h1>
+      <p>A hands-on 4-hour workshop for the AI Integration path. Ship a Streamlit-inspired chat UI with memory,
+        tools, retrieval, MCP servers, orchestration, and production-grade observability.
+      </p>
+
+      <div class="welcome-features">
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <h3>Agent Stack</h3>
+          <p>Memory, tools, RAG, MCP, and orchestration</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎨</div>
+          <h3>Streamlit UI</h3>
+          <p>Chat-first layout with sidebar controls</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔧</div>
+          <h3>Observability</h3>
+          <p>RLHF hooks, TTFT, tokens per second</p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" onclick="startWorkshop()">Start Workshop 🎯</button>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()" aria-label="Toggle menu">
+        <span class="hamburger-icon">☰</span>
+      </button>
+      <div class="logo">
+        <span style="font-size: 1.5rem;">🧠</span>
+        <h1>AI Integration Workshop 5</h1>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      <div class="timer" id="timer">0:00</div>
+      <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" aria-label="Toggle fullscreen" title="Toggle Fullscreen">
+        ⛶
+      </button>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarMinimize()" title="Minimize sidebar">
+          ◀
+        </button>
+        <div class="hour-section">
+          <div class="hour-title">⚡ Hour 1: Streamlit Foundations</div>
+          <div class="exercise-item" data-exercise="0">
+            <div class="exercise-title">1.1 Streamlit Chat Shell</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="1">
+            <div class="exercise-title">1.2 Memory + Prompt Library</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🛠️ Hour 2: Reasoning Tools</div>
+          <div class="exercise-item" data-exercise="2">
+            <div class="exercise-title">2.1 Tool Calling Rig</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="3">
+            <div class="exercise-title">2.2 In-Memory RAG</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🛰️ Hour 3: Connected Agents</div>
+          <div class="exercise-item" data-exercise="4">
+            <div class="exercise-title">3.1 Vector RAG with Milvus</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="5">
+            <div class="exercise-title">3.2 MCP Servers</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+
+        <div class="hour-section">
+          <div class="hour-title">🚀 Hour 4: Orchestration & Safety</div>
+          <div class="exercise-item" data-exercise="6">
+            <div class="exercise-title">4.1 Agents & Multi-Agent Handoffs</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+          <div class="exercise-item" data-exercise="7">
+            <div class="exercise-title">4.2 RLHF + Latency Analytics</div>
+            <div class="exercise-duration">30 minutes</div>
+          </div>
+        </div>
+      </aside>
+      <button class="sidebar-toggle-floating" id="sidebarFloatingToggle" onclick="toggleSidebarMinimize()" title="Show exercises">
+        📋 Exercises
+      </button>
+
+      <!-- Workspace -->
+      <div class="workspace">
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+          <div class="instructions-header" id="instructionsHeader">
+            <span style="font-weight: 600; color: var(--text);">📖 Instructions</span>
+            <div class="instructions-controls">
+              <button class="control-btn" id="minimizeBtn" onclick="toggleInstructions()" title="Minimize/Maximize Instructions">
+                <span id="minimizeIcon">−</span>
+              </button>
+            </div>
+          </div>
+          <div id="instructionsContent">
+            <h2>Loading...</h2>
+            <p>Please wait...</p>
+          </div>
+        </div>
+        <button class="instructions-toggle-floating" id="floatingToggle" onclick="toggleInstructions()" title="Show Instructions">
+          📖 Show Instructions
+        </button>
+
+        <!-- Editor & Preview -->
+        <div class="editor-preview">
+          <div class="editor-container" id="editorContainer">
+            <div class="editor-header">
+              <span class="editor-title">📝 Code Editor</span>
+              <div class="editor-actions">
+                <button class="popout-btn" id="editorPopoutBtn" onclick="toggleEditorPopout()" title="Pop out editor">⇱</button>
+                <button class="btn btn-primary" onclick="runCode()">Run Code ▶️</button>
+                <button class="btn" onclick="resetCode()">Reset</button>
+              </div>
+            </div>
+            <textarea class="editor" id="editor" spellcheck="false"></textarea>
+          </div>
+
+          <div class="preview-container" id="previewContainer">
+            <div class="preview-header">
+              <span class="preview-title">👁️ Live Preview</span>
+              <button class="popout-btn" id="previewPopoutBtn" onclick="togglePreviewPopout()" title="Pop out preview">⇱</button>
+            </div>
+            <iframe class="preview" id="preview" sandbox="allow-scripts"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn hint-btn" onclick="showHint()">
+        💡 Show Hint
+      </button>
+      <div style="display: flex; gap: 1rem;">
+        <button class="btn" onclick="previousExercise()">⬅️ Previous</button>
+        <button class="btn" onclick="showSolution()">Show Solution</button>
+        <button class="btn btn-success" onclick="checkSolution()">Check ✓</button>
+        <button class="btn btn-primary" onclick="nextExercise()">Next ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="hintModal">
+    <div class="modal-content">
+      <h3>💡 Hint</h3>
+      <p id="hintText"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('hintModal')">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="solutionModal">
+    <div class="modal-content">
+      <h3>✨ Solution</h3>
+      <pre><code id="solutionCode"></code></pre>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('solutionModal')">Close</button>
+        <button class="btn btn-primary" onclick="copySolution()">Copy to Editor</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="summaryModal">
+    <div class="modal-content summary-content">
+      <h3>🎉 Workshop Complete!</h3>
+      <div id="summaryContent"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('summaryModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="workshopInfoModal">
+    <div class="modal-content summary-content">
+      <h3>📘 Workshop Overview</h3>
+
+      <div class="modal-actions" style="margin-top: 0; margin-bottom: 1.5rem; justify-content: center;">
+        <button class="btn btn-primary btn-large" style="margin-top: 0; width: 100%;"
+          onclick="proceedToWorkshop()">Let's
+          Start!
+          🚀</button>
+      </div>
+
+      <div class="summary-section">
+        <h4>👥 Target Persona</h4>
+        <p>This workshop is designed for builders who want AI-native flows:</p>
+        <ul>
+          <li><strong>Frontend engineers</strong> shipping Streamlit or browser-based agent UIs.</li>
+          <li><strong>Data/ML practitioners</strong> needing practical RAG + tool-calling scaffolds.</li>
+          <li><strong>Platform teams</strong> standardizing on MCP servers and agent orchestration.</li>
+        </ul>
+      </div>
+
+      <div class="summary-section">
+        <h4>🤔 The Reasoning</h4>
+        <p>Modern AI apps blend <strong>conversation, retrieval, and tools</strong>. By practicing the full stack—UI,
+          memory, RAG, tool calling, MCP, and observability—you'll have a repeatable template instead of one-off demos.</p>
+      </div>
+
+      <div class="summary-section">
+        <h4>🎯 Outcomes</h4>
+        <ul>
+          <li>Ship a <strong>Streamlit-style chat UI</strong> with memory and prompt libraries.</li>
+          <li>Implement <strong>tool calling</strong> plus in-memory and <strong>Milvus-backed RAG</strong>.</li>
+          <li>Wire <strong>MCP servers</strong> (filesystem, database, web search, and more) into agents.</li>
+          <li>Capture <strong>RLHF feedback</strong> and latency observability (TTFT, tokens/sec).</li>
+        </ul>
+      </div>
+
+      <div class="summary-section">
+        <h4>🧠 The Strategy</h4>
+        <p>We follow an <strong>agentic loop</strong> flow: start with UI + memory, add tools and retrieval, connect to
+          MCP servers, then orchestrate multiple agents with real-time feedback signals.</p>
+      </div>
+
+      <div class="summary-section">
+        <h4>📚 Format & Modules</h4>
+        <p>The 4-hour curriculum mirrors the sidebar schedule:</p>
+        <ul>
+          <li><strong>Hour 1: Streamlit Foundations</strong> — chat shell, memory, prompt library.</li>
+          <li><strong>Hour 2: Reasoning Tools</strong> — tool registry and in-memory RAG.</li>
+          <li><strong>Hour 3: Connected Agents</strong> — Milvus vector RAG and MCP servers.</li>
+          <li><strong>Hour 4: Orchestration & Safety</strong> — agent reuse, multi-agent handoffs, RLHF + metrics.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript Modules -->
+  <script src="data/exercises.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
