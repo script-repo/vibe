@@ -793,7 +793,7 @@ const exercises = [
       const step1 = researcher.act(task);
       const step2 = builder.act('Implement: ' + task);
       const transcript = [step1, step2];
-      document.getElementById('log').textContent = transcript.join('\n\n');
+      document.getElementById('log').textContent = transcript.join('\\n\\n');
     }
 
     orchestrate('Ship a Milvus-backed RAG chatbot with MCP tools.');
