@@ -899,4 +899,5 @@ const exercises = [
   }
 ];
 
-export default exercises;
+// Expose exercises to the browser environment
+window.exercises = exercises;
