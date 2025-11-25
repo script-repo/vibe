@@ -174,12 +174,13 @@ function attachExerciseClickHandlers() {
  */
 async function initializeDynamicUI() {
   // Wait for data to be loaded
-  if (!dataLoaded) {
+  if (!window.dataLoaded) {
     console.log('Waiting for course data to load...');
     await initializeCourseData();
   }
 
   console.log('Building dynamic UI...');
+  console.log('Current course exercises:', exercises ? exercises.length : 0);
   populateWelcomeScreen();
   populateIntroPopup();
   populateSidebar();
