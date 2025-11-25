@@ -1,0 +1,440 @@
+{
+  "courseInfo": {
+    "title": "Build Your First Modern Web App",
+    "duration": "4 hours",
+    "exerciseCount": 8,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🚀 Build Your First Modern Web App",
+    "subtitle": "A hands-on 4-hour workshop where you'll learn to build beautiful, interactive web applications from scratch.",
+    "features": [
+      {
+        "icon": "⚡",
+        "title": "8 Exercises",
+        "description": "Progressive learning with real-time coding"
+      },
+      {
+        "icon": "🎨",
+        "title": "Modern UI",
+        "description": "Glassmorphism, animations, and responsive design"
+      },
+      {
+        "icon": "🔧",
+        "title": "Full Stack",
+        "description": "Front-end, architecture, and APIs"
+      }
+    ],
+    "buttonText": "Start Workshop 🎯"
+  },
+  "introPopup": {
+    "title": "📘 Workshop Overview",
+    "audioFile": "media/Workshop-intro.m4a",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Start! 🚀",
+    "sections": [
+      {
+        "title": "👥 Target Persona",
+        "content": "This workshop is designed for:",
+        "items": [
+          "<strong>Aspiring Frontend Developers</strong> who want to move beyond basic HTML/CSS.",
+          "<strong>Designers</strong> looking to bring their creations to life with code.",
+          "<strong>Backend Developers</strong> wanting to understand modern frontend aesthetics and interactivity."
+        ]
+      },
+      {
+        "title": "🤔 The Reasoning",
+        "content": "Modern web development isn't just about making things work—it's about making them feel <strong>alive</strong>. We believe that learning by building \"premium\" interfaces from the start sets a higher standard for quality and user experience.",
+        "items": []
+      },
+      {
+        "title": "🎯 Outcomes",
+        "content": "",
+        "items": [
+          "Mastery of <strong>Glassmorphism</strong> and modern CSS aesthetic trends.",
+          "Ability to build <strong>Reusable Components</strong> and scalable architecture.",
+          "Understanding of <strong>State Management</strong> in vanilla JavaScript.",
+          "Confidence in using the <strong>Canvas API</strong> for interactive visuals."
+        ]
+      },
+      {
+        "title": "🧠 The Strategy",
+        "content": "We use a <strong>\"Visual-First\"</strong> approach. Instead of boring console logs, every concept is immediately applied to a visual element. You'll see the impact of your code instantly, reinforcing the learning loop through positive visual feedback.",
+        "items": []
+      },
+      {
+        "title": "📚 Format & Modules",
+        "content": "The 4-hour curriculum is split into 4 distinct hours:",
+        "items": [
+          "<strong>Hour 1: Foundations</strong> - CSS Gradients, Glass Effects, DOM Basics.",
+          "<strong>Hour 2: Components</strong> - Building a UI Kit, Canvas Particles.",
+          "<strong>Hour 3: Architecture</strong> - Plugin Systems, API Integration.",
+          "<strong>Hour 4: Advanced</strong> - Real-time Updates, Complete App Assembly."
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "⚡ Hour 1: Foundations",
+        "exercises": [
+          {
+            "title": "1.1 Hello Beautiful World",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "1.2 Make It Interactive",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🎨 Hour 2: Components",
+        "exercises": [
+          {
+            "title": "2.1 Build Components",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "2.2 Visual Magic",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🏗️ Hour 3: Architecture",
+        "exercises": [
+          {
+            "title": "3.1 Plugin System",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "3.2 API Integration",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🚀 Hour 4: Advanced",
+        "exercises": [
+          {
+            "title": "4.1 Real-time Updates",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "4.2 Your Masterpiece",
+            "duration": "30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "Hello Beautiful World",
+      "videoFile": "media/Excercise-1.1-Hello_Beautiful_World.mp4",
+      "preambleTitle": "Welcome to Modern Web Development!",
+      "preambleIntro": "In this first exercise, you'll learn the foundational techniques that make modern websites visually stunning. We'll explore <strong>glassmorphism</strong> - a design trend that creates frosted-glass effects - and CSS gradients that add depth and vibrancy to your designs.",
+      "keyConcepts": [
+        "<strong>CSS Box Model</strong>: Understanding how padding, margins, and borders work together",
+        "<strong>Flexbox Layout</strong>: Creating centered, responsive layouts with ease",
+        "<strong>Backdrop Filters</strong>: The magic behind glassmorphism effects",
+        "<strong>Linear Gradients</strong>: Creating beautiful color transitions",
+        "<strong>Background Clip</strong>: Making gradient text effects"
+      ],
+      "commonPitfalls": [
+        "Forgetting to set a semi-transparent background before using backdrop-filter",
+        "Not including vendor prefixes for older browser support",
+        "Using backdrop-filter without blur() which won't create the glass effect",
+        "Forgetting to add -webkit-background-clip for Safari compatibility"
+      ],
+      "prerequisites": "Basic understanding of HTML and CSS selectors. Don't worry if you're new - we'll guide you through each step!",
+      "description": "Create a beautiful, centered card with modern glassmorphism effects, gradient backgrounds, and styled typography. This exercise introduces you to CSS techniques used by top designers.",
+      "objectives": [
+        "Create a centered card layout using Flexbox",
+        "Apply glassmorphism effect with backdrop-filter",
+        "Add a vibrant gradient background",
+        "Style text with gradient effects",
+        "Ensure responsive design principles"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Hello Beautiful World</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      /* TODO: Add gradient background */\n      /* Hint: Use linear-gradient() with 2-3 colors */\n    }\n\n    .card {\n      padding: 3rem;\n      border-radius: 20px;\n      text-align: center;\n      max-width: 500px;\n      /* TODO: Add glassmorphism effect */\n      /* Hint: Set background to rgba(), add backdrop-filter: blur(), and border */\n    }\n\n    h1 {\n      font-size: 2.5rem;\n      margin-bottom: 1rem;\n      /* TODO: Add gradient text */\n      /* Hint: Use background: linear-gradient(), -webkit-background-clip: text */\n    }\n\n    p {\n      font-size: 1.25rem;\n      color: rgba(255, 255, 255, 0.9);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>Hello Beautiful World!</h1>\n    <p>Welcome to modern web development</p>\n  </div>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Hello Beautiful World</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    }\n\n    .card {\n      padding: 3rem;\n      border-radius: 20px;\n      text-align: center;\n      max-width: 500px;\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px) saturate(180%);\n      -webkit-backdrop-filter: blur(10px) saturate(180%);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);\n    }\n\n    h1 {\n      font-size: 2.5rem;\n      margin-bottom: 1rem;\n      background: linear-gradient(135deg, #fff, #a78bfa);\n      -webkit-background-clip: text;\n      -webkit-text-fill-color: transparent;\n      background-clip: text;\n    }\n\n    p {\n      font-size: 1.25rem;\n      color: rgba(255, 255, 255, 0.9);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>Hello Beautiful World!</h1>\n    <p>Welcome to modern web development</p>\n  </div>\n</body>\n</html>",
+      "hint": "Use `backdrop-filter: blur(10px)` for glassmorphism and `linear-gradient(135deg, color1, color2)` for backgrounds. Don't forget to set semi-transparent backgrounds with `rgba()` - the glass effect won't work without it!",
+      "validationRules": ["backdrop-filter", "linear-gradient", "rgba"]
+    },
+    {
+      "id": "1.2",
+      "title": "Make It Interactive",
+      "videoFile": "media/Exercise-1.2-Making_a_Webpage_Interactive.mp4",
+      "preambleTitle": "Bringing Your Page to Life with JavaScript",
+      "preambleIntro": "Now that you've mastered beautiful static designs, it's time to make them interactive! JavaScript is the programming language that powers all interactive features on the web. In this exercise, you'll learn the fundamentals of DOM manipulation and event handling.",
+      "keyConcepts": [
+        "<strong>DOM (Document Object Model)</strong>: How JavaScript sees and manipulates HTML",
+        "<strong>Event Listeners</strong>: Responding to user actions like clicks, hovers, and keypresses",
+        "<strong>State Management</strong>: Keeping track of data as your application runs",
+        "<strong>Dynamic Updates</strong>: Changing page content without reloading",
+        "<strong>CSS Class Manipulation</strong>: Adding/removing classes to trigger animations"
+      ],
+      "commonPitfalls": [
+        "Forgetting to use <code>document.getElementById()</code> to get elements before manipulating them",
+        "Using <code>innerHTML</code> when <code>textContent</code> is safer and more appropriate",
+        "Not properly timing CSS class additions/removals for animations",
+        "Forgetting to use <code>let</code> or <code>const</code> for variable declarations"
+      ],
+      "prerequisites": "Basic JavaScript syntax including variables, functions, and event handling. We'll walk through each concept step by step.",
+      "description": "Add JavaScript interactivity to your page. Learn about event listeners, DOM manipulation, and state management by building a click counter with smooth animations.",
+      "objectives": [
+        "Create variables to store application state",
+        "Use document.getElementById() to access DOM elements",
+        "Add event listeners to respond to button clicks",
+        "Update the DOM dynamically based on user interaction",
+        "Add smooth animations using CSS class manipulation"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Interactive Counter</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    }\n\n    .card {\n      padding: 3rem;\n      border-radius: 20px;\n      text-align: center;\n      max-width: 500px;\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px) saturate(180%);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n    }\n\n    .count {\n      font-size: 4rem;\n      font-weight: 700;\n      color: white;\n      margin: 2rem 0;\n      transition: transform 0.3s ease;\n    }\n\n    .count.pulse {\n      transform: scale(1.2);\n    }\n\n    button {\n      padding: 1rem 2rem;\n      font-size: 1.125rem;\n      border: none;\n      border-radius: 8px;\n      background: rgba(255, 255, 255, 0.2);\n      color: white;\n      cursor: pointer;\n      transition: all 0.3s ease;\n    }\n\n    button:hover {\n      background: rgba(255, 255, 255, 0.3);\n      transform: translateY(-2px);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1 style=\"color: white; margin-bottom: 1rem;\">Click Counter</h1>\n    <div class=\"count\" id=\"count\">0</div>\n    <button id=\"incrementBtn\">Click Me!</button>\n  </div>\n\n  <script>\n    // TODO: Create a variable to store the count (use let)\n\n    // TODO: Get references to DOM elements using document.getElementById()\n    // You need: countElement and btn\n\n    // TODO: Add event listener to button using addEventListener('click', function)\n\n    // TODO: Inside the event listener:\n    // 1. Increment the count\n    // 2. Update the display using textContent\n    // 3. Add pulse animation by adding/removing the 'pulse' class\n\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Interactive Counter</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    }\n\n    .card {\n      padding: 3rem;\n      border-radius: 20px;\n      text-align: center;\n      max-width: 500px;\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px) saturate(180%);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n    }\n\n    .count {\n      font-size: 4rem;\n      font-weight: 700;\n      color: white;\n      margin: 2rem 0;\n      transition: transform 0.3s ease;\n    }\n\n    .count.pulse {\n      transform: scale(1.2);\n    }\n\n    button {\n      padding: 1rem 2rem;\n      font-size: 1.125rem;\n      border: none;\n      border-radius: 8px;\n      background: rgba(255, 255, 255, 0.2);\n      color: white;\n      cursor: pointer;\n      transition: all 0.3s ease;\n    }\n\n    button:hover {\n      background: rgba(255, 255, 255, 0.3);\n      transform: translateY(-2px);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1 style=\"color: white; margin-bottom: 1rem;\">Click Counter</h1>\n    <div class=\"count\" id=\"count\">0</div>\n    <button id=\"incrementBtn\">Click Me!</button>\n  </div>\n\n  <script>\n    let count = 0;\n\n    const countElement = document.getElementById('count');\n    const btn = document.getElementById('incrementBtn');\n\n    btn.addEventListener('click', () => {\n      count++;\n      countElement.textContent = count;\n\n      // Add pulse animation\n      countElement.classList.add('pulse');\n      setTimeout(() => {\n        countElement.classList.remove('pulse');\n      }, 300);\n    });\n  </script>\n</body>\n</html>",
+      "hint": "Use `let count = 0` to store the count, `document.getElementById('id')` to get elements, and `addEventListener('click', () => { ... })` to handle button clicks. For animation, add the class with `classList.add()`, then remove it after 300ms with `setTimeout()`.",
+      "validationRules": ["addEventListener", "textContent", ["let", "var"]]
+    },
+    {
+      "id": "2.1",
+      "title": "Build Reusable Components",
+      "videoFile": "media/Exercise-2.1-Building_Reusable_Components.mp4",
+      "preambleTitle": "The Power of Reusable Components",
+      "preambleIntro": "Professional web developers don't copy-paste code - they create reusable functions and components! In this exercise, you'll build a toast notification system that can be used throughout your application. This teaches you the fundamental principle of <strong>DRY (Don't Repeat Yourself)</strong>.",
+      "keyConcepts": [
+        "<strong>Function Parameters</strong>: Creating flexible, reusable functions",
+        "<strong>Dynamic Element Creation</strong>: Building HTML elements with JavaScript",
+        "<strong>Template Literals</strong>: Using backticks for string interpolation",
+        "<strong>setTimeout()</strong>: Scheduling code to run after a delay",
+        "<strong>Component Design Patterns</strong>: Building modular, reusable code"
+      ],
+      "commonPitfalls": [
+        "Forgetting to append the created element to the document body",
+        "Not using template literals (\\`\\${variable}\\`) for dynamic class names",
+        "Forgetting to call .remove() on the toast element after the delay",
+        "Creating new elements inside a loop instead of using a function"
+      ],
+      "prerequisites": "Understanding of JavaScript functions, parameters, and DOM manipulation from previous exercises.",
+      "description": "Create a reusable toast notification system that can display success, error, and info messages. Learn how to build components that can be used throughout your application.",
+      "objectives": [
+        "Create a showToast() function with parameters for message and type",
+        "Use createElement() to build notification elements dynamically",
+        "Apply different styles based on notification type",
+        "Implement auto-dismiss functionality with setTimeout()",
+        "Add smooth slide-in animations"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Toast Notifications</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n\n    body {\n      font-family: sans-serif;\n      min-height: 100vh;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      padding: 2rem;\n    }\n\n    .toast {\n      position: fixed;\n      top: 2rem;\n      right: 2rem;\n      padding: 1rem 1.5rem;\n      background: white;\n      border-radius: 8px;\n      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\n      /* TODO: Add animation property */\n    }\n\n    /* TODO: Add @keyframes for slideIn animation */\n\n    .toast.success { border-left: 4px solid #10b981; }\n    .toast.error { border-left: 4px solid #ef4444; }\n    .toast.info { border-left: 4px solid #3b82f6; }\n\n    button {\n      margin: 1rem;\n      padding: 0.75rem 1.5rem;\n      font-size: 1rem;\n      border: none;\n      border-radius: 6px;\n      color: white;\n      cursor: pointer;\n    }\n\n    .btn-success { background: #10b981; }\n    .btn-error { background: #ef4444; }\n    .btn-info { background: #3b82f6; }\n  </style>\n</head>\n<body>\n  <button class=\"btn-success\" onclick=\"showToast('Success!', 'success')\">Show Success</button>\n  <button class=\"btn-error\" onclick=\"showToast('Error!', 'error')\">Show Error</button>\n  <button class=\"btn-info\" onclick=\"showToast('Info!', 'info')\">Show Info</button>\n\n  <script>\n    function showToast(message, type = 'info') {\n      // TODO: Create a div element using document.createElement()\n\n      // TODO: Set the className using template literal: \\`toast \\${type}\\`\n\n      // TODO: Set the textContent to the message\n\n      // TODO: Append the toast to document.body\n\n      // TODO: Use setTimeout to remove the toast after 3000ms (3 seconds)\n      // Hint: Use toast.remove() inside the setTimeout callback\n    }\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Toast Notifications</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n\n    body {\n      font-family: sans-serif;\n      min-height: 100vh;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      padding: 2rem;\n    }\n\n    .toast {\n      position: fixed;\n      top: 2rem;\n      right: 2rem;\n      padding: 1rem 1.5rem;\n      background: white;\n      border-radius: 8px;\n      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\n      animation: slideIn 0.3s ease;\n    }\n\n    @keyframes slideIn {\n      from {\n        opacity: 0;\n        transform: translateX(100px);\n      }\n      to {\n        opacity: 1;\n        transform: translateX(0);\n      }\n    }\n\n    .toast.success { border-left: 4px solid #10b981; }\n    .toast.error { border-left: 4px solid #ef4444; }\n    .toast.info { border-left: 4px solid #3b82f6; }\n\n    button {\n      margin: 1rem;\n      padding: 0.75rem 1.5rem;\n      font-size: 1rem;\n      border: none;\n      border-radius: 6px;\n      color: white;\n      cursor: pointer;\n    }\n\n    .btn-success { background: #10b981; }\n    .btn-error { background: #ef4444; }\n    .btn-info { background: #3b82f6; }\n  </style>\n</head>\n<body>\n  <button class=\"btn-success\" onclick=\"showToast('Success!', 'success')\">Show Success</button>\n  <button class=\"btn-error\" onclick=\"showToast('Error!', 'error')\">Show Error</button>\n  <button class=\"btn-info\" onclick=\"showToast('Info!', 'info')\">Show Info</button>\n\n  <script>\n    function showToast(message, type = 'info') {\n      const toast = document.createElement('div');\n      toast.className = `toast ${type}`;\n      toast.textContent = message;\n\n      document.body.appendChild(toast);\n\n      setTimeout(() => {\n        toast.remove();\n      }, 3000);\n    }\n  </script>\n</body>\n</html>",
+      "hint": "Use `document.createElement('div')` to create the toast, set its className with template literals: `toast \\${type}`, set textContent, then `document.body.appendChild(toast)` to add it. Use `setTimeout(() => toast.remove(), 3000)` to remove it after 3 seconds.",
+      "validationRules": ["createElement", "appendChild", "setTimeout"]
+    },
+    {
+      "id": "2.2",
+      "title": "Visual Magic with Canvas",
+      "videoFile": "",
+      "preambleTitle": "The Canvas API: Drawing in the Browser",
+      "preambleIntro": "The HTML Canvas is like a blank canvas for artists - but you paint with code! In this exercise, you'll create an interactive particle system that responds to your mouse. This introduces you to game development concepts and animation techniques used in modern web applications.",
+      "keyConcepts": [
+        "<strong>Canvas API</strong>: Drawing shapes, colors, and paths programmatically",
+        "<strong>Object-Oriented Programming</strong>: Using ES6 classes to create particle objects",
+        "<strong>Animation Loop</strong>: Using requestAnimationFrame for smooth 60fps animations",
+        "<strong>Mouse Tracking</strong>: Capturing and responding to mouse movement",
+        "<strong>Physics Simulation</strong>: Basic particle physics with velocity and collision detection"
+      ],
+      "commonPitfalls": [
+        "Forgetting to get the 2D context with <code>getContext('2d')</code>",
+        "Not setting canvas width and height (defaults to 300x150)",
+        "Calling <code>animate()</code> recursively instead of using <code>requestAnimationFrame()</code>",
+        "Not clearing the canvas between frames, creating a trail effect",
+        "Forgetting to call <code>beginPath()</code> before drawing shapes"
+      ],
+      "prerequisites": "Understanding of JavaScript classes, loops, and event handling. Some basic math (distances, velocities).",
+      "description": "Create an interactive particle system using the Canvas API. Learn about animation loops, object-oriented programming, and mouse interaction to build stunning visual effects.",
+      "objectives": [
+        "Set up an HTML5 canvas and get the drawing context",
+        "Create a Particle class with properties and methods",
+        "Implement an animation loop with requestAnimationFrame()",
+        "Track mouse movement and make particles respond",
+        "Add physics: velocity, collision detection, and particle repulsion"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Particle System</title>\n  <style>\n    * { margin: 0; padding: 0; }\n    body { overflow: hidden; background: #0a0a0a; }\n    canvas { display: block; }\n  </style>\n</head>\n<body>\n  <canvas id=\"canvas\"></canvas>\n\n  <script>\n    const canvas = document.getElementById('canvas');\n    const ctx = canvas.getContext('2d');\n\n    canvas.width = window.innerWidth;\n    canvas.height = window.innerHeight;\n\n    const particles = [];\n    let mouse = { x: canvas.width / 2, y: canvas.height / 2 };\n\n    // TODO: Create Particle class with constructor(x, y)\n    // Properties needed: x, y, size, speedX, speedY, color\n\n    // TODO: Add update() method to Particle class\n    // Should: calculate distance to mouse, move away if too close,\n    // update position, bounce off edges\n\n    // TODO: Add draw() method to Particle class\n    // Should: use ctx.fillStyle, ctx.beginPath(), ctx.arc(), ctx.fill()\n\n    // TODO: Create initial particles (use a for loop, push to particles array)\n\n    // TODO: Track mouse movement\n    // canvas.addEventListener('mousemove', (e) => { ... })\n\n    // TODO: Create animation loop with requestAnimationFrame\n    // Should: clear canvas, update all particles, draw all particles, call requestAnimationFrame\n\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Particle System</title>\n  <style>\n    * { margin: 0; padding: 0; }\n    body { overflow: hidden; background: #0a0a0a; }\n    canvas { display: block; }\n  </style>\n</head>\n<body>\n  <canvas id=\"canvas\"></canvas>\n\n  <script>\n    const canvas = document.getElementById('canvas');\n    const ctx = canvas.getContext('2d');\n\n    canvas.width = window.innerWidth;\n    canvas.height = window.innerHeight;\n\n    const particles = [];\n    let mouse = { x: canvas.width / 2, y: canvas.height / 2 };\n\n    class Particle {\n      constructor(x, y) {\n        this.x = x;\n        this.y = y;\n        this.size = Math.random() * 3 + 1;\n        this.speedX = Math.random() * 3 - 1.5;\n        this.speedY = Math.random() * 3 - 1.5;\n        this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;\n      }\n\n      update() {\n        const dx = mouse.x - this.x;\n        const dy = mouse.y - this.y;\n        const distance = Math.sqrt(dx * dx + dy * dy);\n\n        if (distance < 100) {\n          this.x -= dx / distance * 2;\n          this.y -= dy / distance * 2;\n        }\n\n        this.x += this.speedX;\n        this.y += this.speedY;\n\n        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;\n        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;\n      }\n\n      draw() {\n        ctx.fillStyle = this.color;\n        ctx.beginPath();\n        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);\n        ctx.fill();\n      }\n    }\n\n    for (let i = 0; i < 100; i++) {\n      particles.push(new Particle(\n        Math.random() * canvas.width,\n        Math.random() * canvas.height\n      ));\n    }\n\n    canvas.addEventListener('mousemove', (e) => {\n      mouse.x = e.clientX;\n      mouse.y = e.clientY;\n    });\n\n    function animate() {\n      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';\n      ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n      particles.forEach(particle => {\n        particle.update();\n        particle.draw();\n      });\n\n      requestAnimationFrame(animate);\n    }\n\n    animate();\n  </script>\n</body>\n</html>",
+      "hint": "Create a Particle class with x, y, speedX, speedY properties. In the animate() function, clear the canvas with fillRect(), update all particles by looping through the array, draw them, then call requestAnimationFrame(animate) to create the loop. Use Math.sqrt() to calculate distance between particle and mouse.",
+      "validationRules": ["requestAnimationFrame", "class", "mousemove"]
+    },
+    {
+      "id": "3.1",
+      "title": "Plugin System Architecture",
+      "videoFile": "",
+      "preambleTitle": "Building Extensible Applications",
+      "preambleIntro": "Great software isn't just about features - it's about architecture! A plugin system allows you to extend your application without modifying its core. This is how WordPress, VS Code, and Chrome all work. You'll learn the same patterns used by professional software architects.",
+      "keyConcepts": [
+        "<strong>Plugin Architecture</strong>: Designing systems that can be extended",
+        "<strong>Registry Pattern</strong>: Maintaining a collection of registered plugins",
+        "<strong>Lifecycle Management</strong>: Initializing and managing plugin lifecycles",
+        "<strong>Interface Design</strong>: Creating consistent plugin APIs",
+        "<strong>Separation of Concerns</strong>: Keeping core and plugins independent"
+      ],
+      "commonPitfalls": [
+        "Not defining a clear interface for what plugins must implement",
+        "Allowing plugins to access and modify core functionality directly",
+        "Not handling plugin initialization errors gracefully",
+        "Forgetting to provide a way to pass configuration to plugins"
+      ],
+      "prerequisites": "Solid understanding of JavaScript objects, arrays, and the forEach method. Familiarity with ES6 classes.",
+      "description": "Build a simple plugin architecture that allows adding features dynamically. Learn design patterns used in professional applications like WordPress and VS Code.",
+      "objectives": [
+        "Create a PluginRegistry class to manage plugins",
+        "Implement register() method to add plugins",
+        "Create initAll() method to initialize plugins in order",
+        "Design a plugin interface (name and init() method)",
+        "Test with multiple sample plugins"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Plugin System</title>\n  <style>\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n      color: white;\n    }\n    .plugin-list {\n      background: rgba(255, 255, 255, 0.1);\n      padding: 1.5rem;\n      border-radius: 12px;\n      margin-top: 1rem;\n    }\n  </style>\n</head>\n<body>\n  <h1>Plugin System</h1>\n  <div class=\"plugin-list\" id=\"pluginList\"></div>\n\n  <script>\n    // TODO: Create PluginRegistry class\n    // It should have:\n    // - A constructor that initializes an empty plugins array\n    // - A register(plugin) method that adds a plugin to the array\n    // - An initAll() method that calls init() on each plugin\n    // - A log(message) method that displays messages in the pluginList div\n\n    // TODO: Create an instance of PluginRegistry\n\n    // TODO: Register some plugins\n    // Each plugin should be an object with:\n    // - name: string\n    // - init: function that runs when plugin initializes\n\n    // TODO: Call initAll() to initialize all plugins\n\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Plugin System</title>\n  <style>\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n      color: white;\n    }\n    .plugin-list {\n      background: rgba(255, 255, 255, 0.1);\n      padding: 1.5rem;\n      border-radius: 12px;\n      margin-top: 1rem;\n    }\n  </style>\n</head>\n<body>\n  <h1>Plugin System</h1>\n  <div class=\"plugin-list\" id=\"pluginList\"></div>\n\n  <script>\n    class PluginRegistry {\n      constructor() {\n        this.plugins = [];\n      }\n\n      register(plugin) {\n        this.plugins.push(plugin);\n      }\n\n      initAll() {\n        this.plugins.forEach(plugin => {\n          plugin.init();\n          this.log(`✓ ${plugin.name} loaded`);\n        });\n      }\n\n      log(message) {\n        const list = document.getElementById('pluginList');\n        const item = document.createElement('div');\n        item.textContent = message;\n        item.style.marginBottom = '0.5rem';\n        list.appendChild(item);\n      }\n    }\n\n    const registry = new PluginRegistry();\n\n    registry.register({\n      name: 'Analytics',\n      init() {\n        console.log('Analytics plugin initialized');\n      }\n    });\n\n    registry.register({\n      name: 'Theme',\n      init() {\n        console.log('Theme plugin initialized');\n      }\n    });\n\n    registry.register({\n      name: 'Notifications',\n      init() {\n        console.log('Notifications plugin initialized');\n      }\n    });\n\n    registry.initAll();\n  </script>\n</body>\n</html>",
+      "hint": "Create a PluginRegistry class with a plugins array. The register() method should push plugins to this array. The initAll() method should use forEach() to call init() on each plugin. Each plugin is just an object with 'name' and 'init()' properties.",
+      "validationRules": ["class", "register", "init"]
+    },
+    {
+      "id": "3.2",
+      "title": "API Integration",
+      "videoFile": "",
+      "preambleTitle": "Connecting to the Internet",
+      "preambleIntro": "Modern web apps don't exist in isolation - they fetch data from servers! Learn to use the Fetch API to get real data from external sources.",
+      "keyConcepts": [],
+      "commonPitfalls": [],
+      "prerequisites": "",
+      "description": "Fetch data from an external API and display it beautifully. Learn about async/await, promises, and handling loading states.",
+      "objectives": [
+        "Use fetch() API to get data from a URL",
+        "Handle loading states while waiting for data",
+        "Parse JSON responses",
+        "Display data in styled cards",
+        "Handle errors gracefully with try/catch"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>API Integration</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n    }\n    .container { max-width: 800px; margin: 0 auto; }\n    h1 { color: white; margin-bottom: 2rem; text-align: center; }\n    .user-grid {\n      display: grid;\n      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\n      gap: 1.5rem;\n    }\n    .user-card {\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 12px;\n      padding: 1.5rem;\n      color: white;\n    }\n    .loading {\n      text-align: center;\n      color: white;\n      font-size: 1.5rem;\n      margin-top: 3rem;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>Random Users</h1>\n    <div class=\"loading\" id=\"loading\">Loading...</div>\n    <div class=\"user-grid\" id=\"userGrid\"></div>\n  </div>\n\n  <script>\n    async function fetchUsers() {\n      // TODO: Fetch from https://jsonplaceholder.typicode.com/users\n      // TODO: Hide loading indicator\n      // TODO: Display users in cards\n    }\n\n    fetchUsers();\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>API Integration</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n    }\n    .container { max-width: 800px; margin: 0 auto; }\n    h1 { color: white; margin-bottom: 2rem; text-align: center; }\n    .user-grid {\n      display: grid;\n      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\n      gap: 1.5rem;\n    }\n    .user-card {\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 12px;\n      padding: 1.5rem;\n      color: white;\n    }\n    .loading {\n      text-align: center;\n      color: white;\n      font-size: 1.5rem;\n      margin-top: 3rem;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>Random Users</h1>\n    <div class=\"loading\" id=\"loading\">Loading...</div>\n    <div class=\"user-grid\" id=\"userGrid\"></div>\n  </div>\n\n  <script>\n    async function fetchUsers() {\n      try {\n        const response = await fetch('https://jsonplaceholder.typicode.com/users');\n        const users = await response.json();\n\n        document.getElementById('loading').style.display = 'none';\n\n        const grid = document.getElementById('userGrid');\n        users.forEach(user => {\n          const card = document.createElement('div');\n          card.className = 'user-card';\n          card.innerHTML = `\n            <h3>${user.name}</h3>\n            <p>${user.email}</p>\n            <p>${user.company.name}</p>\n          `;\n          grid.appendChild(card);\n        });\n      } catch (error) {\n        document.getElementById('loading').textContent = 'Error loading data';\n      }\n    }\n\n    fetchUsers();\n  </script>\n</body>\n</html>",
+      "hint": "Use `await fetch(url)` to get the response, then `await response.json()` to parse it. Loop through the users array with forEach() and create card elements for each one. Don't forget to wrap everything in a try/catch block!",
+      "validationRules": ["fetch", "await", "forEach"]
+    },
+    {
+      "id": "4.1",
+      "title": "Real-time Updates",
+      "videoFile": "",
+      "preambleTitle": "Building Live Dashboards",
+      "preambleIntro": "Create dynamic, updating interfaces that feel alive! Learn to use setInterval for periodic updates and build a real-time dashboard.",
+      "keyConcepts": [],
+      "commonPitfalls": [],
+      "prerequisites": "",
+      "description": "Simulate real-time data updates using setInterval for a live dashboard with statistics and trend indicators.",
+      "objectives": [
+        "Create multiple stat cards with dynamic values",
+        "Update values periodically with setInterval()",
+        "Calculate and display value changes",
+        "Show trend indicators (up/down arrows)",
+        "Add smooth transitions for updates"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Real-time Dashboard</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n    }\n    .dashboard {\n      max-width: 1000px;\n      margin: 0 auto;\n      display: grid;\n      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n      gap: 1.5rem;\n    }\n    .stat-card {\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 12px;\n      padding: 1.5rem;\n      color: white;\n      text-align: center;\n    }\n    .stat-value {\n      font-size: 2.5rem;\n      font-weight: 700;\n      margin: 1rem 0;\n      transition: all 0.3s ease;\n    }\n    .trend { font-size: 1.25rem; }\n  </style>\n</head>\n<body>\n  <div class=\"dashboard\">\n    <div class=\"stat-card\">\n      <div>Active Users</div>\n      <div class=\"stat-value\" id=\"users\">0</div>\n      <div class=\"trend\" id=\"usersTrend\"></div>\n    </div>\n    <div class=\"stat-card\">\n      <div>Revenue</div>\n      <div class=\"stat-value\" id=\"revenue\">$0</div>\n      <div class=\"trend\" id=\"revenueTrend\"></div>\n    </div>\n    <div class=\"stat-card\">\n      <div>Orders</div>\n      <div class=\"stat-value\" id=\"orders\">0</div>\n      <div class=\"trend\" id=\"ordersTrend\"></div>\n    </div>\n  </div>\n\n  <script>\n    let users = 1250;\n    let revenue = 5000;\n    let orders = 42;\n\n    // TODO: Create update function\n    // TODO: Use setInterval to update every second\n    // TODO: Add random changes to values\n    // TODO: Show trend indicators\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Real-time Dashboard</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: sans-serif;\n      padding: 2rem;\n      background: linear-gradient(135deg, #667eea, #764ba2);\n    }\n    .dashboard {\n      max-width: 1000px;\n      margin: 0 auto;\n      display: grid;\n      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n      gap: 1.5rem;\n    }\n    .stat-card {\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 12px;\n      padding: 1.5rem;\n      color: white;\n      text-align: center;\n    }\n    .stat-value {\n      font-size: 2.5rem;\n      font-weight: 700;\n      margin: 1rem 0;\n      transition: all 0.3s ease;\n    }\n    .trend { font-size: 1.25rem; }\n  </style>\n</head>\n<body>\n  <div class=\"dashboard\">\n    <div class=\"stat-card\">\n      <div>Active Users</div>\n      <div class=\"stat-value\" id=\"users\">1250</div>\n      <div class=\"trend\" id=\"usersTrend\"></div>\n    </div>\n    <div class=\"stat-card\">\n      <div>Revenue</div>\n      <div class=\"stat-value\" id=\"revenue\">$5000</div>\n      <div class=\"trend\" id=\"revenueTrend\"></div>\n    </div>\n    <div class=\"stat-card\">\n      <div>Orders</div>\n      <div class=\"stat-value\" id=\"orders\">42</div>\n      <div class=\"trend\" id=\"ordersTrend\"></div>\n    </div>\n  </div>\n\n  <script>\n    let users = 1250;\n    let revenue = 5000;\n    let orders = 42;\n\n    function updateStats() {\n      const userChange = Math.floor(Math.random() * 20) - 10;\n      const revenueChange = Math.floor(Math.random() * 200) - 100;\n      const orderChange = Math.floor(Math.random() * 5) - 2;\n\n      users += userChange;\n      revenue += revenueChange;\n      orders += orderChange;\n\n      document.getElementById('users').textContent = users;\n      document.getElementById('revenue').textContent = '$' + revenue;\n      document.getElementById('orders').textContent = orders;\n\n      document.getElementById('usersTrend').textContent =\n        userChange > 0 ? '📈 +' + userChange : '📉 ' + userChange;\n      document.getElementById('revenueTrend').textContent =\n        revenueChange > 0 ? '📈 +$' + revenueChange : '📉 $' + revenueChange;\n      document.getElementById('ordersTrend').textContent =\n        orderChange > 0 ? '📈 +' + orderChange : '📉 ' + orderChange;\n    }\n\n    setInterval(updateStats, 1000);\n  </script>\n</body>\n</html>",
+      "hint": "Use `setInterval(function, 1000)` to run updates every second. Generate random changes with Math.random() and Math.floor(). Update textContent for values and show arrows/emojis for trends based on whether the change is positive or negative.",
+      "validationRules": ["setInterval", "textContent"]
+    },
+    {
+      "id": "4.2",
+      "title": "Your Masterpiece",
+      "videoFile": "",
+      "preambleTitle": "Bring It All Together!",
+      "preambleIntro": "This is your moment to shine! Combine everything you've learned - glassmorphism, interactivity, components, APIs, and real-time updates - into one beautiful personal dashboard. Make it uniquely yours!",
+      "keyConcepts": [],
+      "commonPitfalls": [],
+      "prerequisites": "",
+      "description": "Combine everything you've learned into a personal dashboard. Use all the techniques from previous exercises to create something amazing and uniquely yours!",
+      "objectives": [
+        "Apply glassmorphism and modern UI design",
+        "Add multiple interactive components",
+        "Fetch and display real data from an API",
+        "Include smooth animations and transitions",
+        "Make it personal - add your own creative touches!"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>My Dashboard</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);\n      padding: 2rem;\n    }\n\n    /* TODO: Add your styles here! */\n    /* Create a header, cards, stats, etc. */\n    /* Use glassmorphism, gradients, and animations */\n  </style>\n</head>\n<body>\n  <!-- TODO: Build your dashboard HTML -->\n\n  <script>\n    // TODO: Add your JavaScript\n    // Combine: state management, API calls, animations\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>My Personal Dashboard</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);\n      padding: 2rem;\n    }\n\n    .container { max-width: 1200px; margin: 0 auto; }\n\n    header {\n      text-align: center;\n      margin-bottom: 3rem;\n      color: white;\n    }\n\n    header h1 {\n      font-size: 3rem;\n      margin-bottom: 0.5rem;\n      background: linear-gradient(135deg, #fff, #a78bfa);\n      -webkit-background-clip: text;\n      -webkit-text-fill-color: transparent;\n    }\n\n    .stats {\n      display: grid;\n      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n      gap: 1.5rem;\n      margin-bottom: 2rem;\n    }\n\n    .card {\n      background: rgba(255, 255, 255, 0.1);\n      backdrop-filter: blur(10px) saturate(180%);\n      border: 1px solid rgba(255, 255, 255, 0.2);\n      border-radius: 16px;\n      padding: 2rem;\n      color: white;\n      transition: transform 0.3s ease;\n    }\n\n    .card:hover { transform: translateY(-5px); }\n\n    .stat-value {\n      font-size: 2.5rem;\n      font-weight: 700;\n      margin: 1rem 0;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <header>\n      <h1>🚀 My Dashboard</h1>\n      <p>Built with HTML, CSS & JavaScript</p>\n    </header>\n\n    <div class=\"stats\">\n      <div class=\"card\">\n        <div>Total Visitors</div>\n        <div class=\"stat-value\" id=\"visitors\">0</div>\n      </div>\n      <div class=\"card\">\n        <div>Tasks Completed</div>\n        <div class=\"stat-value\" id=\"tasks\">0</div>\n      </div>\n      <div class=\"card\">\n        <div>Active Projects</div>\n        <div class=\"stat-value\" id=\"projects\">0</div>\n      </div>\n    </div>\n  </div>\n\n  <script>\n    function animateValue(id, start, end, duration) {\n      const obj = document.getElementById(id);\n      const range = end - start;\n      let current = start;\n      const increment = range / (duration / 16);\n\n      const timer = setInterval(() => {\n        current += increment;\n        if (current >= end) {\n          current = end;\n          clearInterval(timer);\n        }\n        obj.textContent = Math.floor(current);\n      }, 16);\n    }\n\n    animateValue('visitors', 0, 1234, 1500);\n    animateValue('tasks', 0, 42, 1500);\n    animateValue('projects', 0, 8, 1500);\n  </script>\n</body>\n</html>",
+      "hint": "This is your chance to be creative! Combine glassmorphism cards, animated counters, API data fetching, and smooth transitions. Add your personal touch - maybe your favorite colors, your own data, or unique features!",
+      "validationRules": ["backdrop-filter", "fetch", "animation", "length>1000"]
+    }
+  ],
+  "completionSummary": {
+    "title": "Congratulations! You've Completed the Workshop!",
+    "message": "You've just built your first modern web application from scratch. That's an incredible achievement!",
+    "skillsLearned": [
+      "HTML5 & Semantic Markup",
+      "Modern CSS (Glassmorphism, Gradients, Flexbox, Grid)",
+      "JavaScript ES6+ (Classes, Async/Await, Arrow Functions)",
+      "DOM Manipulation & Event Handling",
+      "Canvas API & Animations",
+      "Plugin Architecture Patterns",
+      "API Integration & Fetch",
+      "Real-time Updates with setInterval",
+      "Responsive Design Principles",
+      "Component-Based Development"
+    ],
+    "achievements": [
+      {
+        "icon": "🎨",
+        "title": "Design Master",
+        "description": "Created beautiful UIs with glassmorphism"
+      },
+      {
+        "icon": "⚡",
+        "title": "Interaction Expert",
+        "description": "Made pages come alive with JavaScript"
+      },
+      {
+        "icon": "🏗️",
+        "title": "Architect",
+        "description": "Built scalable plugin systems"
+      },
+      {
+        "icon": "🌐",
+        "title": "API Integrator",
+        "description": "Connected to external data sources"
+      },
+      {
+        "icon": "🎯",
+        "title": "Full Stack",
+        "description": "Combined front-end skills into one masterpiece"
+      }
+    ],
+    "nextSteps": [
+      "Build your own projects using these techniques",
+      "Learn React, Vue, or Angular for component frameworks",
+      "Explore Node.js for backend development",
+      "Study TypeScript for type-safe JavaScript",
+      "Dive into advanced CSS with Tailwind or Sass",
+      "Learn about state management with Redux or MobX",
+      "Explore modern build tools like Vite or Webpack",
+      "Study web performance optimization",
+      "Learn about web accessibility (WCAG standards)",
+      "Build a portfolio showcasing your new skills!"
+    ],
+    "resources": [
+      {
+        "name": "MDN Web Docs",
+        "url": "https://developer.mozilla.org"
+      },
+      {
+        "name": "JavaScript.info",
+        "url": "https://javascript.info"
+      },
+      {
+        "name": "CSS-Tricks",
+        "url": "https://css-tricks.com"
+      },
+      {
+        "name": "FreeCodeCamp",
+        "url": "https://freecodecamp.org"
+      }
+    ]
+  }
+}

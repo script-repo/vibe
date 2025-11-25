@@ -1,0 +1,468 @@
+{
+  "courseInfo": {
+    "title": "Master AI Integration",
+    "duration": "4 hours",
+    "exerciseCount": 8,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🤖 Master AI Integration",
+    "subtitle": "A hands-on 4-hour workshop where you'll learn to build intelligent, AI-powered applications from scratch.",
+    "features": [
+      {
+        "icon": "⚡",
+        "title": "8 Exercises",
+        "description": "From API basics to production chatbots"
+      },
+      {
+        "icon": "🧠",
+        "title": "Real AI",
+        "description": "Streaming, function calling, and RAG systems"
+      },
+      {
+        "icon": "💬",
+        "title": "Production Ready",
+        "description": "Build chatbots users will love"
+      }
+    ],
+    "buttonText": "Start Workshop 🎯"
+  },
+  "introPopup": {
+    "title": "📘 Workshop Overview",
+    "audioFile": "",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Start! 🚀",
+    "sections": [
+      {
+        "title": "👥 Target Persona",
+        "content": "This workshop is designed for:",
+        "items": [
+          "<strong>Frontend Developers</strong> wanting to integrate AI into their applications.",
+          "<strong>Full-Stack Engineers</strong> looking to build intelligent user experiences.",
+          "<strong>AI Enthusiasts</strong> ready to move beyond tutorials into real implementations."
+        ]
+      },
+      {
+        "title": "🤔 The Reasoning",
+        "content": "AI is transforming how we build applications. This workshop teaches you to integrate AI <strong>properly</strong> - with streaming responses, structured outputs, and production-ready patterns that create delightful user experiences.",
+        "items": []
+      },
+      {
+        "title": "🎯 Outcomes",
+        "content": "",
+        "items": [
+          "Master <strong>async/await</strong> and modern API integration patterns.",
+          "Build <strong>streaming interfaces</strong> that feel responsive and alive.",
+          "Implement <strong>function calling</strong> to extend AI capabilities.",
+          "Create <strong>RAG systems</strong> that retrieve and use relevant context.",
+          "Deploy a <strong>production-ready chatbot</strong> with error handling."
+        ]
+      },
+      {
+        "title": "🧠 The Strategy",
+        "content": "We use a <strong>\"Build-First\"</strong> approach. Every exercise creates something you can actually use. You'll start with simple API calls and progressively build toward a complete, production-ready AI chatbot.",
+        "items": []
+      },
+      {
+        "title": "📚 Format & Modules",
+        "content": "The 4-hour curriculum is split into 4 distinct hours:",
+        "items": [
+          "<strong>Hour 1: API Foundations</strong> - Fetch, async/await, chat interfaces.",
+          "<strong>Hour 2: Streaming & UX</strong> - Real-time responses, typewriter effects.",
+          "<strong>Hour 3: Advanced AI</strong> - Function calling, structured outputs.",
+          "<strong>Hour 4: Complete Chatbot</strong> - RAG systems, production patterns."
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "⚡ Hour 1: API Foundations",
+        "exercises": [
+          {
+            "title": "1.1 API Basics with Fetch",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "1.2 Chat Interface",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🎨 Hour 2: Streaming & UX",
+        "exercises": [
+          {
+            "title": "2.1 Streaming Responses",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "2.2 Typewriter Effect",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🏗️ Hour 3: Advanced AI",
+        "exercises": [
+          {
+            "title": "3.1 Function Calling",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "3.2 Structured Outputs",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🚀 Hour 4: Complete Chatbot",
+        "exercises": [
+          {
+            "title": "4.1 RAG System Basics",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "4.2 Complete AI Chatbot",
+            "duration": "30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "API Basics with Fetch",
+      "videoFile": "",
+      "preambleTitle": "Making API Requests",
+      "preambleIntro": "Learn to make HTTP requests to AI APIs using the Fetch API and async/await. This is the foundation of all AI integrations - understanding how to communicate with AI services over the network.",
+      "keyConcepts": [
+        "<strong>async/await</strong>: Modern JavaScript syntax for handling asynchronous operations",
+        "<strong>fetch()</strong>: The browser API for making HTTP requests",
+        "<strong>JSON</strong>: Parsing and stringifying data for API communication",
+        "<strong>Error Handling</strong>: Using try/catch blocks to handle network failures gracefully"
+      ],
+      "commonPitfalls": [
+        "Forgetting the 'await' keyword before fetch() and .json() calls",
+        "Not wrapping async code in try/catch blocks",
+        "Assuming the API call succeeded without checking response.ok",
+        "Not handling network errors or timeout scenarios"
+      ],
+      "prerequisites": "Basic JavaScript knowledge including functions and promises. Understanding of what APIs are and how they work.",
+      "description": "Make your first API request to an AI service using fetch and async/await.",
+      "objectives": [
+        "Use async/await syntax",
+        "Make POST requests with fetch",
+        "Handle JSON responses",
+        "Implement error handling"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><head><title>API Basics</title><style>body{font-family:sans-serif;padding:2rem;background:#1e293b;color:#fff}</style></head>\n<body>\n  <h1>AI API Tester</h1>\n  <button onclick=\"testAPI()\">Test API</button>\n  <div id=\"result\"></div>\n  <script>\n    async function testAPI() {\n      // TODO: Make a fetch request to a mock API\n      // Hint: const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');\n      // TODO: Parse JSON\n      // TODO: Display result\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><title>API Basics</title><style>body{font-family:sans-serif;padding:2rem;background:#1e293b;color:#fff}#result{margin-top:1rem;padding:1rem;background:rgba(255,255,255,0.1);border-radius:8px}</style></head>\n<body>\n  <h1>AI API Tester</h1>\n  <button onclick=\"testAPI()\">Test API</button>\n  <div id=\"result\"></div>\n  <script>\n    async function testAPI() {\n      try {\n        const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');\n        const data = await response.json();\n        document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';\n      } catch (error) {\n        document.getElementById('result').textContent = 'Error: ' + error.message;\n      }\n    }\n  </script>\n</body></html>",
+      "hint": "Use async/await with fetch, then call .json() on the response. Wrap in try/catch for error handling.",
+      "validationRules": ["async", "await", "fetch"]
+    },
+    {
+      "id": "1.2",
+      "title": "Chat Interface",
+      "videoFile": "",
+      "preambleTitle": "Building a Chat UI",
+      "preambleIntro": "Create a user-friendly chat interface for AI conversations. A great chat UI is the difference between a demo and a product - users expect smooth, familiar messaging experiences.",
+      "keyConcepts": [
+        "<strong>Flexbox Layout</strong>: Creating flexible chat layouts that adapt to content",
+        "<strong>Message Bubbles</strong>: Styling distinct user and assistant messages",
+        "<strong>Auto-scrolling</strong>: Keeping the latest message visible",
+        "<strong>Input Handling</strong>: Processing user input with Enter key support",
+        "<strong>Dynamic DOM Updates</strong>: Adding messages without page reload"
+      ],
+      "commonPitfalls": [
+        "Not clearing the input field after sending a message",
+        "Forgetting to scroll to the bottom when new messages appear",
+        "Not distinguishing visually between user and AI messages",
+        "Missing keyboard support (Enter key to send)",
+        "Not handling empty messages"
+      ],
+      "prerequisites": "Basic HTML/CSS knowledge, understanding of DOM manipulation with JavaScript.",
+      "description": "Build a chat interface with message bubbles, input field, and send button.",
+      "objectives": [
+        "Create message bubbles",
+        "Handle user input",
+        "Display messages",
+        "Scroll to latest message"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><head><title>Chat</title><style>\nbody{margin:0;font-family:sans-serif;background:#1e293b;color:#fff}\n#chat{height:80vh;display:flex;flex-direction:column}\n#messages{flex:1;overflow-y:auto;padding:1rem}\n/* TODO: Style message bubbles */\n#input-area{padding:1rem;display:flex;gap:0.5rem}\n</style></head>\n<body>\n  <div id=\"chat\">\n    <div id=\"messages\"></div>\n    <div id=\"input-area\">\n      <input id=\"userInput\" type=\"text\" placeholder=\"Type a message...\">\n      <button onclick=\"sendMessage()\">Send</button>\n    </div>\n  </div>\n  <script>\n    function sendMessage() {\n      // TODO: Get user input, add to messages, clear input\n    }\n    function addMessage(text, isUser) {\n      // TODO: Create and append message bubble\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><title>Chat</title><style>\nbody{margin:0;font-family:sans-serif;background:#1e293b;color:#fff}\n#chat{height:100vh;display:flex;flex-direction:column}\n#messages{flex:1;overflow-y:auto;padding:1rem}\n.message{margin-bottom:1rem;display:flex}\n.message.user{justify-content:flex-end}\n.bubble{padding:0.75rem 1rem;border-radius:12px;max-width:70%}\n.user .bubble{background:#8b5cf6;color:#fff}\n.assistant .bubble{background:rgba(255,255,255,0.1);color:#fff}\n#input-area{padding:1rem;display:flex;gap:0.5rem;background:rgba(0,0,0,0.3)}\n#userInput{flex:1;padding:0.75rem;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff}\nbutton{padding:0.75rem 1.5rem;border:none;border-radius:8px;background:#8b5cf6;color:#fff;cursor:pointer}\n</style></head>\n<body>\n  <div id=\"chat\">\n    <div id=\"messages\"></div>\n    <div id=\"input-area\">\n      <input id=\"userInput\" type=\"text\" placeholder=\"Type a message...\" onkeypress=\"if(event.key==='Enter')sendMessage()\">\n      <button onclick=\"sendMessage()\">Send</button>\n    </div>\n  </div>\n  <script>\n    function sendMessage() {\n      const input = document.getElementById('userInput');\n      const text = input.value.trim();\n      if (!text) return;\n      addMessage(text, true);\n      input.value = '';\n      setTimeout(() => addMessage(\"This is a mock response.\", false), 500);\n    }\n    function addMessage(text, isUser) {\n      const messagesDiv = document.getElementById('messages');\n      const msgDiv = document.createElement('div');\n      msgDiv.className = 'message ' + (isUser ? 'user' : 'assistant');\n      msgDiv.innerHTML = '<div class=\"bubble\">' + text + '</div>';\n      messagesDiv.appendChild(msgDiv);\n      messagesDiv.scrollTop = messagesDiv.scrollHeight;\n    }\n  </script>\n</body></html>",
+      "hint": "Create message divs with different classes for user/assistant, style them as bubbles, and scroll to bottom after adding.",
+      "validationRules": ["message", "bubble", "scrollTop"]
+    },
+    {
+      "id": "2.1",
+      "title": "Streaming Responses",
+      "videoFile": "",
+      "preambleTitle": "Real-time AI Streaming",
+      "preambleIntro": "Implement streaming to show AI responses in real-time as they're generated. This creates a much better user experience - instead of waiting for the entire response, users see progress immediately.",
+      "keyConcepts": [
+        "<strong>Streaming</strong>: Processing data as it arrives, not all at once",
+        "<strong>Progressive Rendering</strong>: Updating the UI incrementally",
+        "<strong>Promises and setTimeout</strong>: Creating artificial delays to simulate streaming",
+        "<strong>String Manipulation</strong>: Building strings character by character",
+        "<strong>User Experience</strong>: Why streaming matters for perceived performance"
+      ],
+      "commonPitfalls": [
+        "Not clearing previous content before starting a new stream",
+        "Making the delay too fast or too slow (30-50ms is ideal)",
+        "Not handling errors during streaming",
+        "Forgetting to await the Promise in the loop",
+        "Not providing visual feedback that streaming is happening"
+      ],
+      "prerequisites": "Understanding of async/await, Promises, and basic string manipulation.",
+      "description": "Stream AI responses character by character for better UX.",
+      "objectives": [
+        "Use ReadableStream",
+        "Process chunks",
+        "Display real-time updates"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <button onclick=\"streamText()\">Stream Text</button>\n  <div id=\"output\"></div>\n  <script>\n    async function streamText() {\n      // TODO: Simulate streaming by revealing text character by character\n      const text = \"This is a simulated streaming response from an AI.\";\n      // TODO: Display character by character with delay\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"streamText()\">Stream Text</button>\n  <div id=\"output\" style=\"margin-top:1rem;font-size:1.1rem;line-height:1.6\"></div>\n  <script>\n    async function streamText() {\n      const text = \"This is a simulated streaming response from an AI. It appears character by character!\";\n      const output = document.getElementById('output');\n      output.textContent = '';\n      for (let i = 0; i < text.length; i++) {\n        output.textContent += text[i];\n        await new Promise(resolve => setTimeout(resolve, 30));\n      }\n    }\n  </script>\n</body></html>",
+      "hint": "Loop through each character of the text and add it to the output div with a small delay using setTimeout wrapped in a Promise.",
+      "validationRules": ["setTimeout", "Promise", "textContent"]
+    },
+    {
+      "id": "2.2",
+      "title": "Typewriter Effect",
+      "videoFile": "",
+      "preambleTitle": "Enhanced Streaming UX",
+      "preambleIntro": "Create a polished typewriter effect with cursor animation. This takes streaming to the next level with a blinking cursor that makes the AI feel more alive and engaging.",
+      "keyConcepts": [
+        "<strong>CSS Animations</strong>: Using @keyframes for blinking effects",
+        "<strong>Pseudo-elements</strong>: Using ::after for the cursor",
+        "<strong>CSS Keyframes</strong>: Creating smooth, looping animations",
+        "<strong>Opacity Transitions</strong>: Making elements fade in and out",
+        "<strong>Combining CSS and JavaScript</strong>: CSS for visual effects, JS for logic"
+      ],
+      "commonPitfalls": [
+        "Not using ::after pseudo-element, trying to add cursor as separate element",
+        "Forgetting to make the animation infinite with 'infinite' keyword",
+        "Using the wrong timing for blink (should be around 1s total)",
+        "Not positioning the cursor correctly next to the text",
+        "Making the text container inline-block so ::after appears correctly"
+      ],
+      "prerequisites": "Understanding of CSS animations, pseudo-elements, and the streaming pattern from the previous exercise.",
+      "description": "Add a blinking cursor and smooth typewriter animation.",
+      "objectives": [
+        "Animated cursor",
+        "Character-by-character display",
+        "Smooth transitions"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <div id=\"text\"></div>\n  <script>\n    // TODO: Add typewriter effect with blinking cursor\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><style>\nbody{padding:2rem;background:#1e293b;color:#fff;font-family:monospace;font-size:1.2rem}\n#text{position:relative;display:inline-block}\n#text::after{content:'|';animation:blink 1s infinite;margin-left:2px}\n@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}\n</style></head>\n<body>\n  <div id=\"text\"></div>\n  <script>\n    async function typeWriter(text, element) {\n      for (let i = 0; i < text.length; i++) {\n        element.textContent += text[i];\n        await new Promise(resolve => setTimeout(resolve, 50));\n      }\n    }\n    typeWriter(\"Hello! I'm an AI assistant. How can I help you today?\", document.getElementById('text'));\n  </script>\n</body></html>",
+      "hint": "Use CSS ::after pseudo-element with a pipe character and blink animation. Add characters one by one with setTimeout.",
+      "validationRules": ["::after", "animation", "blink"]
+    },
+    {
+      "id": "3.1",
+      "title": "Function Calling",
+      "videoFile": "",
+      "preambleTitle": "AI Function Calling",
+      "preambleIntro": "Teach AI to call JavaScript functions based on user requests. This is how modern AI assistants can take actions - check weather, set reminders, query databases, and more. Function calling bridges the gap between conversation and action.",
+      "keyConcepts": [
+        "<strong>Function Registry</strong>: Storing callable functions in an object",
+        "<strong>Dynamic Function Calls</strong>: Using bracket notation to call functions by name",
+        "<strong>Spread Operator</strong>: Passing dynamic arguments with ...args",
+        "<strong>AI Tool Use</strong>: How modern AI systems interact with external tools",
+        "<strong>Function Schemas</strong>: Describing available functions to the AI"
+      ],
+      "commonPitfalls": [
+        "Trying to call functions with dot notation instead of bracket notation",
+        "Not using the spread operator when passing argument arrays",
+        "Forgetting that function names are strings when stored in variables",
+        "Not validating that the function exists before trying to call it",
+        "Not handling errors from function execution"
+      ],
+      "prerequisites": "Understanding of JavaScript objects, functions, and the spread operator.",
+      "description": "Implement function calling pattern where AI can execute predefined functions.",
+      "objectives": [
+        "Define callable functions",
+        "Parse AI responses",
+        "Execute functions",
+        "Return results"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <script>\n    const functions = {\n      getWeather: (city) => \"The weather in \" + city + \" is sunny.\",\n      getTime: () => new Date().toLocaleTimeString()\n    };\n    // TODO: Simulate AI choosing and calling a function\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"simulateAI()\">Ask AI</button>\n  <div id=\"result\" style=\"margin-top:1rem\"></div>\n  <script>\n    const functions = {\n      getWeather: (city) => \"The weather in \" + city + \" is sunny and 72°F.\",\n      getTime: () => \"Current time: \" + new Date().toLocaleTimeString(),\n      calculate: (a, b, op) => \"Result: \" + (op === '+' ? a + b : a * b)\n    };\n    \n    function simulateAI() {\n      const funcName = 'getTime';\n      const args = [];\n      const result = functions[funcName](...args);\n      document.getElementById('result').innerHTML = '<strong>AI called:</strong> ' + funcName + '<br><strong>Result:</strong> ' + result;\n    }\n  </script>\n</body></html>",
+      "hint": "Store functions in an object, then call them dynamically using bracket notation: functions[functionName](...args)",
+      "validationRules": ["functions", "[", "..."]
+    },
+    {
+      "id": "3.2",
+      "title": "Structured Outputs",
+      "videoFile": "",
+      "preambleTitle": "Parsing AI JSON",
+      "preambleIntro": "Get structured data from AI in JSON format. Instead of parsing free text, modern AI can return properly structured JSON that your application can use directly - names, dates, lists, nested objects, and more.",
+      "keyConcepts": [
+        "<strong>JSON Parsing</strong>: Converting JSON strings to JavaScript objects",
+        "<strong>Data Validation</strong>: Checking that data has expected structure",
+        "<strong>Error Handling</strong>: Gracefully handling malformed JSON",
+        "<strong>Type Safety</strong>: Ensuring data types match expectations",
+        "<strong>Structured Output</strong>: Why JSON is better than parsing text"
+      ],
+      "commonPitfalls": [
+        "Not wrapping JSON.parse() in try/catch",
+        "Assuming properties exist without checking",
+        "Not validating the structure of parsed data",
+        "Forgetting that JSON.parse() can throw errors",
+        "Not handling null or undefined values in the data"
+      ],
+      "prerequisites": "Understanding of JSON format, JavaScript objects, and error handling with try/catch.",
+      "description": "Parse and validate JSON responses from AI.",
+      "objectives": [
+        "Parse JSON safely",
+        "Validate structure",
+        "Display formatted data"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <script>\n    // TODO: Parse and validate JSON from AI\n    const aiResponse = '{\"name\":\"John\",\"age\":30,\"skills\":[\"JavaScript\",\"Python\"]}';\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <div id=\"output\"></div>\n  <script>\n    const aiResponse = '{\"name\":\"John\",\"age\":30,\"skills\":[\"JavaScript\",\"Python\",\"AI\"]}';\n    try {\n      const data = JSON.parse(aiResponse);\n      let html = '<h2>Parsed Data:</h2>';\n      html += '<p><strong>Name:</strong> ' + data.name + '</p>';\n      html += '<p><strong>Age:</strong> ' + data.age + '</p>';\n      html += '<p><strong>Skills:</strong> ' + data.skills.join(', ') + '</p>';\n      document.getElementById('output').innerHTML = html;\n    } catch (error) {\n      document.getElementById('output').textContent = 'Error parsing JSON: ' + error.message;\n    }\n  </script>\n</body></html>",
+      "hint": "Use JSON.parse() wrapped in try/catch. Access properties with dot notation and format nicely.",
+      "validationRules": ["JSON.parse", "try", "catch"]
+    },
+    {
+      "id": "4.1",
+      "title": "RAG System Basics",
+      "videoFile": "",
+      "preambleTitle": "Retrieval Augmented Generation (RAG)",
+      "preambleIntro": "Build a RAG system that retrieves relevant documents using vector similarity, then provides context to an AI. This is how modern AI systems can answer questions about your specific data - documents, code, knowledge bases, etc.",
+      "keyConcepts": [
+        "<strong>Embeddings</strong>: Converting text to numerical vectors that capture meaning",
+        "<strong>Vector Similarity</strong>: Finding documents similar to the query using cosine similarity",
+        "<strong>Context Retrieval</strong>: Providing retrieved docs to the AI for better answers",
+        "<strong>Cosine Similarity</strong>: The math behind measuring vector similarity",
+        "<strong>Top-K Retrieval</strong>: Getting the K most relevant documents"
+      ],
+      "commonPitfalls": [
+        "Not normalizing vectors before calculating similarity",
+        "Forgetting to handle division by zero in magnitude calculations",
+        "Not sorting results by similarity score",
+        "Providing too much or too little context to the AI",
+        "Not handling cases where no relevant documents are found"
+      ],
+      "prerequisites": "Understanding of arrays, sorting, and basic vector mathematics (dot product, magnitude).",
+      "description": "Implement document retrieval using vector similarity and provide relevant context to AI.",
+      "objectives": [
+        "Create document embeddings (simulated)",
+        "Calculate similarity scores",
+        "Retrieve top-k relevant documents",
+        "Show how context is provided to AI"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <h2>🔍 RAG Document Search</h2>\n  <input id=\"query\" placeholder=\"Ask about AI or programming...\" style=\"width:70%;padding:0.75rem;border-radius:8px;border:1px solid #444;background:#2d3748;color:#fff\">\n  <button onclick=\"search()\" style=\"padding:0.75rem 1.5rem;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer\">Search</button>\n  <div id=\"result\" style=\"margin-top:1.5rem\"></div>\n  <script>\n    // Document database with simulated embeddings (normally from an embedding model)\n    const documents = [\n      {id: 1, content: \"JavaScript is a versatile programming language used for web development.\", embedding: [0.8, 0.2, 0.1, 0.3, 0.7]},\n      {id: 2, content: \"Python is excellent for data science, machine learning, and AI applications.\", embedding: [0.1, 0.9, 0.8, 0.6, 0.4]},\n      {id: 3, content: \"Machine learning models learn patterns from data to make predictions.\", embedding: [0.2, 0.8, 0.9, 0.7, 0.3]},\n      {id: 4, content: \"Three.js is a powerful 3D graphics library for creating interactive web experiences.\", embedding: [0.7, 0.3, 0.1, 0.2, 0.8]},\n      {id: 5, content: \"Neural networks are the foundation of deep learning and modern AI systems.\", embedding: [0.1, 0.9, 0.9, 0.8, 0.5]}\n    ];\n\n    // TODO: Implement a function to simulate query embedding\n    // Hint: For simplicity, generate a random vector or base it on keywords\n    function embedQuery(query) {\n      // Simple simulation: create vector based on keywords\n      const lower = query.toLowerCase();\n      return [\n        lower.includes('javascript') || lower.includes('web') ? 0.8 : 0.2,\n        lower.includes('python') || lower.includes('ai') || lower.includes('machine') ? 0.9 : 0.2,\n        lower.includes('learning') || lower.includes('neural') ? 0.9 : 0.1,\n        lower.includes('data') ? 0.7 : 0.3,\n        lower.includes('3d') || lower.includes('graphics') ? 0.8 : 0.3\n      ];\n    }\n\n    // TODO: Implement cosine similarity function\n    // Hint: dot product divided by magnitudes\n    function cosineSimilarity(vecA, vecB) {\n      // Calculate dot product and magnitudes\n      let dotProduct = 0, magA = 0, magB = 0;\n      for (let i = 0; i < vecA.length; i++) {\n        dotProduct += vecA[i] * vecB[i];\n        magA += vecA[i] * vecA[i];\n        magB += vecB[i] * vecB[i];\n      }\n      return dotProduct / (Math.sqrt(magA) * Math.sqrt(magB));\n    }\n\n    // TODO: Implement search function that finds top-k similar documents\n    function search() {\n      const query = document.getElementById('query').value;\n      if (!query) return;\n\n      // Step 1: Convert query to embedding\n      const queryEmbedding = embedQuery(query);\n\n      // Step 2: Calculate similarity scores for all documents\n      // TODO: Add your code here\n\n      // Step 3: Sort by similarity and get top 3\n      // TODO: Add your code here\n\n      // Step 4: Display results with similarity scores\n      // TODO: Add your code here\n\n      // Step 5: Show how this context would be sent to AI\n      // TODO: Add your code here\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <h2>🔍 RAG Document Search</h2>\n  <input id=\"query\" placeholder=\"Ask about AI or programming...\" style=\"width:70%;padding:0.75rem;border-radius:8px;border:1px solid #444;background:#2d3748;color:#fff\">\n  <button onclick=\"search()\" style=\"padding:0.75rem 1.5rem;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer\">Search</button>\n  <div id=\"result\" style=\"margin-top:1.5rem\"></div>\n  <script>\n    const documents = [\n      {id: 1, content: \"JavaScript is a versatile programming language used for web development.\", embedding: [0.8, 0.2, 0.1, 0.3, 0.7]},\n      {id: 2, content: \"Python is excellent for data science, machine learning, and AI applications.\", embedding: [0.1, 0.9, 0.8, 0.6, 0.4]},\n      {id: 3, content: \"Machine learning models learn patterns from data to make predictions.\", embedding: [0.2, 0.8, 0.9, 0.7, 0.3]},\n      {id: 4, content: \"Three.js is a powerful 3D graphics library for creating interactive web experiences.\", embedding: [0.7, 0.3, 0.1, 0.2, 0.8]},\n      {id: 5, content: \"Neural networks are the foundation of deep learning and modern AI systems.\", embedding: [0.1, 0.9, 0.9, 0.8, 0.5]}\n    ];\n\n    function embedQuery(query) {\n      const lower = query.toLowerCase();\n      return [\n        lower.includes('javascript') || lower.includes('web') ? 0.8 : 0.2,\n        lower.includes('python') || lower.includes('ai') || lower.includes('machine') ? 0.9 : 0.2,\n        lower.includes('learning') || lower.includes('neural') ? 0.9 : 0.1,\n        lower.includes('data') ? 0.7 : 0.3,\n        lower.includes('3d') || lower.includes('graphics') ? 0.8 : 0.3\n      ];\n    }\n\n    function cosineSimilarity(vecA, vecB) {\n      let dotProduct = 0, magA = 0, magB = 0;\n      for (let i = 0; i < vecA.length; i++) {\n        dotProduct += vecA[i] * vecB[i];\n        magA += vecA[i] * vecA[i];\n        magB += vecB[i] * vecB[i];\n      }\n      return dotProduct / (Math.sqrt(magA) * Math.sqrt(magB));\n    }\n\n    function search() {\n      const query = document.getElementById('query').value;\n      if (!query) return;\n\n      const queryEmbedding = embedQuery(query);\n\n      const results = documents.map(doc => ({\n        ...doc,\n        similarity: cosineSimilarity(queryEmbedding, doc.embedding)\n      })).sort((a, b) => b.similarity - a.similarity).slice(0, 3);\n\n      let html = '<h3>📊 Top Matching Documents:</h3>';\n      results.forEach((doc, i) => {\n        const percentage = (doc.similarity * 100).toFixed(1);\n        html += `<div style=\"background:rgba(139,92,246,0.1);padding:1rem;border-radius:8px;margin-bottom:0.75rem;border-left:4px solid #8b5cf6\">\n          <div style=\"display:flex;justify-content:space-between;margin-bottom:0.5rem\">\n            <strong>Match #${i+1}</strong>\n            <span style=\"background:#8b5cf6;padding:0.25rem 0.75rem;border-radius:12px;font-size:0.85rem\">${percentage}% similar</span>\n          </div>\n          <div>${doc.content}</div>\n        </div>`;\n      });\n\n      const context = results.map(r => r.content).join('\\n\\n');\n      html += `<div style=\"background:rgba(34,197,94,0.1);padding:1rem;border-radius:8px;margin-top:1rem;border-left:4px solid #22c55e\">\n        <h4>🤖 Context for AI:</h4>\n        <p style=\"font-size:0.9rem;opacity:0.9\">This context would be added to the AI prompt:</p>\n        <pre style=\"background:rgba(0,0,0,0.3);padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.85rem\">${context}</pre>\n      </div>`;\n\n      document.getElementById('result').innerHTML = html;\n    }\n  </script>\n</body></html>",
+      "hint": "Use cosine similarity to find documents most similar to the query embedding. Sort by similarity score and take top 3.",
+      "validationRules": ["cosineSimilarity", "embedding", "similarity"]
+    },
+    {
+      "id": "4.2",
+      "title": "Complete AI Chatbot",
+      "videoFile": "",
+      "preambleTitle": "Full-Featured Chatbot",
+      "preambleIntro": "Combine everything into a production-ready chatbot. This is where it all comes together - a real chatbot with conversation history, typing indicators, error handling, and all the polish that makes users love your product.",
+      "keyConcepts": [
+        "<strong>Conversation History</strong>: Maintaining context across multiple messages",
+        "<strong>State Management</strong>: Tracking application state in JavaScript",
+        "<strong>Loading States</strong>: Showing typing indicators while waiting",
+        "<strong>Error Recovery</strong>: Handling failures gracefully",
+        "<strong>User Experience Polish</strong>: All the small details that matter"
+      ],
+      "commonPitfalls": [
+        "Not maintaining conversation history for context",
+        "Forgetting to remove typing indicator before showing response",
+        "Not disabling input while waiting for response",
+        "Not handling edge cases like empty messages or network errors",
+        "Missing accessibility features like keyboard navigation"
+      ],
+      "prerequisites": "All previous exercises - this combines everything you've learned.",
+      "description": "Build a complete chatbot with history, typing indicators, and error handling.",
+      "objectives": [
+        "Maintain conversation history",
+        "Show typing indicator",
+        "Handle errors gracefully",
+        "Clear conversations"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body>\n  <!-- TODO: Build complete chatbot -->\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><style>\n*{margin:0;padding:0;box-sizing:border-box}\nbody{font-family:sans-serif;background:#1e293b;color:#fff;height:100vh;display:flex;flex-direction:column}\n#header{padding:1rem;background:#8b5cf6;display:flex;justify-content:space-between;align-items:center}\n#messages{flex:1;overflow-y:auto;padding:1rem}\n.message{margin-bottom:1rem;display:flex}\n.message.user{justify-content:flex-end}\n.bubble{padding:0.75rem 1rem;border-radius:12px;max-width:70%}\n.user .bubble{background:#8b5cf6}\n.assistant .bubble{background:rgba(255,255,255,0.1)}\n.typing{color:#888}\n#input-area{padding:1rem;background:rgba(0,0,0,0.3);display:flex;gap:0.5rem}\ninput{flex:1;padding:0.75rem;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff}\nbutton{padding:0.75rem 1.5rem;border:none;border-radius:8px;background:#8b5cf6;color:#fff;cursor:pointer}\n</style></head>\n<body>\n  <div id=\"header\">\n    <h2>AI Chatbot</h2>\n    <button onclick=\"clearChat()\">Clear</button>\n  </div>\n  <div id=\"messages\"></div>\n  <div id=\"input-area\">\n    <input id=\"userInput\" placeholder=\"Type a message...\" onkeypress=\"if(event.key==='Enter')sendMessage()\">\n    <button onclick=\"sendMessage()\">Send</button>\n  </div>\n  <script>\n    const history = [];\n    function sendMessage() {\n      const input = document.getElementById('userInput');\n      const text = input.value.trim();\n      if (!text) return;\n      addMessage(text, true);\n      history.push({role: 'user', content: text});\n      input.value = '';\n      showTyping();\n      setTimeout(() => {\n        hideTyping();\n        const response = \"I understand you said: \" + text;\n        addMessage(response, false);\n        history.push({role: 'assistant', content: response});\n      }, 1500);\n    }\n    function addMessage(text, isUser) {\n      const div = document.createElement('div');\n      div.className = 'message ' + (isUser ? 'user' : 'assistant');\n      div.innerHTML = '<div class=\"bubble\">' + text + '</div>';\n      document.getElementById('messages').appendChild(div);\n      div.scrollIntoView({behavior: 'smooth'});\n    }\n    function showTyping() {\n      const div = document.createElement('div');\n      div.id = 'typing';\n      div.className = 'message assistant';\n      div.innerHTML = '<div class=\"bubble typing\">Typing...</div>';\n      document.getElementById('messages').appendChild(div);\n    }\n    function hideTyping() {\n      const typing = document.getElementById('typing');\n      if (typing) typing.remove();\n    }\n    function clearChat() {\n      document.getElementById('messages').innerHTML = '';\n      history.length = 0;\n    }\n  </script>\n</body></html>",
+      "hint": "Maintain a history array with {role, content} objects. Add typing indicator, then remove it when response arrives.",
+      "validationRules": ["history", "typing", "clear"]
+    }
+  ],
+  "completionSummary": {
+    "title": "Congratulations! You've Mastered AI Integration!",
+    "message": "You've just built a complete, production-ready AI chatbot from scratch. You now have the skills to integrate AI into any application!",
+    "skillsLearned": [
+      "API Integration with Fetch",
+      "Async/Await Patterns",
+      "Real-time Streaming Responses",
+      "Chat Interface Design",
+      "Typewriter Effects",
+      "Function Calling",
+      "Structured JSON Outputs",
+      "RAG Systems & Vector Similarity",
+      "Conversation History Management",
+      "Production Error Handling"
+    ],
+    "achievements": [
+      {
+        "icon": "🤖",
+        "title": "AI Master",
+        "description": "Built production-ready AI features"
+      },
+      {
+        "icon": "⚡",
+        "title": "Streaming Pro",
+        "description": "Implemented real-time AI responses"
+      },
+      {
+        "icon": "🎯",
+        "title": "Function Caller",
+        "description": "Mastered function calling patterns"
+      },
+      {
+        "icon": "🔍",
+        "title": "RAG Expert",
+        "description": "Built vector search and retrieval"
+      },
+      {
+        "icon": "💬",
+        "title": "Chat Builder",
+        "description": "Created a complete chatbot"
+      }
+    ],
+    "nextSteps": [
+      "Integrate with real AI APIs (OpenAI, Anthropic Claude)",
+      "Build RAG systems with vector databases (Pinecone, Weaviate)",
+      "Implement advanced prompt engineering techniques",
+      "Add authentication and rate limiting for production",
+      "Explore client-side LLMs with WebLLM",
+      "Learn about fine-tuning and custom models",
+      "Build multi-modal AI apps (text, images, audio)",
+      "Study advanced RAG patterns (HyDE, Multi-Query)",
+      "Implement AI agents with tool use",
+      "Deploy your chatbot to production!"
+    ],
+    "resources": [
+      {
+        "name": "OpenAI API Docs",
+        "url": "https://platform.openai.com/docs/"
+      },
+      {
+        "name": "Anthropic Claude Docs",
+        "url": "https://docs.anthropic.com/"
+      },
+      {
+        "name": "LangChain.js",
+        "url": "https://js.langchain.com/"
+      },
+      {
+        "name": "Vercel AI SDK",
+        "url": "https://sdk.vercel.ai/"
+      }
+    ]
+  }
+}
