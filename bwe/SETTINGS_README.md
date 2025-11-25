@@ -82,8 +82,8 @@ Settings are stored in localStorage with the key `bwe_settings` in the following
 
 ## Notes
 
-- The wheel names are stored in settings but require a page reload to be applied to the React app
-- Title and subtitle changes are applied immediately when saved
+- All settings changes (title, subtitle, and names) are applied immediately when saved
+- Settings are persisted in browser localStorage and will be automatically loaded on page refresh
 - Settings are browser-specific and not synced across devices
 
 ## Future Enhancements

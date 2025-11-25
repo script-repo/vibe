@@ -252,12 +252,22 @@
     };
 
     if (saveSettings(settings)) {
-      // Apply settings to the page
+      // Apply title and subtitle to the page
       applySettings(settings);
-      closeSettingsModal();
 
-      // Show success message
-      showNotification('Settings saved successfully! Reload the page to see changes.', 'success');
+      // Inject names into React app immediately
+      if (settings.names && settings.names.length > 0) {
+        const injected = injectNamesIntoReactApp(settings.names);
+        if (injected) {
+          showNotification('Settings saved and applied successfully!', 'success');
+        } else {
+          showNotification('Settings saved! Please reload the page to see name changes.', 'success');
+        }
+      } else {
+        showNotification('Settings saved successfully!', 'success');
+      }
+
+      closeSettingsModal();
     } else {
       showNotification('Error saving settings. Please try again.', 'error');
     }
@@ -321,6 +331,72 @@
     }, 3000);
   }
 
+  // Find React component and update its state
+  function injectNamesIntoReactApp(names) {
+    try {
+      const root = document.getElementById('root');
+      if (!root) {
+        console.warn('BWE Settings: Root element not found');
+        return false;
+      }
+
+      // Find the React Fiber node attached to the root element
+      const fiberKey = Object.keys(root).find(key =>
+        key.startsWith('__reactContainer$') ||
+        key.startsWith('__reactFiber$') ||
+        key.startsWith('__reactInternalInstance$')
+      );
+
+      if (!fiberKey) {
+        console.warn('BWE Settings: React Fiber not found');
+        return false;
+      }
+
+      let fiber = root[fiberKey];
+
+      // Function to recursively search for the component with useState hook
+      function findComponentWithState(node, depth = 0) {
+        if (!node || depth > 20) return null;
+
+        // Check if this fiber node has memoizedState (hooks)
+        if (node.memoizedState) {
+          let hook = node.memoizedState;
+
+          // Iterate through all hooks to find the one with an array state
+          while (hook) {
+            if (hook.memoizedState && Array.isArray(hook.memoizedState)) {
+              // Found a hook with array state - this is likely our names state
+              return { fiber: node, hook: hook };
+            }
+            hook = hook.next;
+          }
+        }
+
+        // Search children first (depth-first)
+        let result = findComponentWithState(node.child, depth + 1);
+        if (result) return result;
+
+        // Then siblings
+        return findComponentWithState(node.sibling, depth + 1);
+      }
+
+      const result = findComponentWithState(fiber);
+
+      if (result && result.hook && result.hook.queue && result.hook.queue.dispatch) {
+        // Call the setState function with our saved names
+        result.hook.queue.dispatch(names);
+        console.log('BWE Settings: Successfully loaded', names.length, 'saved names');
+        return true;
+      } else {
+        console.warn('BWE Settings: Could not find React state hook');
+        return false;
+      }
+    } catch (e) {
+      console.error('BWE Settings: Error injecting names:', e);
+    }
+    return false;
+  }
+
   // Initialize settings on page load
   function initSettings() {
     // Wait for DOM to be ready
@@ -344,12 +420,22 @@
 
       // Apply saved settings on page load
       const settings = getSettings();
-      if (settings.title || settings.subtitle) {
-        // Wait a bit for React to render
-        setTimeout(() => {
+
+      // Wait for React to fully render
+      setTimeout(() => {
+        // Apply title and subtitle
+        if (settings.title || settings.subtitle) {
           applySettings(settings);
-        }, 500);
-      }
+        }
+
+        // Inject names into React app if we have saved names
+        if (settings.names && settings.names.length > 0) {
+          const injected = injectNamesIntoReactApp(settings.names);
+          if (injected) {
+            console.log('BWE Settings: Loaded', settings.names.length, 'saved names');
+          }
+        }
+      }, 1000);
 
       // Listen for Escape key to close modal
       document.addEventListener('keydown', (e) => {
