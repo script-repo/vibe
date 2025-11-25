@@ -68,26 +68,6 @@ async function initializeCourseCarousel() {
   // Add event listeners
   setupCarouselListeners();
 
-  // Hide scroll indicator after first interaction
-  setTimeout(() => {
-    const indicator = document.querySelector('.scroll-indicator');
-    if (indicator) {
-      let hasInteracted = false;
-      const hideIndicator = () => {
-        if (!hasInteracted) {
-          hasInteracted = true;
-          indicator.style.opacity = '0';
-          indicator.style.transition = 'opacity 0.5s ease';
-          setTimeout(() => {
-            indicator.style.display = 'none';
-          }, 500);
-        }
-      };
-      carousel.addEventListener('wheel', hideIndicator, { once: true });
-      carousel.addEventListener('touchstart', hideIndicator, { once: true });
-    }
-  }, 1000);
-
   carouselInitialized = true;
 }
 
@@ -305,12 +285,28 @@ function getSelectedCourseId() {
 async function startWorkshopWithSelectedCourse() {
   const courseId = getSelectedCourseId();
 
-  // Save selection
+  console.log('Starting workshop with course:', courseId);
+
+  // Save selection to localStorage
   localStorage.setItem('selectedCourse', courseId);
+
+  // Set the current course ID in data loader
   setCurrentCourseId(courseId);
 
-  // Call the original startWorkshop function
-  await startWorkshop();
+  // Force reload of course data with the selected course
+  dataLoaded = false;
+
+  try {
+    // Load the selected course data
+    await loadCourseData(courseId);
+    dataLoaded = true;
+
+    // Now proceed with the workshop flow
+    await startWorkshop();
+  } catch (error) {
+    console.error('Error loading selected course:', error);
+    alert('Failed to load the selected course. Please try again.');
+  }
 }
 
 // Initialize carousel when DOM is ready
