@@ -300,7 +300,12 @@ function updateCarousel() {
  * @returns {string} Selected course ID
  */
 function getSelectedCourseId() {
-  return selectedCourseId || allCourses[currentCourseIndex]?.id || 'course-1';
+  const courseId = selectedCourseId || allCourses[currentCourseIndex]?.id || 'course-1';
+  console.log('[getSelectedCourseId] Returning:', courseId);
+  console.log('[getSelectedCourseId] selectedCourseId:', selectedCourseId);
+  console.log('[getSelectedCourseId] currentCourseIndex:', currentCourseIndex);
+  console.log('[getSelectedCourseId] allCourses:', allCourses);
+  return courseId;
 }
 
 /**
@@ -309,43 +314,55 @@ function getSelectedCourseId() {
 async function startWorkshopWithSelectedCourse() {
   const courseId = getSelectedCourseId();
 
-  console.log('Starting workshop with selected course:', courseId);
+  console.log('========================================');
+  console.log('[CAROUSEL] Starting workshop with selected course:', courseId);
+  console.log('[CAROUSEL] Current localStorage selectedCourse:', localStorage.getItem('selectedCourse'));
 
   // Save selection to localStorage (this is what gets loaded on refresh)
   localStorage.setItem('selectedCourse', courseId);
+  console.log('[CAROUSEL] Saved to localStorage:', courseId);
 
   // Set the current course ID in data loader
   setCurrentCourseId(courseId);
+  console.log('[CAROUSEL] Set currentCourseId in data loader:', courseId);
 
   try {
     // Force reload of course data by resetting the dataLoaded flag
-    // This ensures startWorkshop() will load the fresh course data
-    console.log('Forcing course data reload for:', courseId);
+    console.log('[CAROUSEL] Current window.dataLoaded:', window.dataLoaded);
+    console.log('[CAROUSEL] Forcing course data reload for:', courseId);
 
     // Access the global dataLoaded variable from app.js
     window.dataLoaded = false;
+    console.log('[CAROUSEL] Set window.dataLoaded to false');
 
     // Load the selected course data directly
-    console.log('Loading course data for:', courseId);
-    await loadCourseData(courseId);
+    console.log('[CAROUSEL] Calling loadCourseData with courseId:', courseId);
+    const result = await loadCourseData(courseId);
+    console.log('[CAROUSEL] loadCourseData returned:', result);
 
     // Mark data as loaded
     window.dataLoaded = true;
+    console.log('[CAROUSEL] Set window.dataLoaded to true');
 
-    console.log('Course data loaded successfully');
-    console.log('Exercises loaded:', exercises ? exercises.length : 0);
+    console.log('[CAROUSEL] Course data loaded successfully');
+    console.log('[CAROUSEL] Exercises loaded:', exercises ? exercises.length : 0);
+    console.log('[CAROUSEL] First exercise title:', exercises && exercises[0] ? exercises[0].title : 'N/A');
+    console.log('[CAROUSEL] Course info:', getCourseInfo());
 
     // Rebuild the UI with the new course data
-    console.log('Rebuilding UI with new course data...');
+    console.log('[CAROUSEL] Rebuilding UI with new course data...');
     await initializeDynamicUI();
+    console.log('[CAROUSEL] UI rebuilt');
 
-    console.log('Proceeding to workshop modal...');
+    console.log('[CAROUSEL] Proceeding to workshop modal...');
 
     // Now proceed with the workshop flow
     // The startWorkshop function will use the newly loaded course data
     await startWorkshop();
+    console.log('========================================');
   } catch (error) {
-    console.error('Error loading selected course:', error);
+    console.error('[CAROUSEL] Error loading selected course:', error);
+    console.error('[CAROUSEL] Error stack:', error.stack);
     alert('Failed to load the selected course. Please try again.');
   }
 }
