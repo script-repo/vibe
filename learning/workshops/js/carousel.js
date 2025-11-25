@@ -354,6 +354,13 @@ async function startWorkshopWithSelectedCourse() {
     await initializeDynamicUI();
     console.log('[CAROUSEL] UI rebuilt');
 
+    // Update the dropdown selector to match the selected course
+    const dropdown = document.getElementById('courseSelect');
+    if (dropdown) {
+      dropdown.value = courseId;
+      console.log('[CAROUSEL] Updated dropdown to:', courseId);
+    }
+
     console.log('[CAROUSEL] Proceeding to workshop modal...');
 
     // Now proceed with the workshop flow
