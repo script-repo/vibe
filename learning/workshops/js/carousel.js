@@ -112,6 +112,17 @@ function renderCarousel() {
 
   html += '</div>';
 
+  // Add position slider indicator
+  const sliderPosition = (currentCourseIndex / (allCourses.length - 1)) * 80; // 80% to account for slider height
+  html += `
+    <div class="carousel-position-indicator">
+      <div class="position-slider-track">
+        <div class="position-slider-fill" id="positionSliderFill" style="top: ${sliderPosition}%;"></div>
+      </div>
+      <div class="position-slider-label">${currentCourseIndex + 1}/${allCourses.length}</div>
+    </div>
+  `;
+
   // Add navigation dots
   html += '<div class="carousel-dots">';
   allCourses.forEach((course, index) => {
@@ -231,6 +242,8 @@ function updateCarousel() {
 
   const cards = document.querySelectorAll('.course-card');
   const dots = document.querySelectorAll('.carousel-dot');
+  const sliderFill = document.getElementById('positionSliderFill');
+  const sliderLabel = document.querySelector('.position-slider-label');
 
   // Update selected course ID
   selectedCourseId = allCourses[currentCourseIndex].id;
@@ -265,6 +278,17 @@ function updateCarousel() {
     }
   });
 
+  // Update position slider
+  if (sliderFill) {
+    const sliderPosition = (currentCourseIndex / (allCourses.length - 1)) * 80;
+    sliderFill.style.top = `${sliderPosition}%`;
+  }
+
+  // Update slider label
+  if (sliderLabel) {
+    sliderLabel.textContent = `${currentCourseIndex + 1}/${allCourses.length}`;
+  }
+
   // Reset animation lock
   setTimeout(() => {
     isAnimating = false;
@@ -287,21 +311,22 @@ async function startWorkshopWithSelectedCourse() {
 
   console.log('Starting workshop with course:', courseId);
 
-  // Save selection to localStorage
+  // Save selection to localStorage (this is what gets loaded on refresh)
   localStorage.setItem('selectedCourse', courseId);
 
   // Set the current course ID in data loader
   setCurrentCourseId(courseId);
 
-  // Force reload of course data with the selected course
-  dataLoaded = false;
-
   try {
-    // Load the selected course data
+    // Load the selected course data directly
+    // This will update all the global variables (exercises, courseData, etc.)
+    console.log('Loading course data for:', courseId);
     await loadCourseData(courseId);
-    dataLoaded = true;
+
+    console.log('Course data loaded, proceeding to workshop...');
 
     // Now proceed with the workshop flow
+    // The startWorkshop function will use the newly loaded course data
     await startWorkshop();
   } catch (error) {
     console.error('Error loading selected course:', error);
