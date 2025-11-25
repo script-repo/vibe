@@ -1,0 +1,468 @@
+{
+  "courseInfo": {
+    "title": "AI Integration - Streamlit Agents Edition",
+    "duration": "4 hours",
+    "exerciseCount": 8,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🤖 AI Integration - Streamlit Agents",
+    "subtitle": "A hands-on 4-hour workshop where you'll build production-ready AI agent systems with memory, tools, RAG, and observability.",
+    "features": [
+      {
+        "icon": "⚡",
+        "title": "8 Exercises",
+        "description": "Progressive agent development with real tools"
+      },
+      {
+        "icon": "🧠",
+        "title": "RAG & Memory",
+        "description": "Vector search with Milvus and conversation memory"
+      },
+      {
+        "icon": "🛠️",
+        "title": "MCP Integration",
+        "description": "Connect agents to filesystem, database, and more"
+      }
+    ],
+    "buttonText": "Start Workshop 🚀"
+  },
+  "introPopup": {
+    "title": "📘 Workshop Overview",
+    "audioFile": "",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Build Agents! 🚀",
+    "sections": [
+      {
+        "title": "👥 Target Persona",
+        "content": "This workshop is designed for:",
+        "items": [
+          "<strong>AI Engineers</strong> building production agent systems.",
+          "<strong>Backend Developers</strong> integrating LLMs into applications.",
+          "<strong>Data Scientists</strong> wanting to add RAG and tool calling to their workflows."
+        ]
+      },
+      {
+        "title": "🤔 The Reasoning",
+        "content": "Modern AI applications aren't just about prompts—they're about <strong>agentic systems</strong> with memory, tools, and reasoning. We believe that learning by building production-ready agents from the start sets you up for real-world success.",
+        "items": []
+      },
+      {
+        "title": "🎯 Outcomes",
+        "content": "",
+        "items": [
+          "Mastery of <strong>Streamlit-style chat interfaces</strong> for AI applications.",
+          "Ability to implement <strong>conversation memory</strong> and prompt management.",
+          "Understanding of <strong>tool calling</strong> and structured function execution.",
+          "Confidence in <strong>vector RAG with Milvus</strong> for retrieval-augmented generation.",
+          "Knowledge of <strong>MCP servers</strong> for agent capabilities.",
+          "Skills in <strong>multi-agent orchestration</strong> and handoffs.",
+          "Expertise in <strong>RLHF feedback</strong> and latency observability."
+        ]
+      },
+      {
+        "title": "🧠 The Strategy",
+        "content": "We use an <strong>\"Agent-First\"</strong> approach. Instead of abstract theory, every concept is immediately applied to a working agent system. You'll see your agents come alive, reinforcing the learning loop through immediate feedback.",
+        "items": []
+      },
+      {
+        "title": "📚 Format & Modules",
+        "content": "The 4-hour curriculum is split into 4 distinct hours:",
+        "items": [
+          "<strong>Hour 1: Streamlit Foundations</strong> - Chat UI, Memory, Prompts.",
+          "<strong>Hour 2: Reasoning Tools</strong> - Tool Calling, In-Memory RAG.",
+          "<strong>Hour 3: Connected Agents</strong> - Milvus Vector Search, MCP Servers.",
+          "<strong>Hour 4: Orchestration & Safety</strong> - Multi-Agent Systems, RLHF Analytics."
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "⚡ Hour 1: Streamlit Foundations",
+        "exercises": [
+          {
+            "title": "1.1 Streamlit Chat Shell",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "1.2 Memory + Prompt Library",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🛠️ Hour 2: Reasoning Tools",
+        "exercises": [
+          {
+            "title": "2.1 Tool Calling Rig",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "2.2 In-Memory RAG",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🤖 Hour 3: Connected Agents",
+        "exercises": [
+          {
+            "title": "3.1 Vector RAG with Milvus",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "3.2 MCP Servers",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🚀 Hour 4: Orchestration & Safety",
+        "exercises": [
+          {
+            "title": "4.1 Agents & Multi-Agent Handoffs",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "4.2 RLHF + Latency Analytics",
+            "duration": "30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "Streamlit Chat Shell",
+      "videoFile": "",
+      "preambleTitle": "Streamlit-style chat surface",
+      "preambleIntro": "Build a Streamlit-inspired chat UI with a sidebar, header badges, and message bubbles. Keep the layout minimal so you can drop it straight into a Streamlit <code>st.chat_message</code> experience.",
+      "keyConcepts": [
+        "<strong>Split-pane layouts</strong>: Sidebar controls with main chat area",
+        "<strong>Chat transcript styling</strong>: Role-colored bubbles for system/user/assistant",
+        "<strong>Keyboard-friendly input</strong>: Cmd/Ctrl+Enter to send messages",
+        "<strong>Auto-scrolling</strong>: Keep newest messages visible",
+        "<strong>Model controls</strong>: Temperature and model selection"
+      ],
+      "commonPitfalls": [
+        "Forgetting to scroll to the newest message after send",
+        "Making the sidebar too narrow for controls",
+        "Not supporting keyboard shortcuts for message submission",
+        "Using fixed heights instead of flexible layouts"
+      ],
+      "prerequisites": "Basic understanding of HTML layout and CSS Grid/Flexbox. Familiarity with JavaScript event handling.",
+      "description": "Create the base chat layout: sidebar controls plus a transcript with system/user/assistant styles.",
+      "objectives": [
+        "Build a sidebar with model + temperature controls",
+        "Create chat bubbles for system/user/assistant",
+        "Auto-scroll to the latest message after send"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Streamlit Chat Shell</title>\n  <style>\n    :root {\n      --panel: #0f172a;\n      --accent: #a855f7;\n      --muted: #cbd5e1;\n    }\n    body {\n      margin: 0;\n      font-family: 'Inter', system-ui, sans-serif;\n      background: radial-gradient(circle at 10% 20%, rgba(168,85,247,0.12), transparent 25%), #0b1120;\n      color: #e2e8f0;\n      min-height: 100vh;\n      display: grid;\n      grid-template-columns: 280px 1fr;\n    }\n    aside {\n      background: rgba(15, 23, 42, 0.8);\n      padding: 1.5rem;\n      border-right: 1px solid rgba(255,255,255,0.06);\n    }\n    .chip { background: rgba(168,85,247,0.15); color: #e9d5ff; padding: 0.35rem 0.65rem; border-radius: 999px; font-size: 0.85rem; }\n    main { display: flex; flex-direction: column; height: 100vh; }\n    .chat-history { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }\n    .bubble { padding: 1rem 1.25rem; border-radius: 14px; max-width: 720px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }\n    .system { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); }\n    .user { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.35); margin-left: auto; }\n    .assistant { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); }\n    .composer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }\n    textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 0.75rem; border-radius: 12px; resize: vertical; min-height: 72px; }\n    button { background: var(--accent); color: #0b1120; border: none; border-radius: 10px; padding: 0 1.2rem; font-weight: 700; cursor: pointer; }\n  </style>\n</head>\n<body>\n  <aside>\n    <div class=\"chip\">Model</div>\n    <!-- TODO: add model + temperature controls -->\n  </aside>\n  <main>\n    <div class=\"chat-history\" id=\"chat\"></div>\n    <div class=\"composer\">\n      <textarea id=\"input\" placeholder=\"Ask anything about your data...\"></textarea>\n      <button id=\"send\">Send</button>\n    </div>\n  </main>\n  <script>\n    // TODO: render starter transcript and wire send button\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Streamlit Chat Shell</title>\n  <style>\n    :root { --panel: #0f172a; --accent: #a855f7; --muted: #cbd5e1; }\n    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: radial-gradient(circle at 10% 20%, rgba(168,85,247,0.12), transparent 25%), #0b1120; color: #e2e8f0; min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; }\n    aside { background: rgba(15, 23, 42, 0.8); padding: 1.5rem; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 1rem; }\n    .field { display: grid; gap: 0.35rem; }\n    .field label { color: var(--muted); font-size: 0.9rem; }\n    select, input[type=\"range\"] { width: 100%; }\n    .chip { background: rgba(168,85,247,0.15); color: #e9d5ff; padding: 0.35rem 0.65rem; border-radius: 999px; font-size: 0.85rem; display: inline-block; }\n    main { display: flex; flex-direction: column; height: 100vh; }\n    header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }\n    .badge-row { display: flex; gap: 0.5rem; }\n    .badge { background: rgba(255,255,255,0.06); padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.85rem; }\n    .chat-history { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }\n    .bubble { padding: 1rem 1.25rem; border-radius: 14px; max-width: 720px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); line-height: 1.6; }\n    .system { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); }\n    .user { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.35); margin-left: auto; }\n    .assistant { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); }\n    .composer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }\n    textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 0.75rem; border-radius: 12px; resize: vertical; min-height: 72px; }\n    button { background: var(--accent); color: #0b1120; border: none; border-radius: 10px; padding: 0 1.2rem; font-weight: 700; cursor: pointer; transition: transform 120ms ease; }\n    button:hover { transform: translateY(-1px); }\n  </style>\n</head>\n<body>\n  <aside>\n    <div class=\"chip\">Chat Controls</div>\n    <div class=\"field\">\n      <label for=\"model\">Model</label>\n      <select id=\"model\">\n        <option>gpt-4.1</option>\n        <option>claude-3.5-sonnet</option>\n        <option>local-phi3</option>\n      </select>\n    </div>\n    <div class=\"field\">\n      <label for=\"temp\">Temperature</label>\n      <input id=\"temp\" type=\"range\" min=\"0\" max=\"1\" step=\"0.1\" value=\"0.2\" />\n    </div>\n    <div class=\"field\">\n      <label>Memory</label>\n      <div class=\"badge-row\">\n        <span class=\"badge\">Windowed</span>\n        <span class=\"badge\">Summary</span>\n      </div>\n    </div>\n  </aside>\n  <main>\n    <header>\n      <div class=\"badge-row\">\n        <span class=\"badge\">Streamlit-ready</span>\n        <span class=\"badge\">Accessible</span>\n      </div>\n      <div class=\"badge-row\">\n        <span class=\"badge\">⌘⏎ Send</span>\n      </div>\n    </header>\n    <div class=\"chat-history\" id=\"chat\"></div>\n    <div class=\"composer\">\n      <textarea id=\"input\" placeholder=\"Ask anything about your data...\"></textarea>\n      <button id=\"send\">Send</button>\n    </div>\n  </main>\n  <script>\n    const chat = document.getElementById('chat');\n    const input = document.getElementById('input');\n    const send = document.getElementById('send');\n\n    const transcript = [\n      { role: 'system', text: 'You are a helpful analyst that cites sources.' },\n      { role: 'user', text: 'Summarize customer sentiment for Q1.' },\n      { role: 'assistant', text: 'Overall sentiment is positive with recurring requests for faster exports.' }\n    ];\n\n    function render() {\n      chat.innerHTML = transcript.map(m => '<div class=\"bubble ' + m.role + '\"><strong>' + m.role + '</strong><br>' + m.text + '</div>').join('');\n      chat.scrollTop = chat.scrollHeight;\n    }\n\n    function sendMessage() {\n      const value = input.value.trim();\n      if (!value) return;\n      transcript.push({ role: 'user', text: value });\n      render();\n      input.value = '';\n    }\n\n    send.addEventListener('click', sendMessage);\n    input.addEventListener('keydown', (e) => {\n      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {\n        sendMessage();\n      }\n    });\n\n    render();\n  </script>\n</body>\n</html>",
+      "hint": "Use a scrollable chat history, three bubble styles, and make ⌘/Ctrl + Enter submit messages like Streamlit's chat input.",
+      "validationRules": ["chat-history", "system", "textarea"]
+    },
+    {
+      "id": "1.2",
+      "title": "Memory + Prompt Library",
+      "videoFile": "",
+      "preambleTitle": "Conversation memory with reusable prompts",
+      "preambleIntro": "Capture conversation memory (window + summary) and offer a prompt library so operators can swap behaviors quickly. This is essential for production AI agents that need to maintain context across conversations.",
+      "keyConcepts": [
+        "<strong>Memory slices</strong>: Rolling window + summarized context",
+        "<strong>Prompt templates</strong>: Reusable system prompts with variables",
+        "<strong>System prompt safety rails</strong>: Guardrails for refusing unsafe actions",
+        "<strong>Payload composition</strong>: Combining system + user + memory into requests",
+        "<strong>Prompt presets</strong>: Analyst, guardrail, and researcher modes"
+      ],
+      "commonPitfalls": [
+        "Not properly serializing memory into the payload",
+        "Forgetting to update summary as conversation grows",
+        "Not providing clear prompt preset descriptions",
+        "Mixing system prompts with user messages"
+      ],
+      "prerequisites": "Understanding of JavaScript objects and JSON serialization. Familiarity with LLM prompt engineering concepts.",
+      "description": "Model a memory object and prompt library controls that plug into the chat shell.",
+      "objectives": [
+        "Track windowed history and a running summary",
+        "Expose prompt presets (analyst, guardrail, researcher)",
+        "Show how to compose system + user + memory into a request payload"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Inter, sans-serif; background: #0b1120; color: #e2e8f0; padding: 2rem; }\n    .panel { border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem 1.25rem; background: rgba(255,255,255,0.04); }\n    .row { display: flex; gap: 1rem; margin-bottom: 1rem; }\n    select, textarea, button { width: 100%; }\n  </style>\n</head>\n<body>\n  <div class=\"row\">\n    <div class=\"panel\" style=\"flex:1\">\n      <h3>Prompt Library</h3>\n      <!-- TODO: prompt select + render -->\n    </div>\n    <div class=\"panel\" style=\"flex:1\">\n      <h3>Memory</h3>\n      <!-- TODO: show window + summary -->\n    </div>\n  </div>\n  <div class=\"panel\">\n    <h3>Payload Preview</h3>\n    <pre id=\"payload\"></pre>\n  </div>\n  <script>\n    // TODO: wire prompt presets + memory composition\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Inter, sans-serif; background: #0b1120; color: #e2e8f0; padding: 2rem; }\n    .panel { border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem 1.25rem; background: rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }\n    .row { display: flex; gap: 1rem; margin-bottom: 1rem; }\n    select, textarea, button { width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05); color: #fff; padding: 0.5rem; }\n    pre { background: rgba(0,0,0,0.35); padding: 1rem; border-radius: 10px; white-space: pre-wrap; }\n  </style>\n</head>\n<body>\n  <div class=\"row\">\n    <div class=\"panel\" style=\"flex:1\">\n      <h3>Prompt Library</h3>\n      <select id=\"prompt\">\n        <option value=\"analyst\">Analyst (cite sources)</option>\n        <option value=\"guard\">Guardrail (refuse PI)</option>\n        <option value=\"research\">Researcher (break down questions)</option>\n      </select>\n      <textarea id=\"promptText\" rows=\"6\"></textarea>\n    </div>\n    <div class=\"panel\" style=\"flex:1\">\n      <h3>Memory</h3>\n      <div><strong>Window</strong></div>\n      <ul id=\"window\"></ul>\n      <div><strong>Summary</strong></div>\n      <textarea id=\"summary\" rows=\"3\">Customer asks about billing and exports</textarea>\n    </div>\n  </div>\n  <div class=\"panel\">\n    <h3>Payload Preview</h3>\n    <pre id=\"payload\"></pre>\n  </div>\n  <script>\n    const promptText = document.getElementById('promptText');\n    const promptSelect = document.getElementById('prompt');\n    const windowEl = document.getElementById('window');\n    const payload = document.getElementById('payload');\n    const summary = document.getElementById('summary');\n\n    const prompts = {\n      analyst: 'You are an analyst who always cites sources in bullet points.',\n      guard: 'You must refuse PII, secrets, or unsafe actions. Be brief and cite the policy section.',\n      research: 'Break down the question into steps, ask for missing details, and propose experiments.'\n    };\n\n    const memory = {\n      window: [\n        { role: 'user', text: 'Please review my billing anomalies.' },\n        { role: 'assistant', text: 'Happy to help. Can you share an invoice ID?' }\n      ],\n      summary: summary.value\n    };\n\n    function renderPrompt() {\n      promptText.value = prompts[promptSelect.value];\n      renderPayload();\n    }\n\n    function renderWindow() {\n      windowEl.innerHTML = memory.window.map(m => '<li><strong>' + m.role + ':</strong> ' + m.text + '</li>').join('');\n    }\n\n    function renderPayload() {\n      const payloadJson = {\n        system: promptText.value,\n        memory: {\n          window: memory.window,\n          summary: summary.value\n        },\n        message: { role: 'user', text: 'How many invoices failed last week?' }\n      };\n      payload.textContent = JSON.stringify(payloadJson, null, 2);\n    }\n\n    promptSelect.addEventListener('change', renderPrompt);\n    summary.addEventListener('input', renderPayload);\n\n    renderPrompt();\n    renderWindow();\n  </script>\n</body>\n</html>",
+      "hint": "Expose prompt presets with a <select>, keep memory as window + summary objects, and serialize everything into a payload preview.",
+      "validationRules": ["prompt", "memory", "summary"]
+    },
+    {
+      "id": "2.1",
+      "title": "Tool Calling Rig",
+      "videoFile": "",
+      "preambleTitle": "Structured tool calling",
+      "preambleIntro": "Define a tool registry with JSON schemas and run-safe execution. Simulate a tool call response like you would from a streaming LLM. This is the foundation for giving your agents real capabilities.",
+      "keyConcepts": [
+        "<strong>Tool metadata</strong>: Name, description, JSON schema for parameters",
+        "<strong>Execution layer</strong>: Safe dispatching with guardrails",
+        "<strong>Call/response wiring</strong>: Integrating tool results into chat transcript",
+        "<strong>Tool registry pattern</strong>: Central registration for all available tools",
+        "<strong>Schema validation</strong>: Ensuring tool arguments match expected types"
+      ],
+      "commonPitfalls": [
+        "Not validating tool arguments before execution",
+        "Allowing unsafe operations without sandboxing",
+        "Forgetting to append tool results to the transcript",
+        "Not handling tool execution errors gracefully"
+      ],
+      "prerequisites": "Understanding of JavaScript objects, functions, and error handling. Familiarity with JSON Schema concepts.",
+      "description": "Model function calling with a registry and a dispatcher that feeds chat messages.",
+      "objectives": [
+        "Define tools with JSON schema-like contracts",
+        "Simulate a tool_call message and append results",
+        "Show how to guard and log tool invocations"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background: #0b1120; color: #e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    .log { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; min-height: 200px; }\n  </style>\n</head>\n<body>\n  <h3>Tool Calls</h3>\n  <div class=\"log\" id=\"log\"></div>\n  <script>\n    // TODO: create registry + dispatcher + sample call\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background: #0b1120; color: #e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    .log { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; min-height: 220px; white-space: pre-wrap; }\n    code { background: rgba(255,255,255,0.08); padding: 0.2rem 0.4rem; border-radius: 6px; }\n  </style>\n</head>\n<body>\n  <h3>Tool Calls</h3>\n  <div class=\"log\" id=\"log\"></div>\n  <script>\n    const log = document.getElementById('log');\n\n    const registry = {\n      weather_lookup: {\n        description: 'Get weather by city',\n        schema: { properties: { city: { type: 'string' } }, required: ['city'] },\n        handler: ({ city }) => ({ city, summary: city + ' is 72°F and clear' })\n      },\n      sql_query: {\n        description: 'Run a safe read-only query',\n        schema: { properties: { query: { type: 'string' } }, required: ['query'] },\n        handler: ({ query }) => ({ rows: 42, sample: query.slice(0, 40) })\n      }\n    };\n\n    function dispatch(toolCall) {\n      const tool = registry[toolCall.name];\n      if (!tool) throw new Error('Unknown tool');\n      logMessage('tool_call', toolCall);\n      const result = tool.handler(toolCall.arguments);\n      logMessage('tool_result', result);\n      return result;\n    }\n\n    function logMessage(kind, payload) {\n      log.innerHTML += '\\n' + kind.toUpperCase() + ': ' + JSON.stringify(payload, null, 2);\n    }\n\n    const toolCall = { name: 'weather_lookup', arguments: { city: 'Lisbon' } };\n    dispatch(toolCall);\n  </script>\n</body>\n</html>",
+      "hint": "Create a registry object keyed by tool name, include description/schema, and append tool_call + tool_result into a log or transcript.",
+      "validationRules": ["registry", "tool_call"]
+    },
+    {
+      "id": "2.2",
+      "title": "In-Memory RAG",
+      "videoFile": "",
+      "preambleTitle": "Retrieval without infrastructure",
+      "preambleIntro": "Implement lightweight retrieval that runs in-memory. Use embeddings or token overlap scoring to pull top-k context and return a context block you could inject into your prompt. This is perfect for prototyping RAG systems before scaling to production vector databases.",
+      "keyConcepts": [
+        "<strong>Document chunking</strong>: Breaking text into searchable chunks with metadata",
+        "<strong>Vector-like scoring</strong>: Cosine-ish via dot product or token overlap",
+        "<strong>Context assembly</strong>: Formatting retrieved chunks for model calls",
+        "<strong>Top-k retrieval</strong>: Selecting the most relevant documents",
+        "<strong>Tag-based filtering</strong>: Using metadata to improve relevance"
+      ],
+      "commonPitfalls": [
+        "Not normalizing scores for comparison",
+        "Forgetting to preserve document metadata",
+        "Using chunk sizes that are too large or too small",
+        "Not handling queries with no relevant results"
+      ],
+      "prerequisites": "Basic understanding of information retrieval concepts. Familiarity with JavaScript array methods like map, filter, and sort.",
+      "description": "Score local chunks against a query and render the selected context block.",
+      "objectives": [
+        "Create an embedding or keyword scorer",
+        "Return top-k chunks with metadata",
+        "Render the context block for the chat UI"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    .card { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }\n  </style>\n</head>\n<body>\n  <h3>In-Memory RAG</h3>\n  <input id=\"query\" placeholder=\"Ask about onboarding\" style=\"width:100%; padding:0.75rem; border-radius:10px;\" />\n  <div id=\"results\"></div>\n  <script>\n    const docs = [\n      { id: '1', text: 'Onboarding requires 2FA setup and workspace invite.', tags: ['onboarding','security'] },\n      { id: '2', text: 'Exports are generated asynchronously and emailed.', tags: ['exports','email'] },\n      { id: '3', text: 'Milvus collections should use cosine similarity for embeddings.', tags: ['milvus','rag'] }\n    ];\n    // TODO: implement a tiny scorer and render top docs\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    .card { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; background: rgba(255,255,255,0.04); }\n    code { background: rgba(255,255,255,0.08); padding: 0.2rem 0.4rem; border-radius: 6px; }\n  </style>\n</head>\n<body>\n  <h3>In-Memory RAG</h3>\n  <input id=\"query\" placeholder=\"Ask about onboarding\" style=\"width:100%; padding:0.75rem; border-radius:10px;\" />\n  <div id=\"results\"></div>\n  <script>\n    const docs = [\n      { id: '1', text: 'Onboarding requires 2FA setup and workspace invite.', tags: ['onboarding','security'] },\n      { id: '2', text: 'Exports are generated asynchronously and emailed.', tags: ['exports','email'] },\n      { id: '3', text: 'Milvus collections should use cosine similarity for embeddings.', tags: ['milvus','rag'] }\n    ];\n\n    function embed(text) {\n      // toy embed by summing char codes\n      return text.toLowerCase().split(/\\W+/).reduce((acc, word) => acc + word.charCodeAt(0), 0);\n    }\n\n    function score(query, doc) {\n      return Math.abs(embed(query) - embed(doc.text)) * -1; // higher is better (less distance)\n    }\n\n    function search(query) {\n      const results = docs\n        .map(d => ({ ...d, score: score(query, d) }))\n        .sort((a, b) => b.score - a.score)\n        .slice(0, 2);\n      return results;\n    }\n\n    function render() {\n      const q = document.getElementById('query').value;\n      const hits = search(q);\n      const block = hits.map(h => '- (' + h.id + ') ' + h.text + ' [tags: ' + h.tags.join(', ') + ']').join('\\n');\n      document.getElementById('results').innerHTML = '<div class=\"card\"><strong>Context Block</strong><pre>' + block + '</pre></div>';\n    }\n\n    document.getElementById('query').addEventListener('input', render);\n    render();\n  </script>\n</body>\n</html>",
+      "hint": "Use a simple scoring function (keyword overlap or summed char codes) to rank docs; return top-k as a context block string.",
+      "validationRules": ["score", "tags"]
+    },
+    {
+      "id": "3.1",
+      "title": "Vector RAG with Milvus",
+      "videoFile": "",
+      "preambleTitle": "Milvus-backed search",
+      "preambleIntro": "Model how you'd call Milvus for vector search. Build a configuration block with collection name, dimension, and metric, and simulate a search response that the chat UI can render. Milvus is a production-grade vector database used for semantic search at scale.",
+      "keyConcepts": [
+        "<strong>Collection schema</strong>: ID, vector, metadata fields",
+        "<strong>Search parameters</strong>: topK, metricType, consistency level",
+        "<strong>Result mapping</strong>: Converting Milvus results into RAG context",
+        "<strong>Similarity metrics</strong>: COSINE vs L2 distance",
+        "<strong>Configuration management</strong>: Collection settings and search params"
+      ],
+      "commonPitfalls": [
+        "Using wrong metric type for your embedding model",
+        "Not setting appropriate topK values",
+        "Forgetting to normalize vectors for cosine similarity",
+        "Not handling empty search results"
+      ],
+      "prerequisites": "Understanding of vector embeddings and similarity search. Familiarity with database query concepts.",
+      "description": "Show a Milvus config panel and simulate a search into a context payload.",
+      "objectives": [
+        "Capture Milvus config (collection, metric, topK)",
+        "Mock a search API response",
+        "Render context rows with similarity scores"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Inter, sans-serif; background: #0b1120; color: #e2e8f0; padding: 2rem; }\n    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }\n    .panel { border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:1rem; background: rgba(255,255,255,0.04); }\n  </style>\n</head>\n<body>\n  <h3>Milvus Vector Search</h3>\n  <div class=\"grid\">\n    <div class=\"panel\" id=\"config\"></div>\n    <div class=\"panel\" id=\"results\"></div>\n  </div>\n  <script>\n    // TODO: render config + mock search\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Inter, sans-serif; background: #0b1120; color: #e2e8f0; padding: 2rem; }\n    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }\n    .panel { border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:1rem; background: rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }\n    input, select { width: 100%; padding: 0.6rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: #fff; }\n    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }\n    td, th { padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }\n  </style>\n</head>\n<body>\n  <h3>Milvus Vector Search</h3>\n  <div class=\"grid\">\n    <div class=\"panel\" id=\"config\"></div>\n    <div class=\"panel\" id=\"results\"></div>\n  </div>\n  <script>\n    const state = {\n      collection: 'support_articles',\n      dimension: 1536,\n      metricType: 'COSINE',\n      topK: 3,\n    };\n\n    function renderConfig() {\n      document.getElementById('config').innerHTML = '<label>Collection</label><input value=\"' + state.collection + '\" id=\"collection\" /><label>Metric</label><select id=\"metric\"><option value=\"COSINE\">COSINE</option><option value=\"L2\">L2</option></select><label>Top K</label><input type=\"number\" value=\"' + state.topK + '\" id=\"topk\" min=\"1\" max=\"10\" />';\n      document.getElementById('metric').value = state.metricType;\n      document.getElementById('collection').addEventListener('input', e => { state.collection = e.target.value; renderResults(); });\n      document.getElementById('metric').addEventListener('change', e => { state.metricType = e.target.value; renderResults(); });\n      document.getElementById('topk').addEventListener('input', e => { state.topK = Number(e.target.value); renderResults(); });\n    }\n\n    function mockSearch() {\n      const hits = [\n        { id: 'a1', text: 'Enable 2FA before inviting contractors.', score: 0.91 },\n        { id: 'b2', text: 'Export jobs run asynchronously; retries after 5m.', score: 0.83 },\n        { id: 'c3', text: 'Milvus collections should be sharded by team.', score: 0.78 }\n      ];\n      return hits.slice(0, state.topK);\n    }\n\n    function renderResults() {\n      const hits = mockSearch();\n      const rows = hits.map(h => '<tr><td>' + h.id + '</td><td>' + h.text + '</td><td>' + h.score.toFixed(2) + '</td></tr>').join('');\n      document.getElementById('results').innerHTML = '<strong>Context Returned</strong><table><tr><th>ID</th><th>Chunk</th><th>Score</th></tr>' + rows + '</table>';\n    }\n\n    renderConfig();\n    renderResults();\n  </script>\n</body>\n</html>",
+      "hint": "Model the Milvus config (collection, metricType, topK) and simulate a search response so learners can see the context rows and scores.",
+      "validationRules": ["collection", "metric", "topK"]
+    },
+    {
+      "id": "3.2",
+      "title": "MCP Servers",
+      "videoFile": "",
+      "preambleTitle": "Model Context Protocol (MCP) connectors",
+      "preambleIntro": "Plan and visualize MCP servers that give your agent file-system, database, web search, and other capabilities. Surface connection status and capabilities. MCP is the standard protocol for connecting AI agents to external systems and tools.",
+      "keyConcepts": [
+        "<strong>Filesystem server</strong>: Read/write access to project files",
+        "<strong>Database server</strong>: SQL read-only queries for data access",
+        "<strong>Web-search server</strong>: Search and scrape web content",
+        "<strong>Additional staples</strong>: Git, Slack, Calendar integration",
+        "<strong>Status + capability-driven routing</strong>: Dynamic tool availability",
+        "<strong>Connection management</strong>: Health checks and reconnection logic"
+      ],
+      "commonPitfalls": [
+        "Not checking server connection status before use",
+        "Exposing unsafe capabilities without permission checks",
+        "Not handling server timeouts gracefully",
+        "Forgetting to document each server's capabilities"
+      ],
+      "prerequisites": "Understanding of client-server architecture and REST APIs. Familiarity with capability-based security models.",
+      "description": "List MCP servers with status badges and map them into agent tools.",
+      "objectives": [
+        "Show at least six MCP servers (filesystem, database, web search + three more)",
+        "Display connection status and capabilities",
+        "Map enabled servers into an agent tool registry"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    table { width:100%; border-collapse: collapse; }\n    th, td { padding:0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }\n    .badge { padding:0.2rem 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.08); }\n  </style>\n</head>\n<body>\n  <h3>MCP Server Map</h3>\n  <div id=\"table\"></div>\n  <script>\n    // TODO: render servers + tool registry preview\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family: Inter, sans-serif; padding: 2rem; }\n    table { width:100%; border-collapse: collapse; }\n    th, td { padding:0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }\n    .badge { padding:0.2rem 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.08); }\n  </style>\n</head>\n<body>\n  <h3>MCP Server Map</h3>\n  <div id=\"table\"></div>\n  <pre id=\"registry\"></pre>\n  <script>\n    const servers = [\n      { name: 'filesystem', capability: 'read/write project files', status: 'connected' },\n      { name: 'database', capability: 'sql read-only', status: 'connected' },\n      { name: 'web-search', capability: 'search + scrape', status: 'connected' },\n      { name: 'git', capability: 'pull branches + diff', status: 'warming' },\n      { name: 'slack', capability: 'post + search channels', status: 'connected' },\n      { name: 'calendar', capability: 'read events + schedule', status: 'connected' },\n    ];\n\n    function renderTable() {\n      const rows = servers.map(s => '<tr><td>' + s.name + '</td><td>' + s.capability + '</td><td><span class=\"badge\">' + s.status + '</span></td></tr>').join('');\n      document.getElementById('table').innerHTML = '<table><tr><th>Server</th><th>Capability</th><th>Status</th></tr>' + rows + '</table>';\n    }\n\n    function toToolRegistry() {\n      return servers.filter(s => s.status === 'connected').map(s => ({ name: s.name + '_tool', server: s.name }));\n    }\n\n    renderTable();\n    document.getElementById('registry').textContent = JSON.stringify(toToolRegistry(), null, 2);\n  </script>\n</body>\n</html>",
+      "hint": "List the MCP servers (filesystem, database, web search, git, slack, calendar), show status badges, and convert connected ones into tool entries.",
+      "validationRules": ["filesystem", "database", "web-search"]
+    },
+    {
+      "id": "4.1",
+      "title": "Agents & Multi-Agent Handoffs",
+      "videoFile": "",
+      "preambleTitle": "Agent factory + orchestration",
+      "preambleIntro": "Create an agent blueprint with name, instructions, tools, and routing hints. Then orchestrate two agents (researcher + builder) handing off tasks. Multi-agent systems are essential for complex workflows that require specialized capabilities.",
+      "keyConcepts": [
+        "<strong>Agent config objects</strong>: Name, prompt, tools, and routing",
+        "<strong>Agent factories</strong>: Creating agent instances with different capabilities",
+        "<strong>Task router</strong>: Orchestrating multiple agents intelligently",
+        "<strong>Deterministic handoffs</strong>: Clear transfer of control between agents",
+        "<strong>Transcript management</strong>: Maintaining context across agent switches"
+      ],
+      "commonPitfalls": [
+        "Not clearly defining agent responsibilities",
+        "Creating circular handoff loops",
+        "Losing context during agent transitions",
+        "Not validating agent outputs before handoff"
+      ],
+      "prerequisites": "Understanding of object-oriented programming and class-based design. Familiarity with orchestration patterns.",
+      "description": "Model two agents and simulate a handoff with transcripts updated in the chat UI.",
+      "objectives": [
+        "Define an Agent class/factory with tools",
+        "Create researcher + builder agents",
+        "Simulate a multi-agent orchestration step"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"><style>body{background:#0b1120;color:#e2e8f0;font-family:Inter,sans-serif;padding:2rem;} .panel{background:rgba(255,255,255,0.05);padding:1rem;border-radius:12px;margin-bottom:1rem;white-space:pre-wrap;}</style></head>\n<body>\n  <h3>Multi-Agent Orchestration</h3>\n  <div class=\"panel\" id=\"log\">Loading...</div>\n  <script>\n    // TODO: Complete the Agent class\n    class Agent {\n      constructor(name, prompt, tools=[]) {\n        this.name = name;\n        this.prompt = prompt;\n        this.tools = tools;\n      }\n      act(task) {\n        // TODO: Return a formatted string showing what this agent would do\n        // Format: \"[AgentName] prompt | tools: tool1, tool2 | task: taskDescription\"\n        return 'Agent ' + this.name + ' received task: ' + task;\n      }\n    }\n\n    function orchestrate(task) {\n      // TODO: Create two agents with different tools\n      const researcher = new Agent('Researcher', 'Research and plan', ['web-search']);\n      const builder = new Agent('Builder', 'Build and implement', ['database']);\n\n      // TODO: Have both agents act on the task and collect results\n      const step1 = researcher.act(task);\n      const step2 = builder.act('Implement: ' + task);\n\n      // Display results\n      document.getElementById('log').textContent = step1 + '\\n\\n' + step2;\n    }\n\n    // Run a demo\n    orchestrate('Ship a Milvus-backed RAG chatbot with MCP tools.');\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"><style>body{background:#0b1120;color:#e2e8f0;font-family:Inter,sans-serif;padding:2rem;} .panel{background:rgba(255,255,255,0.05);padding:1rem;border-radius:12px;margin-bottom:1rem;white-space:pre-wrap;}</style></head>\n<body>\n  <h3>Multi-Agent Orchestration</h3>\n  <div class=\"panel\" id=\"log\"></div>\n  <script>\n    class Agent {\n      constructor(name, prompt, tools=[]) {\n        this.name = name;\n        this.prompt = prompt;\n        this.tools = tools;\n      }\n      act(task) {\n        return '[' + this.name + '] ' + this.prompt + ' | tools: ' + this.tools.join(', ') + ' | task: ' + task;\n      }\n    }\n\n    function orchestrate(task) {\n      const researcher = new Agent('Researcher', 'Break down and propose plan', ['web-search', 'filesystem']);\n      const builder = new Agent('Builder', 'Implement plan and report status', ['database', 'git']);\n\n      const step1 = researcher.act(task);\n      const step2 = builder.act('Implement: ' + task);\n      const transcript = [step1, step2];\n      document.getElementById('log').textContent = transcript.join('\\n\\n');\n    }\n\n    orchestrate('Ship a Milvus-backed RAG chatbot with MCP tools.');\n  </script>\n</body>\n</html>",
+      "hint": "Create two agents (researcher + builder) with prompts and tools. Simulate a router that collects their responses into a transcript.",
+      "validationRules": ["Agent", "researcher", "builder"]
+    },
+    {
+      "id": "4.2",
+      "title": "RLHF + Latency Analytics",
+      "videoFile": "",
+      "preambleTitle": "Feedback + observability",
+      "preambleIntro": "Capture user feedback (thumbs, freeform notes) and measure latency: TTFT (time-to-first-token) and tokens-per-second to detect regressions. Production AI systems require continuous monitoring and feedback loops.",
+      "keyConcepts": [
+        "<strong>TTFT measurement</strong>: Time from request start to first chunk",
+        "<strong>Tokens-per-second</strong>: Total tokens divided by duration",
+        "<strong>RLHF buckets</strong>: Positive, neutral, negative with comments",
+        "<strong>Latency tracking</strong>: Identifying performance regressions",
+        "<strong>Feedback collection</strong>: Structured user ratings and notes"
+      ],
+      "commonPitfalls": [
+        "Not recording timestamps for all streaming events",
+        "Forgetting to normalize latency across different model sizes",
+        "Not providing clear feedback options to users",
+        "Missing correlation between feedback and session context"
+      ],
+      "prerequisites": "Understanding of streaming protocols and performance metrics. Familiarity with user feedback patterns.",
+      "description": "Add feedback controls and compute TTFT + tokens/sec from mock streaming events.",
+      "objectives": [
+        "Calculate TTFT and tokens/sec from timestamps",
+        "Capture RLHF thumbs + freeform feedback",
+        "Render a mini telemetry panel"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family:Inter,sans-serif; padding:2rem; }\n    .panel { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }\n    button { background: transparent; border: 2px solid rgba(255,255,255,0.2); color: #e2e8f0; font-size: 1.5rem; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }\n    button:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.1); }\n  </style>\n</head>\n<body>\n  <h3>RLHF & Latency</h3>\n  <div class=\"panel\" id=\"metrics\"></div>\n  <div class=\"panel\">\n    <button id=\"up\">👍</button>\n    <button id=\"down\">👎</button>\n    <input id=\"note\" placeholder=\"Add a comment here.\" />\n  </div>\n  <script>\n    // TODO: compute TTFT + tokens/sec from mock events and capture feedback\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { background:#0b1120; color:#e2e8f0; font-family:Inter,sans-serif; padding:2rem; }\n    .panel { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }\n    .metric { display: flex; gap: 0.5rem; align-items: center; }\n    button { background: transparent; border: 2px solid rgba(255,255,255,0.2); color: #e2e8f0; font-size: 1.5rem; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }\n    button:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.1); }\n  </style>\n</head>\n<body>\n  <h3>RLHF & Latency</h3>\n  <div class=\"panel\" id=\"metrics\"></div>\n  <div class=\"panel\">\n    <button id=\"up\">👍</button>\n    <button id=\"down\">👎</button>\n    <input id=\"note\" placeholder=\"Add a comment here.\" />\n  </div>\n  <pre id=\"feedback\"></pre>\n  <script>\n    const metricsEl = document.getElementById('metrics');\n    const feedbackEl = document.getElementById('feedback');\n    const events = [\n      { type: 'start', time: 0 },\n      { type: 'first_token', time: 420 },\n      { type: 'chunk', time: 820, tokens: 50 },\n      { type: 'chunk', time: 1200, tokens: 90 },\n      { type: 'end', time: 1500, tokens: 120 }\n    ];\n\n    function computeMetrics() {\n      const start = events.find(e => e.type === 'start').time;\n      const first = events.find(e => e.type === 'first_token').time;\n      const end = events.find(e => e.type === 'end').time;\n      const totalTokens = events.filter(e => e.tokens).reduce((acc, e) => acc + e.tokens, 0);\n      const ttft = first - start;\n      const tps = totalTokens / ((end - start) / 1000);\n      metricsEl.innerHTML = '<div class=\"metric\"><strong>TTFT:</strong> ' + ttft + ' ms</div><div class=\"metric\"><strong>Tokens/sec:</strong> ' + tps.toFixed(1) + '</div>';\n    }\n\n    const feedback = { score: null, note: '' };\n    document.getElementById('up').onclick = () => { feedback.score = 1; renderFeedback(); };\n    document.getElementById('down').onclick = () => { feedback.score = -1; renderFeedback(); };\n    document.getElementById('note').oninput = (e) => { feedback.note = e.target.value; renderFeedback(); };\n\n    function renderFeedback() {\n      feedbackEl.textContent = JSON.stringify({ ...feedback, timestamp: Date.now() }, null, 2);\n    }\n\n    computeMetrics();\n    renderFeedback();\n  </script>\n</body>\n</html>",
+      "hint": "Mock streaming timestamps, compute TTFT = first_token - start, tokens/sec = total_tokens / duration_s, and capture thumbs + notes in a feedback object.",
+      "validationRules": ["TTFT", "tokens", "feedback"]
+    }
+  ],
+  "completionSummary": {
+    "title": "Congratulations! You've Mastered AI Agent Development!",
+    "message": "You've just built a complete production-ready AI agent system with memory, tools, RAG, and observability. That's an incredible achievement!",
+    "skillsLearned": [
+      "Streamlit-style Chat UI Design",
+      "Conversation Memory Management (Window + Summary)",
+      "Prompt Engineering & Library Management",
+      "Structured Tool Calling with JSON Schemas",
+      "In-Memory RAG with Document Scoring",
+      "Vector RAG with Milvus Integration",
+      "MCP Server Integration (Filesystem, Database, Web Search, Git, Slack, Calendar)",
+      "Multi-Agent Orchestration & Handoffs",
+      "RLHF Feedback Collection",
+      "Latency Analytics (TTFT, Tokens/sec)"
+    ],
+    "achievements": [
+      {
+        "icon": "🤖",
+        "title": "Agent Architect",
+        "description": "Built a production-ready agent system"
+      },
+      {
+        "icon": "🧠",
+        "title": "RAG Expert",
+        "description": "Implemented vector search and retrieval"
+      },
+      {
+        "icon": "🛠️",
+        "title": "Tool Master",
+        "description": "Integrated MCP servers and custom tools"
+      },
+      {
+        "icon": "📊",
+        "title": "Observability Pro",
+        "description": "Tracked TTFT, tokens/sec, and RLHF feedback"
+      },
+      {
+        "icon": "🎯",
+        "title": "Full Stack AI",
+        "description": "Combined all skills into a complete agent system"
+      }
+    ],
+    "nextSteps": [
+      "Deploy your agent system with real AI APIs (Claude, GPT-4, etc.)",
+      "Scale with production-grade Milvus clusters",
+      "Build custom MCP servers for your specific domain",
+      "Implement advanced multi-agent workflows with routing",
+      "Add enterprise security and compliance features",
+      "Integrate with Streamlit for production dashboards",
+      "Explore advanced prompt engineering techniques",
+      "Build evaluation pipelines for agent performance",
+      "Study LangChain or LlamaIndex for framework integration",
+      "Create a portfolio showcasing your AI agent projects!"
+    ],
+    "resources": [
+      {
+        "name": "Anthropic Claude API",
+        "url": "https://docs.anthropic.com/"
+      },
+      {
+        "name": "Milvus Documentation",
+        "url": "https://milvus.io/docs"
+      },
+      {
+        "name": "MCP Protocol Spec",
+        "url": "https://modelcontextprotocol.io/"
+      },
+      {
+        "name": "Streamlit Docs",
+        "url": "https://docs.streamlit.io/"
+      },
+      {
+        "name": "LangChain",
+        "url": "https://python.langchain.com/"
+      },
+      {
+        "name": "OpenAI Function Calling",
+        "url": "https://platform.openai.com/docs/guides/function-calling"
+      }
+    ]
+  }
+}

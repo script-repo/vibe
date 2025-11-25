@@ -1,0 +1,473 @@
+{
+  "courseInfo": {
+    "title": "Master Software Hooks & Filters",
+    "duration": "4 hours",
+    "exerciseCount": 8,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🏗️ Master Software Hooks & Filters",
+    "subtitle": "A hands-on 4-hour workshop where you'll learn to build extensible, plugin-based architectures like WordPress, VS Code, and Chrome.",
+    "features": [
+      {
+        "icon": "🔌",
+        "title": "8 Exercises",
+        "description": "Progressive learning from events to complete systems"
+      },
+      {
+        "icon": "⚡",
+        "title": "Event-Driven",
+        "description": "Pub/Sub, hooks, filters, and middleware"
+      },
+      {
+        "icon": "🏗️",
+        "title": "Architecture",
+        "description": "Build production-ready plugin systems"
+      }
+    ],
+    "buttonText": "Start Workshop 🎯"
+  },
+  "introPopup": {
+    "title": "📘 Workshop Overview",
+    "audioFile": "",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Start! 🚀",
+    "sections": [
+      {
+        "title": "👥 Target Persona",
+        "content": "This workshop is designed for:",
+        "items": [
+          "<strong>Software Architects</strong> who want to design extensible systems.",
+          "<strong>Plugin Developers</strong> looking to understand core architecture patterns.",
+          "<strong>Framework Builders</strong> wanting to create systems that others can extend."
+        ]
+      },
+      {
+        "title": "🤔 The Reasoning",
+        "content": "Great software isn't just about features—it's about <strong>extensibility</strong>. This workshop teaches you the patterns used by WordPress, VS Code, and other successful platforms to allow third-party developers to extend functionality without modifying core code.",
+        "items": []
+      },
+      {
+        "title": "🎯 Outcomes",
+        "content": "",
+        "items": [
+          "Mastery of <strong>Event-Driven Architecture</strong> with pub/sub patterns.",
+          "Ability to build <strong>Plugin Systems</strong> with lifecycle management.",
+          "Understanding of <strong>Hook Patterns</strong> (actions and filters).",
+          "Confidence in implementing <strong>Middleware</strong> chains.",
+          "Knowledge of <strong>Extensible Design</strong> principles."
+        ]
+      },
+      {
+        "title": "🧠 The Strategy",
+        "content": "We use a <strong>\"Build-It-Yourself\"</strong> approach. You'll recreate the same patterns used by professional platforms, starting simple and building up to production-ready architectures. Each pattern builds on the previous one.",
+        "items": []
+      },
+      {
+        "title": "📚 Format & Modules",
+        "content": "The 4-hour curriculum is split into 4 distinct hours:",
+        "items": [
+          "<strong>Hour 1: Event-Driven</strong> - Event Bus, Pub/Sub Pattern.",
+          "<strong>Hour 2: Plugin System</strong> - Registry, Lifecycle Management.",
+          "<strong>Hour 3: Hooks & Filters</strong> - Actions, Filters, WordPress-style.",
+          "<strong>Hour 4: Complete System</strong> - Middleware, Full Integration."
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "⚡ Hour 1: Event-Driven",
+        "exercises": [
+          {
+            "title": "1.1 Event Bus Pattern",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "1.2 Pub/Sub System",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🔌 Hour 2: Plugin System",
+        "exercises": [
+          {
+            "title": "2.1 Plugin Registry",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "2.2 Plugin Lifecycle",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🎯 Hour 3: Hooks & Filters",
+        "exercises": [
+          {
+            "title": "3.1 Action Hooks",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "3.2 Filter Hooks",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🏗️ Hour 4: Complete System",
+        "exercises": [
+          {
+            "title": "4.1 Middleware Pattern",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "4.2 Complete Plugin System",
+            "duration": "30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "Event Bus Pattern",
+      "videoFile": "",
+      "preambleTitle": "Building an Event Bus",
+      "preambleIntro": "Learn to create a central event bus for decoupled component communication. The Event Bus pattern is fundamental to building scalable applications where components need to communicate without tight coupling.",
+      "keyConcepts": [
+        "<strong>Event Bus</strong>: Central hub for event communication",
+        "<strong>Publish/Subscribe</strong>: Decoupled messaging pattern",
+        "<strong>Callbacks</strong>: Functions passed as event handlers",
+        "<strong>Event Names</strong>: String-based event identification",
+        "<strong>Decoupling</strong>: Components communicate without direct references"
+      ],
+      "commonPitfalls": [
+        "Forgetting to initialize the events object before using it",
+        "Not checking if event exists before emitting",
+        "Creating memory leaks by not cleaning up event listeners",
+        "Using the same event name for different purposes"
+      ],
+      "prerequisites": "Basic JavaScript knowledge including objects, arrays, and functions. Understanding of the <code>this</code> keyword in JavaScript.",
+      "description": "Create a simple event bus that allows components to communicate without direct references.",
+      "objectives": [
+        "Create event bus object with events storage",
+        "Implement on() method for subscriptions",
+        "Implement emit() method for publishing events",
+        "Handle multiple listeners for the same event",
+        "Pass data between publishers and subscribers"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><head><title>Event Bus</title><style>body{padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif}</style></head>\n<body>\n  <button onclick=\"publish()\">Publish Event</button>\n  <div id=\"output\"></div>\n  <script>\n    const eventBus = {\n      events: {},\n      on(event, callback) {\n        // TODO: Store callback for event\n      },\n      emit(event, data) {\n        // TODO: Call all callbacks for event\n      }\n    };\n    \n    // TODO: Subscribe to events\n    // TODO: Publish events\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><title>Event Bus</title><style>body{padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif}#output{margin-top:1rem;padding:1rem;background:rgba(255,255,255,0.1);border-radius:8px}</style></head>\n<body>\n  <button onclick=\"publish()\">Publish Event</button>\n  <div id=\"output\"></div>\n  <script>\n    const eventBus = {\n      events: {},\n      on(event, callback) {\n        if (!this.events[event]) this.events[event] = [];\n        this.events[event].push(callback);\n      },\n      emit(event, data) {\n        if (this.events[event]) {\n          this.events[event].forEach(callback => callback(data));\n        }\n      }\n    };\n    \n    eventBus.on('message', (data) => {\n      document.getElementById('output').innerHTML += '<p>Received: ' + data + '</p>';\n    });\n    \n    function publish() {\n      eventBus.emit('message', 'Hello from event bus! ' + new Date().toLocaleTimeString());\n    }\n  </script>\n</body></html>",
+      "hint": "Store an array of callbacks for each event name. In emit(), loop through callbacks and call each one with the data. Use forEach() to iterate over the callbacks array.",
+      "validationRules": ["on", "emit", "events"]
+    },
+    {
+      "id": "1.2",
+      "title": "Pub/Sub System",
+      "videoFile": "",
+      "preambleTitle": "Publish/Subscribe Pattern",
+      "preambleIntro": "Build a full pub/sub system with unsubscribe functionality. This pattern is used extensively in event-driven architectures and allows for flexible, decoupled communication between application components.",
+      "keyConcepts": [
+        "<strong>Subscription Tokens</strong>: Unique identifiers for each subscription",
+        "<strong>Unsubscribe</strong>: Removing event listeners to prevent memory leaks",
+        "<strong>Once Pattern</strong>: Single-fire event listeners that auto-remove",
+        "<strong>Token-based Management</strong>: Using IDs to track subscriptions",
+        "<strong>Object Storage</strong>: Using objects instead of arrays for O(1) removal"
+      ],
+      "commonPitfalls": [
+        "Not returning a token from subscribe() for later unsubscription",
+        "Using array index as token (breaks when array changes)",
+        "Not implementing once() which is needed for single-fire events",
+        "Forgetting to increment the ID counter for unique tokens"
+      ],
+      "prerequisites": "Understanding of the Event Bus pattern from Exercise 1.1. Knowledge of JavaScript classes and the <code>this</code> keyword.",
+      "description": "Extend the event bus with unsubscribe capability and event namespacing.",
+      "objectives": [
+        "Add unsubscribe method using tokens",
+        "Return subscription token from subscribe()",
+        "Support wildcard events (optional)",
+        "Implement once() for single-fire events",
+        "Use unique IDs to track subscriptions"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <script>\n    class PubSub {\n      constructor() {\n        this.events = {};\n        this.id = 0;\n      }\n      // TODO: Implement subscribe, unsubscribe, publish\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Pub/Sub</button>\n  <div id=\"output\"></div>\n  <script>\n    class PubSub {\n      constructor() {\n        this.events = {};\n        this.id = 0;\n      }\n      subscribe(event, callback) {\n        const token = this.id++;\n        if (!this.events[event]) this.events[event] = {};\n        this.events[event][token] = callback;\n        return token;\n      }\n      unsubscribe(token) {\n        for (let event in this.events) {\n          if (this.events[event][token]) {\n            delete this.events[event][token];\n            return true;\n          }\n        }\n        return false;\n      }\n      publish(event, data) {\n        if (this.events[event]) {\n          Object.values(this.events[event]).forEach(callback => callback(data));\n        }\n      }\n      once(event, callback) {\n        const token = this.subscribe(event, (data) => {\n          callback(data);\n          this.unsubscribe(token);\n        });\n      }\n    }\n    \n    const pubsub = new PubSub();\n    function test() {\n      const token = pubsub.subscribe('test', (data) => {\n        document.getElementById('output').innerHTML += '<p>Sub 1: ' + data + '</p>';\n      });\n      pubsub.once('test', (data) => {\n        document.getElementById('output').innerHTML += '<p>Once: ' + data + '</p>';\n      });\n      pubsub.publish('test', 'First message');\n      pubsub.publish('test', 'Second message');\n      pubsub.unsubscribe(token);\n      pubsub.publish('test', 'Third message (sub 1 removed)');\n    }\n  </script>\n</body></html>",
+      "hint": "Use tokens (unique IDs) to track subscriptions. Store callbacks in an object keyed by token for easy removal. For once(), create a wrapper that calls unsubscribe after executing.",
+      "validationRules": ["subscribe", "unsubscribe", "once"]
+    },
+    {
+      "id": "2.1",
+      "title": "Plugin Registry",
+      "videoFile": "",
+      "preambleTitle": "Plugin System Foundation",
+      "preambleIntro": "Create a registry to manage plugins dynamically. A plugin registry is the foundation of extensible architectures, allowing you to register, activate, and manage plugins at runtime.",
+      "keyConcepts": [
+        "<strong>Plugin Registry</strong>: Central storage for all plugins",
+        "<strong>Map Data Structure</strong>: Key-value storage for fast lookups",
+        "<strong>Plugin Metadata</strong>: Storing information about each plugin",
+        "<strong>Activation State</strong>: Tracking which plugins are active",
+        "<strong>Lifecycle Methods</strong>: init() and destroy() hooks"
+      ],
+      "commonPitfalls": [
+        "Using an array instead of Map for plugin storage (slower lookups)",
+        "Not tracking which plugins are active vs registered",
+        "Forgetting to check if a plugin exists before activating",
+        "Not providing a way to query the registry state"
+      ],
+      "prerequisites": "Understanding of JavaScript classes and ES6 Map data structure. Familiarity with the concept of object methods.",
+      "description": "Build a plugin registry that can register, activate, and deactivate plugins.",
+      "objectives": [
+        "Register plugins with metadata",
+        "Store plugin information in a Map",
+        "Activate plugins and call their init() method",
+        "Deactivate plugins and call their destroy() method",
+        "Query which plugins are active"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff\">\n  <script>\n    class PluginRegistry {\n      constructor() {\n        this.plugins = new Map();\n      }\n      // TODO: Implement register, activate, deactivate\n    }\n  </script>\n</body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Plugins</button>\n  <div id=\"output\"></div>\n  <script>\n    class PluginRegistry {\n      constructor() {\n        this.plugins = new Map();\n        this.active = new Set();\n      }\n      register(name, plugin) {\n        this.plugins.set(name, plugin);\n        return this;\n      }\n      activate(name) {\n        if (this.plugins.has(name)) {\n          const plugin = this.plugins.get(name);\n          if (plugin.init) plugin.init();\n          this.active.add(name);\n          return true;\n        }\n        return false;\n      }\n      deactivate(name) {\n        if (this.active.has(name)) {\n          const plugin = this.plugins.get(name);\n          if (plugin.destroy) plugin.destroy();\n          this.active.delete(name);\n          return true;\n        }\n        return false;\n      }\n      getActive() {\n        return Array.from(this.active);\n      }\n    }\n    \n    const registry = new PluginRegistry();\n    const logPlugin = {\n      name: 'Logger',\n      init() { log('Logger plugin activated'); },\n      destroy() { log('Logger plugin deactivated'); }\n    };\n    \n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>' + msg + '</p>';\n    }\n    \n    function test() {\n      registry.register('logger', logPlugin);\n      registry.activate('logger');\n      log('Active plugins: ' + registry.getActive().join(', '));\n      registry.deactivate('logger');\n    }\n  </script>\n</body></html>",
+      "hint": "Use a Map to store plugins by name and a Set to track active plugins. Call init() on activation and destroy() on deactivation. Check if a plugin exists before activating it.",
+      "validationRules": ["register", "activate", "Map"]
+    },
+    {
+      "id": "2.2",
+      "title": "Plugin Lifecycle",
+      "videoFile": "",
+      "preambleTitle": "Plugin Lifecycle Management",
+      "preambleIntro": "Implement full lifecycle hooks: install, init, update, destroy. Professional plugin systems have well-defined lifecycle stages that allow plugins to properly initialize resources and clean up when needed.",
+      "keyConcepts": [
+        "<strong>Lifecycle Hooks</strong>: onInstall, onInit, onUpdate, onDestroy",
+        "<strong>State Tracking</strong>: Monitoring plugin states (registered, active, inactive)",
+        "<strong>Resource Management</strong>: Proper initialization and cleanup",
+        "<strong>Version Management</strong>: Tracking plugin versions",
+        "<strong>Error Handling</strong>: Gracefully handling plugin failures"
+      ],
+      "commonPitfalls": [
+        "Not calling lifecycle methods in the correct order",
+        "Forgetting to track plugin state transitions",
+        "Not handling missing lifecycle methods gracefully",
+        "Activating a plugin multiple times without checking state"
+      ],
+      "prerequisites": "Understanding of the Plugin Registry pattern from Exercise 2.1. Knowledge of state machines and lifecycle concepts.",
+      "description": "Add lifecycle methods and dependency management to the plugin system.",
+      "objectives": [
+        "Implement lifecycle hooks (onInstall, onInit, onDestroy)",
+        "Track plugin states throughout lifecycle",
+        "Call appropriate hooks at the right time",
+        "Handle version information",
+        "Provide state query methods"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><!-- TODO: Add lifecycle management --></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Lifecycle</button>\n  <div id=\"output\"></div>\n  <script>\n    class PluginManager {\n      constructor() {\n        this.plugins = new Map();\n        this.states = new Map();\n      }\n      register(plugin) {\n        this.plugins.set(plugin.name, plugin);\n        this.states.set(plugin.name, 'registered');\n        if (plugin.onInstall) plugin.onInstall();\n        log(plugin.name + ' installed');\n      }\n      activate(name) {\n        const plugin = this.plugins.get(name);\n        if (!plugin) return false;\n        if (plugin.onInit) plugin.onInit();\n        this.states.set(name, 'active');\n        log(name + ' activated');\n        return true;\n      }\n      deactivate(name) {\n        const plugin = this.plugins.get(name);\n        if (!plugin) return false;\n        if (plugin.onDestroy) plugin.onDestroy();\n        this.states.set(name, 'inactive');\n        log(name + ' deactivated');\n        return true;\n      }\n      getState(name) {\n        return this.states.get(name);\n      }\n    }\n    \n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>→ ' + msg + '</p>';\n    }\n    \n    function test() {\n      const manager = new PluginManager();\n      manager.register({\n        name: 'Analytics',\n        version: '1.0.0',\n        onInstall() { log('Setting up analytics...'); },\n        onInit() { log('Analytics tracking started'); },\n        onDestroy() { log('Analytics tracking stopped'); }\n      });\n      manager.activate('Analytics');\n      log('State: ' + manager.getState('Analytics'));\n      manager.deactivate('Analytics');\n    }\n  </script>\n</body></html>",
+      "hint": "Define standard lifecycle methods (onInstall, onInit, onDestroy) and call them at appropriate times. Track plugin states in a separate Map. Always check if a method exists before calling it.",
+      "validationRules": ["onInstall", "onInit", "onDestroy"]
+    },
+    {
+      "id": "3.1",
+      "title": "Action Hooks",
+      "videoFile": "",
+      "preambleTitle": "WordPress-Style Actions",
+      "preambleIntro": "Implement action hooks that let plugins execute code at specific points. Action hooks are one of the most powerful patterns in WordPress, allowing plugins to inject behavior at critical points in your application's execution.",
+      "keyConcepts": [
+        "<strong>Action Hooks</strong>: Points where plugins can execute code",
+        "<strong>Priority System</strong>: Controlling execution order of callbacks",
+        "<strong>Hook Registration</strong>: Adding callbacks to named hooks",
+        "<strong>Hook Execution</strong>: Running all callbacks for a hook",
+        "<strong>Variadic Arguments</strong>: Passing multiple arguments to hooks"
+      ],
+      "commonPitfalls": [
+        "Not sorting callbacks by priority before execution",
+        "Forgetting to pass arguments from doAction to callbacks",
+        "Using a fixed number of parameters instead of spread operator",
+        "Not initializing the actions array before pushing to it"
+      ],
+      "prerequisites": "Understanding of callback functions and the spread operator (...args). Knowledge of array sorting.",
+      "description": "Create an action hook system inspired by WordPress.",
+      "objectives": [
+        "Add action hooks with priority support",
+        "Register callbacks for actions",
+        "Execute hooks in priority order",
+        "Pass data to action callbacks",
+        "Check if actions are registered"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><!-- TODO: Implement action hooks --></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Actions</button>\n  <div id=\"output\"></div>\n  <script>\n    class ActionHooks {\n      constructor() {\n        this.actions = {};\n      }\n      addAction(name, callback, priority = 10) {\n        if (!this.actions[name]) this.actions[name] = [];\n        this.actions[name].push({ callback, priority });\n        this.actions[name].sort((a, b) => a.priority - b.priority);\n      }\n      doAction(name, ...args) {\n        if (this.actions[name]) {\n          this.actions[name].forEach(action => action.callback(...args));\n        }\n      }\n      hasAction(name) {\n        return this.actions[name] && this.actions[name].length > 0;\n      }\n    }\n    \n    const hooks = new ActionHooks();\n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>' + msg + '</p>';\n    }\n    \n    function test() {\n      hooks.addAction('user_login', (user) => log('Logging: ' + user + ' logged in'), 10);\n      hooks.addAction('user_login', (user) => log('Analytics: Track ' + user), 5);\n      hooks.addAction('user_login', (user) => log('Welcome email sent to ' + user), 20);\n      \n      log('Has user_login hooks: ' + hooks.hasAction('user_login'));\n      log('--- Executing user_login ---');\n      hooks.doAction('user_login', 'John');\n    }\n  </script>\n</body></html>",
+      "hint": "Store actions in an array sorted by priority. When executing, call each callback in priority order with the provided arguments using the spread operator (...args).",
+      "validationRules": ["addAction", "doAction", "priority"]
+    },
+    {
+      "id": "3.2",
+      "title": "Filter Hooks",
+      "videoFile": "",
+      "preambleTitle": "Filter Hook Pattern",
+      "preambleIntro": "Implement filter hooks that let plugins modify data as it flows through the app. Unlike actions which execute code, filters transform data—each filter receives the output of the previous filter and can modify it.",
+      "keyConcepts": [
+        "<strong>Filter Hooks</strong>: Points where plugins can modify data",
+        "<strong>Filter Chaining</strong>: Passing data through multiple filters",
+        "<strong>Reduce Pattern</strong>: Using reduce() to chain filters",
+        "<strong>Data Transformation</strong>: Modifying and returning values",
+        "<strong>Immutability</strong>: Returning new values instead of mutating"
+      ],
+      "commonPitfalls": [
+        "Using forEach instead of reduce (doesn't chain values)",
+        "Not returning the modified value from filter callbacks",
+        "Forgetting to pass the initial value to reduce",
+        "Mutating the original value instead of creating a new one"
+      ],
+      "prerequisites": "Understanding of the reduce() method and functional programming concepts. Knowledge of action hooks from Exercise 3.1.",
+      "description": "Create a filter system where data can be modified by multiple plugins in sequence.",
+      "objectives": [
+        "Add filter hooks with priority support",
+        "Chain filters using reduce()",
+        "Modify and return data through filter chain",
+        "Set default values for filters",
+        "Pass additional arguments to filters"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><!-- TODO: Implement filter hooks --></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Filters</button>\n  <div id=\"output\"></div>\n  <script>\n    class FilterHooks {\n      constructor() {\n        this.filters = {};\n      }\n      addFilter(name, callback, priority = 10) {\n        if (!this.filters[name]) this.filters[name] = [];\n        this.filters[name].push({ callback, priority });\n        this.filters[name].sort((a, b) => a.priority - b.priority);\n      }\n      applyFilters(name, value, ...args) {\n        if (this.filters[name]) {\n          return this.filters[name].reduce((val, filter) => {\n            return filter.callback(val, ...args);\n          }, value);\n        }\n        return value;\n      }\n    }\n    \n    const filters = new FilterHooks();\n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>' + msg + '</p>';\n    }\n    \n    function test() {\n      filters.addFilter('format_price', (price) => {\n        log('Filter 1: Adding $');\n        return '$' + price;\n      }, 10);\n      \n      filters.addFilter('format_price', (price) => {\n        log('Filter 2: Adding commas');\n        return price.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');\n      }, 20);\n      \n      const price = filters.applyFilters('format_price', '1000');\n      log('Final price: ' + price);\n    }\n  </script>\n</body></html>",
+      "hint": "Use reduce() to chain filters. Each filter receives the modified value from the previous filter and returns a new value. Start with the initial value parameter.",
+      "validationRules": ["addFilter", "applyFilters", "reduce"]
+    },
+    {
+      "id": "4.1",
+      "title": "Middleware Pattern",
+      "videoFile": "",
+      "preambleTitle": "Request/Response Middleware",
+      "preambleIntro": "Implement middleware pattern for request processing pipelines. Middleware is a powerful pattern used in Express.js, Redux, and other frameworks to create composable chains of processing logic.",
+      "keyConcepts": [
+        "<strong>Middleware Stack</strong>: Ordered list of processing functions",
+        "<strong>next() Function</strong>: Passing control to the next middleware",
+        "<strong>Early Termination</strong>: Stopping the chain by not calling next()",
+        "<strong>Async/Await</strong>: Supporting asynchronous middleware",
+        "<strong>Context Object</strong>: Shared state passed through middleware"
+      ],
+      "commonPitfalls": [
+        "Forgetting to call next() which breaks the chain",
+        "Not using async/await properly for asynchronous middleware",
+        "Calling next() multiple times in the same middleware",
+        "Not handling errors in the middleware chain"
+      ],
+      "prerequisites": "Understanding of async/await and promises. Knowledge of closure concepts and the next() pattern.",
+      "description": "Create a middleware system that processes requests through a chain of handlers.",
+      "objectives": [
+        "Chain middleware functions",
+        "Implement next() function for flow control",
+        "Support early termination",
+        "Handle async middleware with await",
+        "Pass context through the middleware stack"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><!-- TODO: Implement middleware --></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Middleware</button>\n  <div id=\"output\"></div>\n  <script>\n    class Middleware {\n      constructor() {\n        this.stack = [];\n      }\n      use(fn) {\n        this.stack.push(fn);\n        return this;\n      }\n      async execute(context) {\n        let index = 0;\n        const next = async () => {\n          if (index < this.stack.length) {\n            const fn = this.stack[index++];\n            await fn(context, next);\n          }\n        };\n        await next();\n        return context;\n      }\n    }\n    \n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>' + msg + '</p>';\n    }\n    \n    async function test() {\n      const mw = new Middleware();\n      \n      mw.use(async (ctx, next) => {\n        log('MW1: Before');\n        ctx.count = (ctx.count || 0) + 1;\n        await next();\n        log('MW1: After');\n      });\n      \n      mw.use(async (ctx, next) => {\n        log('MW2: Processing');\n        ctx.processed = true;\n        await next();\n      });\n      \n      mw.use(async (ctx, next) => {\n        log('MW3: Final handler');\n        ctx.result = 'Done! Count: ' + ctx.count;\n      });\n      \n      const result = await mw.execute({});\n      log('Result: ' + result.result);\n    }\n  </script>\n</body></html>",
+      "hint": "Create a next() function that calls the next middleware in the stack. Each middleware receives context and next, and can call next() to continue. Use async/await for proper asynchronous handling.",
+      "validationRules": ["next", "stack", "async"]
+    },
+    {
+      "id": "4.2",
+      "title": "Complete Plugin System",
+      "videoFile": "",
+      "preambleTitle": "Full-Featured Architecture",
+      "preambleIntro": "Combine everything into a production-ready plugin system with hooks, filters, and middleware. This final exercise brings together all the patterns you've learned to create a comprehensive, extensible architecture.",
+      "keyConcepts": [
+        "<strong>Integrated System</strong>: Combining registry, hooks, filters, and state",
+        "<strong>State Management</strong>: Global state with change notifications",
+        "<strong>Plugin Communication</strong>: Plugins interacting through the system",
+        "<strong>Error Boundaries</strong>: Graceful error handling",
+        "<strong>Production Patterns</strong>: Real-world extensibility"
+      ],
+      "commonPitfalls": [
+        "Not providing access to the system in plugin init()",
+        "Forgetting to trigger state_changed actions",
+        "Making the system too complex with unnecessary features",
+        "Not documenting the plugin interface clearly"
+      ],
+      "prerequisites": "Completion of all previous exercises. Understanding of how all patterns work together.",
+      "description": "Build a complete architecture with registry, hooks, filters, middleware, and state management.",
+      "objectives": [
+        "Create integrated system with all patterns",
+        "Add state management with notifications",
+        "Allow plugins to register actions and filters",
+        "Provide error boundaries for plugin failures",
+        "Enable plugin-to-plugin communication"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><!-- TODO: Build complete system --></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"padding:2rem;background:#1e293b;color:#fff;font-family:sans-serif\">\n  <button onclick=\"test()\">Test Complete System</button>\n  <div id=\"output\"></div>\n  <script>\n    class PluginSystem {\n      constructor() {\n        this.plugins = new Map();\n        this.actions = {};\n        this.filters = {};\n        this.state = {};\n      }\n      \n      register(plugin) {\n        this.plugins.set(plugin.name, plugin);\n        if (plugin.init) plugin.init(this);\n        log('✓ Plugin registered: ' + plugin.name);\n      }\n      \n      addAction(name, callback, priority = 10) {\n        if (!this.actions[name]) this.actions[name] = [];\n        this.actions[name].push({ callback, priority });\n        this.actions[name].sort((a, b) => a.priority - b.priority);\n      }\n      \n      doAction(name, ...args) {\n        if (this.actions[name]) {\n          this.actions[name].forEach(action => action.callback(...args));\n        }\n      }\n      \n      addFilter(name, callback, priority = 10) {\n        if (!this.filters[name]) this.filters[name] = [];\n        this.filters[name].push({ callback, priority });\n        this.filters[name].sort((a, b) => a.priority - b.priority);\n      }\n      \n      applyFilters(name, value, ...args) {\n        if (this.filters[name]) {\n          return this.filters[name].reduce((val, filter) => {\n            return filter.callback(val, ...args);\n          }, value);\n        }\n        return value;\n      }\n      \n      setState(key, value) {\n        const oldValue = this.state[key];\n        this.state[key] = value;\n        this.doAction('state_changed', key, value, oldValue);\n      }\n      \n      getState(key) {\n        return this.state[key];\n      }\n    }\n    \n    function log(msg) {\n      document.getElementById('output').innerHTML += '<p>' + msg + '</p>';\n    }\n    \n    function test() {\n      const system = new PluginSystem();\n      \n      // Register plugins\n      system.register({\n        name: 'Analytics',\n        init(sys) {\n          sys.addAction('user_action', (action) => {\n            log('📊 Analytics: Tracked ' + action);\n          });\n        }\n      });\n      \n      system.register({\n        name: 'Logger',\n        init(sys) {\n          sys.addAction('user_action', (action) => {\n            log('📝 Logger: ' + action);\n          });\n          sys.addAction('state_changed', (key, val) => {\n            log('📝 State changed: ' + key + ' = ' + val);\n          });\n        }\n      });\n      \n      system.register({\n        name: 'Formatter',\n        init(sys) {\n          sys.addFilter('format_message', (msg) => {\n            return '✨ ' + msg + ' ✨';\n          });\n        }\n      });\n      \n      // Test the system\n      log('--- Testing Actions ---');\n      system.doAction('user_action', 'clicked button');\n      \n      log('--- Testing Filters ---');\n      const formatted = system.applyFilters('format_message', 'Hello World');\n      log('Formatted: ' + formatted);\n      \n      log('--- Testing State ---');\n      system.setState('user', 'John');\n      log('State user: ' + system.getState('user'));\n    }\n  </script>\n</body></html>",
+      "hint": "Combine registry, actions, filters, and state into one cohesive system. Plugins can hook into any part of the system. Pass the system instance to plugin init() so they can register their hooks.",
+      "validationRules": ["register", "addAction", "addFilter", "setState"]
+    }
+  ],
+  "completionSummary": {
+    "title": "Congratulations! You've Mastered Software Architecture!",
+    "message": "You've just built a production-ready plugin system from scratch using patterns from WordPress, VS Code, and other professional platforms. This is an incredible achievement that puts you in the league of software architects!",
+    "skillsLearned": [
+      "Event-Driven Architecture",
+      "Plugin Systems & Registries",
+      "Hook Patterns (Actions & Filters)",
+      "Middleware Chains",
+      "State Management",
+      "Pub/Sub Pattern",
+      "Filter Chains & Data Transformation",
+      "Extensible Design Principles",
+      "Lifecycle Management",
+      "Decoupled Architecture"
+    ],
+    "achievements": [
+      {
+        "icon": "🏗️",
+        "title": "Architect",
+        "description": "Designed scalable, extensible systems"
+      },
+      {
+        "icon": "🔌",
+        "title": "Plugin Master",
+        "description": "Built production-ready plugin architectures"
+      },
+      {
+        "icon": "⚡",
+        "title": "Event Pro",
+        "description": "Mastered event-driven patterns"
+      },
+      {
+        "icon": "🎯",
+        "title": "Hook Expert",
+        "description": "Implemented WordPress-style hooks and filters"
+      },
+      {
+        "icon": "🚀",
+        "title": "System Builder",
+        "description": "Created a complete extensible platform"
+      }
+    ],
+    "nextSteps": [
+      "Build a complete plugin ecosystem for a real application",
+      "Implement dependency injection patterns",
+      "Add module federation for micro-frontends",
+      "Create a micro-frontend architecture",
+      "Study advanced design patterns (Strategy, Observer, Decorator)",
+      "Explore framework source code (WordPress, Express.js, Redux)",
+      "Build a plugin marketplace",
+      "Implement plugin sandboxing and security",
+      "Create comprehensive plugin documentation",
+      "Share your plugin system as an open-source library"
+    ],
+    "resources": [
+      {
+        "name": "JavaScript Design Patterns",
+        "url": "https://www.patterns.dev/"
+      },
+      {
+        "name": "WordPress Plugin Handbook",
+        "url": "https://developer.wordpress.org/plugins/"
+      },
+      {
+        "name": "Martin Fowler's Architecture",
+        "url": "https://martinfowler.com/architecture/"
+      },
+      {
+        "name": "Clean Architecture",
+        "url": "https://blog.cleancoder.com/"
+      }
+    ]
+  }
+}

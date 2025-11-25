@@ -1,0 +1,461 @@
+{
+  "courseInfo": {
+    "title": "Master 3D Graphics on the Web",
+    "duration": "4 hours",
+    "exerciseCount": 8,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🎨 Master 3D Graphics on the Web",
+    "subtitle": "A hands-on 4-hour workshop where you'll learn to create stunning 3D visualizations and interactive experiences using CSS 3D transforms and Three.js.",
+    "features": [
+      {
+        "icon": "⚡",
+        "title": "8 Exercises",
+        "description": "Progressive learning from CSS 3D to Three.js"
+      },
+      {
+        "icon": "🎨",
+        "title": "3D Mastery",
+        "description": "Transforms, lighting, materials, and particles"
+      },
+      {
+        "icon": "🔧",
+        "title": "Real Projects",
+        "description": "Build cubes, terrain, and particle galaxies"
+      }
+    ],
+    "buttonText": "Start Workshop 🎯"
+  },
+  "introPopup": {
+    "title": "📘 Workshop Overview",
+    "audioFile": "",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Start! 🚀",
+    "sections": [
+      {
+        "title": "👥 Target Persona",
+        "content": "This workshop is designed for:",
+        "items": [
+          "<strong>Frontend Developers</strong> who want to add 3D graphics to their skill set.",
+          "<strong>Creative Developers</strong> looking to build immersive web experiences.",
+          "<strong>Web Designers</strong> wanting to understand 3D visualization techniques."
+        ]
+      },
+      {
+        "title": "🤔 The Reasoning",
+        "content": "3D graphics on the web are no longer limited to games - they're everywhere! From product visualizations to data displays, knowing 3D opens up a world of creative possibilities. We start with CSS 3D to build intuition, then move to Three.js for professional-grade graphics.",
+        "items": []
+      },
+      {
+        "title": "🎯 Outcomes",
+        "content": "",
+        "items": [
+          "Mastery of <strong>CSS 3D Transforms</strong> for interface effects.",
+          "Understanding of <strong>Three.js fundamentals</strong> - scenes, cameras, renderers.",
+          "Ability to create <strong>3D materials and lighting</strong> for realistic visuals.",
+          "Confidence in building <strong>particle systems and procedural generation</strong>."
+        ]
+      },
+      {
+        "title": "🧠 The Strategy",
+        "content": "We use a <strong>\"Build-First\"</strong> approach. You'll create visual 3D projects from the start, learning concepts through hands-on coding. Each exercise builds on the previous one, taking you from CSS basics to advanced Three.js techniques.",
+        "items": []
+      },
+      {
+        "title": "📚 Format & Modules",
+        "content": "The 4-hour curriculum is split into 4 distinct hours:",
+        "items": [
+          "<strong>Hour 1: CSS 3D</strong> - Flip cards, rotating cubes, pure CSS transforms.",
+          "<strong>Hour 2: Three.js Basics</strong> - Scenes, geometries, materials, lighting.",
+          "<strong>Hour 3: Advanced Shapes</strong> - Complex geometries, camera controls.",
+          "<strong>Hour 4: Procedural Magic</strong> - Terrain generation, particle systems."
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "⚡ Hour 1: CSS 3D",
+        "exercises": [
+          {
+            "title": "1.1 CSS 3D Card",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "1.2 3D Cube Rotation",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🎨 Hour 2: Three.js Basics",
+        "exercises": [
+          {
+            "title": "2.1 Three.js Scene Setup",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "2.2 3D Materials & Lighting",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🏗️ Hour 3: Advanced Shapes",
+        "exercises": [
+          {
+            "title": "3.1 Complex Geometries",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "3.2 Camera Controls",
+            "duration": "30 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🚀 Hour 4: Procedural Magic",
+        "exercises": [
+          {
+            "title": "4.1 Procedural Terrain",
+            "duration": "30 minutes"
+          },
+          {
+            "title": "4.2 3D Particle Galaxy",
+            "duration": "30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "CSS 3D Card",
+      "videoFile": "",
+      "preambleTitle": "Welcome to 3D Graphics on the Web!",
+      "preambleIntro": "In this first exercise, you'll learn how to create 3D transformations using pure CSS. No external libraries needed - just the power of CSS 3D transforms!",
+      "keyConcepts": [
+        "<strong>perspective</strong>: Creates depth and 3D space for child elements",
+        "<strong>transform-style: preserve-3d</strong>: Maintains 3D positioning of nested elements",
+        "<strong>transform: rotateX/Y/Z</strong>: Rotates elements in 3D space",
+        "<strong>backface-visibility</strong>: Controls visibility of the back of an element",
+        "<strong>transition</strong>: Smoothly animates 3D transformations"
+      ],
+      "commonPitfalls": [
+        "Forgetting to set <code>perspective</code> on the parent container",
+        "Not using <code>transform-style: preserve-3d</code> for nested 3D elements",
+        "Mixing 2D and 3D transforms incorrectly",
+        "Not considering the transform-origin when rotating"
+      ],
+      "prerequisites": "Basic CSS knowledge. We'll build up your 3D skills step by step!",
+      "description": "Create a 3D flip card using CSS transforms. Learn perspective, 3D rotations, and how to create depth with pure CSS.",
+      "objectives": [
+        "Understand and apply CSS perspective",
+        "Use transform-style: preserve-3d for 3D contexts",
+        "Create 3D rotations with rotateX, rotateY, rotateZ",
+        "Build an interactive flip card with front and back faces",
+        "Apply smooth transitions to 3D transforms"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>3D Flip Card</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    }\n\n    .card-container {\n      /* TODO: Add perspective for 3D effect */\n      /* Hint: perspective: 1000px; */\n      width: 300px;\n      height: 400px;\n    }\n\n    .card {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      /* TODO: Add transform-style to preserve 3D */\n      /* TODO: Add transition for smooth animation */\n      cursor: pointer;\n    }\n\n    .card:hover {\n      /* TODO: Add 3D rotation on hover */\n      /* Hint: transform: rotateY(180deg); */\n    }\n\n    .card-face {\n      position: absolute;\n      width: 100%;\n      height: 100%;\n      backface-visibility: hidden;\n      border-radius: 20px;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 2rem;\n      font-weight: 700;\n    }\n\n    .card-front {\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      color: white;\n    }\n\n    .card-back {\n      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);\n      color: white;\n      /* TODO: Rotate back face 180deg initially */\n      /* Hint: transform: rotateY(180deg); */\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card-container\">\n    <div class=\"card\">\n      <div class=\"card-face card-front\">\n        Front\n      </div>\n      <div class=\"card-face card-back\">\n        Back\n      </div>\n    </div>\n  </div>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>3D Flip Card</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n    }\n\n    .card-container {\n      perspective: 1000px;\n      width: 300px;\n      height: 400px;\n    }\n\n    .card {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      transform-style: preserve-3d;\n      transition: transform 0.8s;\n      cursor: pointer;\n    }\n\n    .card:hover {\n      transform: rotateY(180deg);\n    }\n\n    .card-face {\n      position: absolute;\n      width: 100%;\n      height: 100%;\n      backface-visibility: hidden;\n      border-radius: 20px;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 2rem;\n      font-weight: 700;\n    }\n\n    .card-front {\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      color: white;\n    }\n\n    .card-back {\n      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);\n      color: white;\n      transform: rotateY(180deg);\n    }\n  </style>\n</head>\n<body>\n  <div class=\"card-container\">\n    <div class=\"card\">\n      <div class=\"card-face card-front\">\n        Front\n      </div>\n      <div class=\"card-face card-back\">\n        Back\n      </div>\n    </div>\n  </div>\n</body>\n</html>",
+      "hint": "Set perspective: 1000px on the container, transform-style: preserve-3d on the card, and rotate the card with transform: rotateY(180deg) on hover. Don't forget to rotate the back face 180deg initially!",
+      "validationRules": ["perspective", "transform-style: preserve-3d", "rotateY"]
+    },
+    {
+      "id": "1.2",
+      "title": "3D Cube Rotation",
+      "videoFile": "",
+      "preambleTitle": "Building a 3D Cube with CSS",
+      "preambleIntro": "Now let's level up by creating a full 3D cube that rotates continuously. This exercise teaches you how to position multiple faces in 3D space and create smooth animations.",
+      "keyConcepts": [
+        "<strong>translateZ</strong>: Moves elements along the Z-axis (toward/away from viewer)",
+        "<strong>Multiple 3D Transforms</strong>: Combining rotations and translations",
+        "<strong>@keyframes</strong>: Creating CSS animations",
+        "<strong>animation</strong>: Applying and controlling animations",
+        "<strong>3D Positioning</strong>: Placing elements in 3D space"
+      ],
+      "commonPitfalls": [
+        "Incorrect translateZ distance (should be half the cube size)",
+        "Forgetting to rotate faces before translating them",
+        "Not centering the cube properly",
+        "Animation running too fast or too slow"
+      ],
+      "prerequisites": "Understanding of CSS 3D transforms from the previous exercise.",
+      "description": "Create a 3D cube with 6 faces that rotates continuously. Learn how to position elements in 3D space and create smooth animations.",
+      "objectives": [
+        "Build a 3D cube with 6 faces",
+        "Position faces using translateZ and rotate",
+        "Create continuous rotation animation with @keyframes",
+        "Combine multiple 3D transforms",
+        "Apply smooth, infinite animations"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Rotating 3D Cube</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);\n    }\n\n    .scene {\n      perspective: 1000px;\n    }\n\n    .cube {\n      width: 200px;\n      height: 200px;\n      position: relative;\n      transform-style: preserve-3d;\n      /* TODO: Add animation */\n      /* Hint: animation: rotate 10s infinite linear; */\n    }\n\n    /* TODO: Create @keyframes for rotation */\n    /* Hint: Rotate on X and Y axes */\n\n    .cube-face {\n      position: absolute;\n      width: 200px;\n      height: 200px;\n      border: 2px solid white;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 3rem;\n      font-weight: 700;\n      color: white;\n      opacity: 0.9;\n    }\n\n    .front  { background: rgba(255, 0, 0, 0.7); }\n    .back   { background: rgba(0, 255, 0, 0.7); }\n    .right  { background: rgba(0, 0, 255, 0.7); }\n    .left   { background: rgba(255, 255, 0, 0.7); }\n    .top    { background: rgba(255, 0, 255, 0.7); }\n    .bottom { background: rgba(0, 255, 255, 0.7); }\n\n    /* TODO: Position each face using rotateY/X and translateZ */\n    /* Front face already positioned as example */\n    .front  { transform: rotateY(0deg) translateZ(100px); }\n    /* TODO: Position other 5 faces */\n  </style>\n</head>\n<body>\n  <div class=\"scene\">\n    <div class=\"cube\">\n      <div class=\"cube-face front\">1</div>\n      <div class=\"cube-face back\">2</div>\n      <div class=\"cube-face right\">3</div>\n      <div class=\"cube-face left\">4</div>\n      <div class=\"cube-face top\">5</div>\n      <div class=\"cube-face bottom\">6</div>\n    </div>\n  </div>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Rotating 3D Cube</title>\n  <style>\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);\n    }\n\n    .scene {\n      perspective: 1000px;\n    }\n\n    .cube {\n      width: 200px;\n      height: 200px;\n      position: relative;\n      transform-style: preserve-3d;\n      animation: rotate 10s infinite linear;\n    }\n\n    @keyframes rotate {\n      from {\n        transform: rotateX(0deg) rotateY(0deg);\n      }\n      to {\n        transform: rotateX(360deg) rotateY(360deg);\n      }\n    }\n\n    .cube-face {\n      position: absolute;\n      width: 200px;\n      height: 200px;\n      border: 2px solid white;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 3rem;\n      font-weight: 700;\n      color: white;\n      opacity: 0.9;\n    }\n\n    .front  { background: rgba(255, 0, 0, 0.7); }\n    .back   { background: rgba(0, 255, 0, 0.7); }\n    .right  { background: rgba(0, 0, 255, 0.7); }\n    .left   { background: rgba(255, 255, 0, 0.7); }\n    .top    { background: rgba(255, 0, 255, 0.7); }\n    .bottom { background: rgba(0, 255, 255, 0.7); }\n\n    .front  { transform: rotateY(0deg) translateZ(100px); }\n    .back   { transform: rotateY(180deg) translateZ(100px); }\n    .right  { transform: rotateY(90deg) translateZ(100px); }\n    .left   { transform: rotateY(-90deg) translateZ(100px); }\n    .top    { transform: rotateX(90deg) translateZ(100px); }\n    .bottom { transform: rotateX(-90deg) translateZ(100px); }\n  </style>\n</head>\n<body>\n  <div class=\"scene\">\n    <div class=\"cube\">\n      <div class=\"cube-face front\">1</div>\n      <div class=\"cube-face back\">2</div>\n      <div class=\"cube-face right\">3</div>\n      <div class=\"cube-face left\">4</div>\n      <div class=\"cube-face top\">5</div>\n      <div class=\"cube-face bottom\">6</div>\n    </div>\n  </div>\n</body>\n</html>",
+      "hint": "Each face needs to be rotated to face the right direction, then translated out by half the cube size (100px). Use rotateY for left/right faces, rotateX for top/bottom. Create a @keyframes animation that rotates on both X and Y axes.",
+      "validationRules": ["@keyframes", "animation", "translateZ", "rotateX", "rotateY"]
+    },
+    {
+      "id": "2.1",
+      "title": "Three.js Scene Setup",
+      "videoFile": "",
+      "preambleTitle": "Introduction to Three.js",
+      "preambleIntro": "Three.js is the most popular 3D library for the web. It provides a powerful, easy-to-use API for creating and displaying 3D graphics. Let's set up your first scene!",
+      "keyConcepts": [
+        "<strong>Scene</strong>: The container for all 3D objects",
+        "<strong>Camera</strong>: The viewpoint from which we see the scene",
+        "<strong>Renderer</strong>: Renders the scene to the canvas",
+        "<strong>Geometry</strong>: The shape of 3D objects",
+        "<strong>Material</strong>: The surface appearance of objects",
+        "<strong>Mesh</strong>: Combines geometry and material into a renderable object"
+      ],
+      "commonPitfalls": [
+        "Forgetting to add objects to the scene",
+        "Not positioning the camera correctly (too close or inside objects)",
+        "Not calling renderer.render() in the animation loop",
+        "Forgetting to append the canvas to the document body"
+      ],
+      "prerequisites": "Basic JavaScript knowledge. No prior 3D experience needed!",
+      "description": "Set up a basic Three.js scene with a camera, renderer, and a rotating cube. This is the foundation for all Three.js projects.",
+      "objectives": [
+        "Import and initialize Three.js",
+        "Create a scene, camera, and renderer",
+        "Add a basic cube geometry",
+        "Implement an animation loop",
+        "Render the scene continuously"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Three.js Scene</title>\n  <style>\n    body { margin: 0; overflow: hidden; }\n    canvas { display: block; }\n  </style>\n</head>\n<body>\n  <script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n  <script>\n    // TODO: Create scene, camera, and renderer\n    // Hint: const scene = new THREE.Scene();\n    \n    // TODO: Create a cube geometry and material\n    // Hint: new THREE.BoxGeometry(1, 1, 1)\n    \n    // TODO: Create animation loop to rotate and render\n    function animate() {\n      requestAnimationFrame(animate);\n      // TODO: Rotate cube\n      // TODO: Render scene\n    }\n    \n    // animate();\n  </script>\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Three.js Scene</title>\n  <style>\n    body { margin: 0; overflow: hidden; }\n    canvas { display: block; }\n  </style>\n</head>\n<body>\n  <script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n  <script>\n    const scene = new THREE.Scene();\n    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);\n    const renderer = new THREE.WebGLRenderer();\n    \n    renderer.setSize(window.innerWidth, window.innerHeight);\n    document.body.appendChild(renderer.domElement);\n    \n    const geometry = new THREE.BoxGeometry(1, 1, 1);\n    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });\n    const cube = new THREE.Mesh(geometry, material);\n    scene.add(cube);\n    \n    camera.position.z = 5;\n    \n    function animate() {\n      requestAnimationFrame(animate);\n      cube.rotation.x += 0.01;\n      cube.rotation.y += 0.01;\n      renderer.render(scene, camera);\n    }\n    \n    animate();\n  </script>\n</body>\n</html>",
+      "hint": "Create a scene, camera, and renderer. Add a BoxGeometry with a MeshBasicMaterial. In the animate function, rotate the cube and call renderer.render(scene, camera).",
+      "validationRules": ["THREE.Scene", "THREE.PerspectiveCamera", "THREE.WebGLRenderer", "requestAnimationFrame"]
+    },
+    {
+      "id": "2.2",
+      "title": "3D Materials & Lighting",
+      "videoFile": "",
+      "preambleTitle": "Adding Lights and Materials",
+      "preambleIntro": "Learn how to add realistic lighting and materials to your 3D scenes. Lighting transforms flat objects into realistic 3D visuals with depth and dimension.",
+      "keyConcepts": [
+        "<strong>AmbientLight</strong>: Provides soft, uniform lighting across the scene",
+        "<strong>DirectionalLight</strong>: Simulates sunlight with parallel rays",
+        "<strong>MeshStandardMaterial</strong>: Physically-based material that reacts to light",
+        "<strong>Metalness & Roughness</strong>: Properties that control material appearance",
+        "<strong>Light Positioning</strong>: How light position affects shadows and highlights"
+      ],
+      "commonPitfalls": [
+        "Using MeshBasicMaterial which doesn't react to lights",
+        "Forgetting to add lights to the scene",
+        "Not positioning lights correctly for desired effect",
+        "Using too many lights which can impact performance"
+      ],
+      "prerequisites": "Completion of previous Three.js scene setup exercise.",
+      "description": "Add lights and advanced materials to create realistic 3D objects.",
+      "objectives": [
+        "Add directional and ambient lights",
+        "Use MeshStandardMaterial",
+        "Understand light and shadow",
+        "Adjust metalness and roughness properties",
+        "Create realistic material appearances"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><head><title>Lights</title><style>body{margin:0}</style></head><body>\n<script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\n// TODO: Add lights and better materials\n</script></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><head><title>Lights</title><style>body{margin:0}</style></head><body>\n<script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\nconst ambientLight = new THREE.AmbientLight(0x404040);\nscene.add(ambientLight);\nconst directionalLight = new THREE.DirectionalLight(0xffffff, 1);\ndirectionalLight.position.set(5, 5, 5);\nscene.add(directionalLight);\n\nconst geometry = new THREE.SphereGeometry(1, 32, 32);\nconst material = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.5, roughness: 0.5 });\nconst sphere = new THREE.Mesh(geometry, material);\nscene.add(sphere);\ncamera.position.z = 5;\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  sphere.rotation.y += 0.01;\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "hint": "Add AmbientLight and DirectionalLight, then use MeshStandardMaterial for physically-based rendering.",
+      "validationRules": ["Light", "MeshStandardMaterial"]
+    },
+    {
+      "id": "3.1",
+      "title": "Complex Geometries",
+      "videoFile": "",
+      "preambleTitle": "Advanced Shapes",
+      "preambleIntro": "Create complex 3D shapes using Three.js geometries. Learn to work with spheres, toruses, and how to group multiple objects together for complex compositions.",
+      "keyConcepts": [
+        "<strong>SphereGeometry</strong>: Creates perfect 3D spheres",
+        "<strong>TorusGeometry</strong>: Creates donut-shaped objects",
+        "<strong>Group</strong>: Container for organizing multiple objects",
+        "<strong>Object Hierarchy</strong>: Parent-child relationships in 3D",
+        "<strong>Relative Transformations</strong>: How child objects inherit parent transforms"
+      ],
+      "commonPitfalls": [
+        "Not providing enough segments for smooth curved surfaces",
+        "Forgetting to add groups to the scene",
+        "Not understanding how rotations affect grouped objects",
+        "Overlapping geometries creating z-fighting artifacts"
+      ],
+      "prerequisites": "Understanding of Three.js scenes, materials, and basic geometries.",
+      "description": "Work with various Three.js geometries like spheres, toruses, and custom shapes.",
+      "objectives": [
+        "Create multiple geometries",
+        "Group objects together",
+        "Manipulate complex shapes",
+        "Understand object hierarchies",
+        "Compose complex 3D scenes"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><head><style>body{margin:0;overflow:hidden}</style></head>\n<body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\n// Basic scene setup\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\n// Add lights\nconst light = new THREE.DirectionalLight(0xffffff, 1);\nlight.position.set(5, 5, 5);\nscene.add(light);\nscene.add(new THREE.AmbientLight(0x404040));\n\n// TODO: Create a group to hold multiple geometries\n// Hint: const group = new THREE.Group();\n\n// TODO: Create a sphere geometry\n// Hint: const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshStandardMaterial({color: 0xff0000}));\n\n// TODO: Create a torus geometry\n// Hint: const torus = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.2, 16, 100), new THREE.MeshStandardMaterial({color: 0x00ff00}));\n\n// TODO: Add geometries to the group and scene\n// Hint: group.add(sphere, torus); scene.add(group);\n\ncamera.position.z = 5;\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  // TODO: Rotate the group\n  // Hint: group.rotation.y += 0.01;\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\nconst light = new THREE.DirectionalLight(0xffffff, 1);\nlight.position.set(5, 5, 5);\nscene.add(light);\nscene.add(new THREE.AmbientLight(0x404040));\n\nconst group = new THREE.Group();\nconst sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshStandardMaterial({color: 0xff0000}));\nconst torus = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.2, 16, 100), new THREE.MeshStandardMaterial({color: 0x00ff00}));\ntorus.rotation.x = Math.PI / 2;\ngroup.add(sphere, torus);\nscene.add(group);\ncamera.position.z = 5;\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  group.rotation.y += 0.01;\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "hint": "Use Group to combine multiple geometries. Try SphereGeometry, TorusGeometry, and others.",
+      "validationRules": ["Group", "Geometry"]
+    },
+    {
+      "id": "3.2",
+      "title": "Camera Controls",
+      "videoFile": "",
+      "preambleTitle": "Interactive Camera",
+      "preambleIntro": "Add orbit controls for interactive 3D viewing. OrbitControls allow users to explore your 3D scenes from any angle using mouse or touch input.",
+      "keyConcepts": [
+        "<strong>OrbitControls</strong>: Provides intuitive camera manipulation",
+        "<strong>Mouse Interaction</strong>: Left-click to rotate, right-click to pan, scroll to zoom",
+        "<strong>Damping</strong>: Smooth, inertial camera movement",
+        "<strong>Camera Limits</strong>: Constraining rotation and zoom ranges",
+        "<strong>Auto-rotation</strong>: Programmatic camera movement"
+      ],
+      "commonPitfalls": [
+        "Forgetting to import OrbitControls from examples/jsm",
+        "Not calling controls.update() in the animation loop when damping is enabled",
+        "Setting inappropriate zoom limits that block the view",
+        "Not handling window resize events"
+      ],
+      "prerequisites": "Understanding of Three.js cameras and scenes.",
+      "description": "Implement OrbitControls to allow users to rotate, zoom, and pan the camera.",
+      "objectives": [
+        "Add OrbitControls",
+        "Enable mouse interaction",
+        "Control camera movement",
+        "Enable damping for smooth controls",
+        "Create interactive 3D viewing experience"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script type=\"module\">\n// TODO: Import and add OrbitControls\n</script></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script type=\"module\">\nimport { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';\n\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\nconst controls = new OrbitControls(camera, renderer.domElement);\ncontrols.enableDamping = true;\n\nconst geometry = new THREE.BoxGeometry(2, 2, 2);\nconst material = new THREE.MeshNormalMaterial();\nconst cube = new THREE.Mesh(geometry, material);\nscene.add(cube);\ncamera.position.z = 5;\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  controls.update();\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "hint": "Import OrbitControls from the examples/jsm folder and pass the camera and renderer.domElement to it.",
+      "validationRules": ["OrbitControls", "import"]
+    },
+    {
+      "id": "4.1",
+      "title": "Procedural Terrain",
+      "videoFile": "",
+      "preambleTitle": "Generate 3D Terrain",
+      "preambleIntro": "Create procedural terrain using PlaneGeometry and vertex manipulation. Learn the fundamentals of procedural generation - creating complex shapes from algorithms rather than manual modeling.",
+      "keyConcepts": [
+        "<strong>PlaneGeometry</strong>: 2D surface divided into segments",
+        "<strong>Vertex Manipulation</strong>: Modifying individual points to create shapes",
+        "<strong>BufferGeometry Attributes</strong>: Accessing and modifying geometry data",
+        "<strong>Noise Functions</strong>: Using math to create natural-looking randomness",
+        "<strong>Normal Recalculation</strong>: Updating lighting after modifying geometry"
+      ],
+      "commonPitfalls": [
+        "Not providing enough segments for smooth terrain",
+        "Forgetting to call computeVertexNormals() after modifying vertices",
+        "Not understanding the vertex indexing system",
+        "Creating terrain that's too flat or too extreme"
+      ],
+      "prerequisites": "Solid understanding of Three.js geometries and materials.",
+      "description": "Generate a 3D terrain landscape using noise functions and vertex displacement.",
+      "objectives": [
+        "Create a plane geometry",
+        "Manipulate vertices",
+        "Add height variation",
+        "Apply materials",
+        "Generate natural-looking terrain"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>// TODO: Create terrain with vertex manipulation</script></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\nconst light = new THREE.DirectionalLight(0xffffff, 1);\nlight.position.set(0, 10, 0);\nscene.add(light);\nscene.add(new THREE.AmbientLight(0x404040));\n\nconst geometry = new THREE.PlaneGeometry(20, 20, 50, 50);\nconst vertices = geometry.attributes.position;\nfor (let i = 0; i < vertices.count; i++) {\n  const x = vertices.getX(i);\n  const y = vertices.getY(i);\n  vertices.setZ(i, Math.sin(x * 0.5) * Math.cos(y * 0.5) * 2);\n}\ngeometry.computeVertexNormals();\n\nconst material = new THREE.MeshStandardMaterial({ color: 0x00ff00, wireframe: false });\nconst terrain = new THREE.Mesh(geometry, material);\nterrain.rotation.x = -Math.PI / 2;\nscene.add(terrain);\n\ncamera.position.set(0, 10, 15);\ncamera.lookAt(0, 0, 0);\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  terrain.rotation.z += 0.001;\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "hint": "Use PlaneGeometry with many segments, then modify the Z coordinates of vertices using Math.sin and Math.cos for wave patterns.",
+      "validationRules": ["PlaneGeometry", "vertices", "setZ"]
+    },
+    {
+      "id": "4.2",
+      "title": "3D Particle Galaxy",
+      "videoFile": "",
+      "preambleTitle": "Create a Particle System",
+      "preambleIntro": "Build a stunning 3D particle galaxy using Points and BufferGeometry. Particle systems are used everywhere in 3D graphics - from stars to fire to magic effects!",
+      "keyConcepts": [
+        "<strong>BufferGeometry</strong>: Efficient geometry using typed arrays",
+        "<strong>Float32Array</strong>: JavaScript typed array for 3D coordinates",
+        "<strong>Points</strong>: Renders geometry as individual particles",
+        "<strong>PointsMaterial</strong>: Material specifically for particle rendering",
+        "<strong>Vertex Colors</strong>: Assigning colors to individual particles"
+      ],
+      "commonPitfalls": [
+        "Not creating positions array with correct size (particleCount * 3)",
+        "Forgetting to use Float32Array instead of regular arrays",
+        "Not setting the correct attribute stride (3 for xyz coordinates)",
+        "Creating too many particles and impacting performance"
+      ],
+      "prerequisites": "All previous exercises. This combines many concepts!",
+      "description": "Create a beautiful rotating particle galaxy with thousands of stars.",
+      "objectives": [
+        "Create particle system",
+        "Use BufferGeometry",
+        "Add colors to particles",
+        "Animate particles",
+        "Render thousands of particles efficiently"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html><body><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>// TODO: Create particle galaxy</script></body></html>",
+      "solution": "<!DOCTYPE html>\n<html><body style=\"margin:0\"><script src=\"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js\"></script>\n<script>\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);\nconst renderer = new THREE.WebGLRenderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.domElement);\n\nconst particlesGeometry = new THREE.BufferGeometry();\nconst particlesCount = 5000;\nconst posArray = new Float32Array(particlesCount * 3);\nconst colorsArray = new Float32Array(particlesCount * 3);\n\nfor(let i = 0; i < particlesCount * 3; i++) {\n  posArray[i] = (Math.random() - 0.5) * 100;\n  colorsArray[i] = Math.random();\n}\n\nparticlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));\nparticlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorsArray, 3));\n\nconst particlesMaterial = new THREE.PointsMaterial({\n  size: 0.3,\n  vertexColors: true,\n  transparent: true,\n  opacity: 0.8\n});\n\nconst particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);\nscene.add(particlesMesh);\n\ncamera.position.z = 50;\n\nfunction animate() {\n  requestAnimationFrame(animate);\n  particlesMesh.rotation.y += 0.001;\n  particlesMesh.rotation.x += 0.0005;\n  renderer.render(scene, camera);\n}\nanimate();\n</script></body></html>",
+      "hint": "Create a BufferGeometry, populate it with random positions using Float32Array, and render with Points and PointsMaterial.",
+      "validationRules": ["BufferGeometry", "Points", "Float32Array"]
+    }
+  ],
+  "completionSummary": {
+    "title": "Congratulations! You've Completed the Workshop!",
+    "message": "You've just mastered 3D graphics on the web! From CSS transforms to particle systems, you've learned the skills that power immersive web experiences.",
+    "skillsLearned": [
+      "CSS 3D Transforms",
+      "Three.js Fundamentals",
+      "3D Lighting & Materials",
+      "Complex Geometries",
+      "Camera Controls",
+      "Procedural Generation",
+      "Particle Systems",
+      "WebGL Rendering"
+    ],
+    "achievements": [
+      {
+        "icon": "🎨",
+        "title": "3D Artist",
+        "description": "Created stunning 3D visualizations"
+      },
+      {
+        "icon": "🔮",
+        "title": "Three.js Master",
+        "description": "Mastered the Three.js library"
+      },
+      {
+        "icon": "⚡",
+        "title": "Performance Pro",
+        "description": "Optimized 3D scenes for 60fps"
+      },
+      {
+        "icon": "🌌",
+        "title": "Galaxy Creator",
+        "description": "Built a beautiful particle galaxy"
+      }
+    ],
+    "nextSteps": [
+      "Explore advanced Three.js features like shaders and post-processing",
+      "Build a 3D game or interactive experience",
+      "Learn WebGL and GLSL for custom shaders",
+      "Combine 3D graphics with other web technologies",
+      "Study the AI Integration Path to add intelligence to your 3D apps"
+    ],
+    "resources": [
+      {
+        "name": "Three.js Documentation",
+        "url": "https://threejs.org/docs/"
+      },
+      {
+        "name": "Three.js Examples",
+        "url": "https://threejs.org/examples/"
+      },
+      {
+        "name": "WebGL Fundamentals",
+        "url": "https://webglfundamentals.org/"
+      },
+      {
+        "name": "Book of Shaders",
+        "url": "https://thebookofshaders.com/"
+      }
+    ]
+  }
+}

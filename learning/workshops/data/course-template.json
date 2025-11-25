@@ -1,0 +1,198 @@
+{
+  "courseInfo": {
+    "title": "Your Course Title Here",
+    "duration": "X hours",
+    "exerciseCount": 0,
+    "version": "1.0.0"
+  },
+  "welcomeScreen": {
+    "title": "🎯 Your Course Title",
+    "subtitle": "A brief description of what students will learn and build in this course.",
+    "features": [
+      {
+        "icon": "⚡",
+        "title": "Feature 1",
+        "description": "Brief description of first feature"
+      },
+      {
+        "icon": "🎨",
+        "title": "Feature 2",
+        "description": "Brief description of second feature"
+      },
+      {
+        "icon": "🔧",
+        "title": "Feature 3",
+        "description": "Brief description of third feature"
+      }
+    ],
+    "buttonText": "Start Course 🚀"
+  },
+  "introPopup": {
+    "title": "📘 Course Overview",
+    "audioFile": "media/your-intro-audio.m4a",
+    "audioLabel": "🎧 Intro Audio",
+    "proceedButtonText": "Let's Start! 🚀",
+    "sections": [
+      {
+        "title": "👥 Who Is This For?",
+        "content": "This course is designed for:",
+        "items": [
+          "<strong>Target Audience 1</strong> who want to learn X.",
+          "<strong>Target Audience 2</strong> looking to understand Y.",
+          "<strong>Target Audience 3</strong> wanting to master Z."
+        ]
+      },
+      {
+        "title": "🎯 Learning Outcomes",
+        "content": "By the end of this course, you will:",
+        "items": [
+          "Outcome 1: Understand and apply concept X",
+          "Outcome 2: Build feature Y from scratch",
+          "Outcome 3: Master technique Z"
+        ]
+      },
+      {
+        "title": "📚 Course Structure",
+        "content": "The course is organized into modules:",
+        "items": [
+          "<strong>Module 1</strong> - Topic A",
+          "<strong>Module 2</strong> - Topic B",
+          "<strong>Module 3</strong> - Topic C"
+        ]
+      }
+    ]
+  },
+  "sidebar": {
+    "hours": [
+      {
+        "title": "📖 Module 1: Getting Started",
+        "exercises": [
+          {
+            "title": "1.1 First Exercise",
+            "duration": "20 minutes"
+          },
+          {
+            "title": "1.2 Second Exercise",
+            "duration": "20 minutes"
+          }
+        ]
+      },
+      {
+        "title": "🔨 Module 2: Building Skills",
+        "exercises": [
+          {
+            "title": "2.1 Third Exercise",
+            "duration": "20 minutes"
+          },
+          {
+            "title": "2.2 Fourth Exercise",
+            "duration": "20 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "1.1",
+      "title": "Exercise 1 Title",
+      "videoFile": "media/exercise-1-1.mp4",
+      "preambleTitle": "Introduction to Topic 1",
+      "preambleIntro": "In this exercise, you'll learn about [TOPIC]. We'll cover [KEY POINTS] and by the end, you'll be able to [OUTCOME].",
+      "keyConcepts": [
+        "<strong>Concept 1</strong>: Explanation of first concept",
+        "<strong>Concept 2</strong>: Explanation of second concept",
+        "<strong>Concept 3</strong>: Explanation of third concept"
+      ],
+      "commonPitfalls": [
+        "Common mistake 1 and how to avoid it",
+        "Common mistake 2 and how to avoid it",
+        "Common mistake 3 and how to avoid it"
+      ],
+      "prerequisites": "Basic knowledge of [PREREQUISITE TOPIC]",
+      "description": "Brief description of what students will do in this exercise.",
+      "objectives": [
+        "Objective 1: Do something specific",
+        "Objective 2: Learn something specific",
+        "Objective 3: Build something specific"
+      ],
+      "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Exercise 1</title>\n</head>\n<body>\n  <!-- TODO: Students work here -->\n</body>\n</html>",
+      "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Exercise 1 - Solution</title>\n</head>\n<body>\n  <!-- Complete solution here -->\n</body>\n</html>",
+      "hint": "Helpful hint that guides students without giving away the answer.",
+      "validationRules": ["keyword1", "keyword2", "keyword3"]
+    },
+    {
+      "id": "1.2",
+      "title": "Exercise 2 Title",
+      "videoFile": "",
+      "preambleTitle": "Building on Previous Concepts",
+      "preambleIntro": "Now that you understand [PREVIOUS TOPIC], let's apply it to [NEW SCENARIO].",
+      "keyConcepts": [
+        "<strong>New Concept 1</strong>: Description",
+        "<strong>New Concept 2</strong>: Description"
+      ],
+      "commonPitfalls": [
+        "Pitfall specific to this exercise"
+      ],
+      "prerequisites": "Completion of Exercise 1.1",
+      "description": "What students will build or learn in this exercise.",
+      "objectives": [
+        "Specific learning objective 1",
+        "Specific learning objective 2"
+      ],
+      "starterCode": "// Your starter code here",
+      "solution": "// Complete solution here",
+      "hint": "Guidance for students",
+      "validationRules": ["validation1", "validation2"]
+    }
+  ],
+  "completionSummary": {
+    "title": "🎉 Congratulations! Course Complete!",
+    "message": "You've successfully completed [COURSE NAME] and gained valuable skills!",
+    "skillsLearned": [
+      "Skill 1: Description",
+      "Skill 2: Description",
+      "Skill 3: Description",
+      "Skill 4: Description",
+      "Skill 5: Description"
+    ],
+    "achievements": [
+      {
+        "icon": "🎯",
+        "title": "Achievement 1",
+        "description": "What this achievement represents"
+      },
+      {
+        "icon": "⚡",
+        "title": "Achievement 2",
+        "description": "What this achievement represents"
+      },
+      {
+        "icon": "🏆",
+        "title": "Achievement 3",
+        "description": "What this achievement represents"
+      }
+    ],
+    "nextSteps": [
+      "Suggested next course or topic to learn",
+      "Project idea to practice skills",
+      "Advanced topic to explore",
+      "Community to join",
+      "Book or resource to read"
+    ],
+    "resources": [
+      {
+        "name": "Resource Name 1",
+        "url": "https://example.com/resource1"
+      },
+      {
+        "name": "Resource Name 2",
+        "url": "https://example.com/resource2"
+      },
+      {
+        "name": "Resource Name 3",
+        "url": "https://example.com/resource3"
+      }
+    ]
+  }
+}
