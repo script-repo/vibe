@@ -126,7 +126,7 @@ async function switchCourse(courseId) {
     }
 
     // Rebuild UI with new course data
-    buildUIFromData();
+    await initializeDynamicUI();
 
     // Load first exercise
     loadExercise(0);
