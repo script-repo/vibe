@@ -6,7 +6,9 @@
 // Application state
 let currentExercise = 0;
 let completedExercises = new Set();
-let dataLoaded = false;
+
+// Use window.dataLoaded as the single source of truth across all modules
+window.dataLoaded = window.dataLoaded || false;
 
 // Device detection
 const deviceInfo = {
@@ -24,12 +26,12 @@ const deviceInfo = {
  * Initialize course data
  */
 async function initializeCourseData() {
-  if (dataLoaded) return true;
+  if (window.dataLoaded) return true;
 
   try {
     console.log('Loading course data...');
     await loadCourseData();
-    dataLoaded = true;
+    window.dataLoaded = true;
     console.log('Course data loaded successfully!');
     return true;
   } catch (error) {
@@ -45,7 +47,7 @@ async function startWorkshop() {
   console.log('Starting workshop flow...');
 
   // Ensure data is loaded
-  if (!dataLoaded) {
+  if (!window.dataLoaded) {
     const loaded = await initializeCourseData();
     if (!loaded) {
       alert('Failed to load workshop data. Please refresh the page.');
@@ -76,7 +78,7 @@ async function proceedToWorkshop() {
   console.log('Proceeding to workshop...');
 
   // Ensure data is loaded
-  if (!dataLoaded) {
+  if (!window.dataLoaded) {
     const loaded = await initializeCourseData();
     if (!loaded) {
       alert('Failed to load workshop data. Please refresh the page.');
@@ -111,9 +113,9 @@ async function switchCourse(courseId) {
 
   try {
     // Reload course data with new course ID
-    dataLoaded = false;
+    window.dataLoaded = false;
     await loadCourseData(courseId);
-    dataLoaded = true;
+    window.dataLoaded = true;
 
     // Reset exercise progress
     currentExercise = 0;
