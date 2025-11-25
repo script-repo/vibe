@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Transcribe - Audio Recorder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Voice Transcribe</h1>
+            <p class="subtitle">Record audio and save to cloud storage</p>
+        </header>
+
+        <div class="config-panel">
+            <h2>Cloud Storage Configuration</h2>
+            <div class="config-form">
+                <div class="form-group">
+                    <label for="storage-type">Storage Type:</label>
+                    <select id="storage-type">
+                        <option value="s3">Amazon S3</option>
+                        <option value="gcs">Google Cloud Storage</option>
+                        <option value="azure">Azure Blob Storage</option>
+                    </select>
+                </div>
+
+                <div class="form-group s3-config">
+                    <label for="s3-bucket">S3 Bucket Name:</label>
+                    <input type="text" id="s3-bucket" placeholder="my-audio-bucket">
+                </div>
+
+                <div class="form-group s3-config">
+                    <label for="s3-region">AWS Region:</label>
+                    <input type="text" id="s3-region" placeholder="us-east-1">
+                </div>
+
+                <div class="form-group s3-config">
+                    <label for="s3-access-key">Access Key ID:</label>
+                    <input type="password" id="s3-access-key" placeholder="Your Access Key">
+                </div>
+
+                <div class="form-group s3-config">
+                    <label for="s3-secret-key">Secret Access Key:</label>
+                    <input type="password" id="s3-secret-key" placeholder="Your Secret Key">
+                </div>
+
+                <div class="form-group gcs-config" style="display: none;">
+                    <label for="gcs-bucket">GCS Bucket Name:</label>
+                    <input type="text" id="gcs-bucket" placeholder="my-audio-bucket">
+                </div>
+
+                <div class="form-group gcs-config" style="display: none;">
+                    <label for="gcs-api-key">API Key:</label>
+                    <input type="password" id="gcs-api-key" placeholder="Your GCS API Key">
+                </div>
+
+                <div class="form-group azure-config" style="display: none;">
+                    <label for="azure-account">Storage Account:</label>
+                    <input type="text" id="azure-account" placeholder="mystorageaccount">
+                </div>
+
+                <div class="form-group azure-config" style="display: none;">
+                    <label for="azure-container">Container Name:</label>
+                    <input type="text" id="azure-container" placeholder="audio-recordings">
+                </div>
+
+                <div class="form-group azure-config" style="display: none;">
+                    <label for="azure-sas">SAS Token:</label>
+                    <input type="password" id="azure-sas" placeholder="Your SAS Token">
+                </div>
+
+                <button id="save-config" class="btn btn-secondary">Save Configuration</button>
+            </div>
+        </div>
+
+        <div class="recorder-panel">
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">Ready to record</span>
+            </div>
+
+            <div class="audio-visualizer" id="visualizer">
+                <canvas id="visualizer-canvas"></canvas>
+            </div>
+
+            <div class="controls">
+                <button id="record-btn" class="btn btn-primary">
+                    <span class="btn-icon">🎤</span>
+                    Start Recording
+                </button>
+                <button id="stop-btn" class="btn btn-danger" disabled>
+                    <span class="btn-icon">⏹</span>
+                    Stop Recording
+                </button>
+                <button id="play-btn" class="btn btn-secondary" disabled>
+                    <span class="btn-icon">▶️</span>
+                    Play
+                </button>
+                <button id="upload-btn" class="btn btn-success" disabled>
+                    <span class="btn-icon">☁️</span>
+                    Upload to Cloud
+                </button>
+            </div>
+
+            <div class="recording-info">
+                <div class="timer" id="timer">00:00</div>
+                <div class="file-info" id="file-info"></div>
+            </div>
+
+            <div class="audio-player-container" id="audio-player-container" style="display: none;">
+                <audio id="audio-player" controls></audio>
+            </div>
+        </div>
+
+        <div class="recordings-list">
+            <h2>Uploaded Recordings</h2>
+            <div id="recordings-container">
+                <p class="empty-state">No recordings uploaded yet</p>
+            </div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
