@@ -309,7 +309,7 @@ function getSelectedCourseId() {
 async function startWorkshopWithSelectedCourse() {
   const courseId = getSelectedCourseId();
 
-  console.log('Starting workshop with course:', courseId);
+  console.log('Starting workshop with selected course:', courseId);
 
   // Save selection to localStorage (this is what gets loaded on refresh)
   localStorage.setItem('selectedCourse', courseId);
@@ -318,12 +318,28 @@ async function startWorkshopWithSelectedCourse() {
   setCurrentCourseId(courseId);
 
   try {
+    // Force reload of course data by resetting the dataLoaded flag
+    // This ensures startWorkshop() will load the fresh course data
+    console.log('Forcing course data reload for:', courseId);
+
+    // Access the global dataLoaded variable from app.js
+    window.dataLoaded = false;
+
     // Load the selected course data directly
-    // This will update all the global variables (exercises, courseData, etc.)
     console.log('Loading course data for:', courseId);
     await loadCourseData(courseId);
 
-    console.log('Course data loaded, proceeding to workshop...');
+    // Mark data as loaded
+    window.dataLoaded = true;
+
+    console.log('Course data loaded successfully');
+    console.log('Exercises loaded:', exercises ? exercises.length : 0);
+
+    // Rebuild the UI with the new course data
+    console.log('Rebuilding UI with new course data...');
+    await initializeDynamicUI();
+
+    console.log('Proceeding to workshop modal...');
 
     // Now proceed with the workshop flow
     // The startWorkshop function will use the newly loaded course data

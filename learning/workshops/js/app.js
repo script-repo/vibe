@@ -8,6 +8,9 @@ let currentExercise = 0;
 let completedExercises = new Set();
 let dataLoaded = false;
 
+// Expose dataLoaded to window for cross-module access
+window.dataLoaded = false;
+
 // Device detection
 const deviceInfo = {
   isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
@@ -30,6 +33,7 @@ async function initializeCourseData() {
     console.log('Loading course data...');
     await loadCourseData();
     dataLoaded = true;
+    window.dataLoaded = true;
     console.log('Course data loaded successfully!');
     return true;
   } catch (error) {
@@ -112,8 +116,10 @@ async function switchCourse(courseId) {
   try {
     // Reload course data with new course ID
     dataLoaded = false;
+    window.dataLoaded = false;
     await loadCourseData(courseId);
     dataLoaded = true;
+    window.dataLoaded = true;
 
     // Reset exercise progress
     currentExercise = 0;
