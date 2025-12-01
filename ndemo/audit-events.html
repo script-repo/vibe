@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Events - Nutanix Enterprise AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="audit-events">
+    <div class="app-container">
+        <div class="sidebar">
+            <button class="close-btn" onclick="window.history.back()">✕</button>
+            <a href="dashboard.html" class="sidebar-item" data-page="dashboard">Dashboard</a>
+            <a href="models.html" class="sidebar-item" data-page="models">Models</a>
+            <a href="endpoints.html" class="sidebar-item" data-page="endpoints">Endpoints</a>
+            <a href="audit-events.html" class="sidebar-item active" data-page="audit-events">Audit Events</a>
+            <a href="#" class="sidebar-item" data-page="infrastructure">Infrastructure</a>
+            <a href="#" class="sidebar-item" data-page="users">Users</a>
+            <div style="flex: 1;"></div>
+            <div class="sidebar-section">
+                <a href="#" class="sidebar-item" data-page="nai-labs">NAI Labs</a>
+                <a href="#" class="sidebar-item settings">Settings</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-title">Nutanix Enterprise AI</div>
+                <div class="user-menu" onclick="logout()">
+                    <span id="current-user">daemon.behr</span>
+                </div>
+            </div>
+            <div class="content-area">
+                <div class="page-header">
+                    <h1 class="page-title">Audit Events</h1>
+                </div>
+
+                <div class="table-container">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="auditSearch" placeholder="Search Query" onkeyup="filterTable('auditSearch', 'auditTable')">
+                    </div>
+                    <div class="table-header">
+                        <div class="table-info">Viewing all 5,048 Audit Events</div>
+                        <div class="table-pagination">
+                            <span class="modify-filters">Modify Filters</span>
+                            <button class="btn-secondary" style="padding: 6px 14px; margin: 0 12px;">Export</button>
+                            <span>1 - 60 of 5,048</span>
+                            <span>ⓘ</span>
+                            <span>60 rows ⋮</span>
+                        </div>
+                    </div>
+                    <table id="auditTable">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Action</th>
+                                <th>Entity Type</th>
+                                <th>User</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>User daemon.behr has logged in from 10.40.26.205</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>daemon.behr</td>
+                                <td>01 Dec 2025, 14:52</td>
+                            </tr>
+                            <tr>
+                                <td>User admin failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:48</td>
+                            </tr>
+                            <tr>
+                                <td>User admin failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:45</td>
+                            </tr>
+                            <tr>
+                                <td>User admin failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:44</td>
+                            </tr>
+                            <tr>
+                                <td>User DM3-POC110-User19 failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>DM3-POC110-User19</td>
+                                <td>01 Dec 2025, 14:43</td>
+                            </tr>
+                            <tr>
+                                <td>User gabriel.rapaport failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>gabriel.rapaport</td>
+                                <td>01 Dec 2025, 14:43</td>
+                            </tr>
+                            <tr>
+                                <td>User gabriel.rapaport@nutanix.com failed to log in from 10.24.28.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>gabriel.rapaport@nutanix.com</td>
+                                <td>01 Dec 2025, 14:42</td>
+                            </tr>
+                            <tr>
+                                <td>User admin has logged out from 10.22.24.155</td>
+                                <td>Log out</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:42</td>
+                            </tr>
+                            <tr>
+                                <td>User admin has logged in from 10.22.24.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:42</td>
+                            </tr>
+                            <tr>
+                                <td>User admin has logged out from 10.22.24.155</td>
+                                <td>Log out</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:41</td>
+                            </tr>
+                            <tr>
+                                <td>User admin has logged in from 10.22.24.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:41</td>
+                            </tr>
+                            <tr>
+                                <td>User admin failed to log in from 10.22.24.155</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>admin</td>
+                                <td>01 Dec 2025, 14:41</td>
+                            </tr>
+                            <tr>
+                                <td>User matt-admin has logged in from 10.24.28.206</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>matt-admin</td>
+                                <td>01 Dec 2025, 14:29</td>
+                            </tr>
+                            <tr>
+                                <td>Created 20bgptoss using catalog.nim method</td>
+                                <td>Create</td>
+                                <td>Model</td>
+                                <td>sales</td>
+                                <td>01 Dec 2025, 14:27</td>
+                            </tr>
+                            <tr>
+                                <td>User brandon.mendonca@nutanix.com failed to log in from 10.40.25.194</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>brandon.mendonca@nutanix.com</td>
+                                <td>01 Dec 2025, 14:25</td>
+                            </tr>
+                            <tr>
+                                <td>User michael.keelun@nutanix.com failed to log in from 10.24.28.93</td>
+                                <td>Log in</td>
+                                <td>User</td>
+                                <td>michael.keelun@nutanix.com</td>
+                                <td>01 Dec 2025, 13:50</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('current-user').textContent = getCurrentUser();
+        checkAuth();
+    </script>
+</body>
+</html>

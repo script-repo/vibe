@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endpoints - Nutanix Enterprise AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="endpoints">
+    <div class="app-container">
+        <div class="sidebar">
+            <button class="close-btn" onclick="window.history.back()">✕</button>
+            <a href="dashboard.html" class="sidebar-item" data-page="dashboard">Dashboard</a>
+            <a href="models.html" class="sidebar-item" data-page="models">Models</a>
+            <a href="endpoints.html" class="sidebar-item active" data-page="endpoints">Endpoints</a>
+            <a href="audit-events.html" class="sidebar-item" data-page="audit-events">Audit Events</a>
+            <a href="#" class="sidebar-item" data-page="infrastructure">Infrastructure</a>
+            <a href="#" class="sidebar-item" data-page="users">Users</a>
+            <div style="flex: 1;"></div>
+            <div class="sidebar-section">
+                <a href="#" class="sidebar-item" data-page="nai-labs">NAI Labs</a>
+                <a href="#" class="sidebar-item settings">Settings</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-title">Nutanix Enterprise AI</div>
+                <div class="user-menu" onclick="logout()">
+                    <span id="current-user">daemon.behr</span>
+                </div>
+            </div>
+            <div class="content-area">
+                <div class="page-header">
+                    <h1 class="page-title">Endpoints</h1>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active">List</div>
+                    <div class="tab">API Keys</div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-primary">Create Endpoint</button>
+                    <button class="btn-secondary">Actions</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="endpointSearch" placeholder="Search Query" onkeyup="filterTable('endpointSearch', 'endpointsTable')">
+                    </div>
+                    <div class="table-header">
+                        <div class="table-info">Viewing all 97 Endpoints</div>
+                        <div class="table-pagination">
+                            <span class="modify-filters">Modify Filters</span>
+                            <span>1 - 60 of 97</span>
+                            <span>ⓘ</span>
+                            <span>60 rows ⋮</span>
+                        </div>
+                    </div>
+                    <table id="endpointsTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox"></th>
+                                <th>Endpoint Name ↕</th>
+                                <th>Model Instance Name</th>
+                                <th>Model Capabilities</th>
+                                <th>Accelerator</th>
+                                <th>Created By</th>
+                                <th>Status ↕</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">researched-model</a></td>
+                                <td>llama3.370b</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(2) NVIDIA-H100-NVL</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">llama-1b-3-2</a></td>
+                                <td>llama-3-2-1b</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(8) Intel AMX vCPU</td>
+                                <td>sales</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">peterholmstromend</a></td>
+                                <td>peterhunsloth</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(1) NVIDIA-H100-NVL</td>
+                                <td>peter.holmstrom</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">llama-3-3-70b</a></td>
+                                <td>llama-3-3-70B</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(1) NVIDIA-H100-NVL</td>
+                                <td>tomoya.umesato</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">llama31nemotron70b-i</a></td>
+                                <td>Llama-3.1-nemotron-70b-instruct</td>
+                                <td><span class="capability-badge">Text To Text</span></td>
+                                <td>(2) NVIDIA-H100-NVL</td>
+                                <td>sales</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">iktest</a></td>
+                                <td>iktest</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(1) NVIDIA-H100-NVL</td>
+                                <td>hideyuki.ikushima</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">peterholmstrom</a></td>
+                                <td>peterhunsloth</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(1) NVIDIA-L40S</td>
+                                <td>peter.holmstrom</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">iep-apertus</a></td>
+                                <td>Apertus-8b-Instruct</td>
+                                <td><span class="capability-badge">Text To Text</span></td>
+                                <td>(1) NVIDIA-L40S</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">js-reranker</a></td>
+                                <td>mod-marco-reranker</td>
+                                <td><span class="capability-badge">Reranker</span></td>
+                                <td>(8) Intel AMX vCPU</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">embedcpu</a></td>
+                                <td>ibm-granite-model</td>
+                                <td><span class="capability-badge">Embedding</span></td>
+                                <td>(8) Intel AMX vCPU</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">llama3313b-model</a></td>
+                                <td>llam323b</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(16) Intel AMX vCPU</td>
+                                <td>steven.thomson</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">ibi</a></td>
+                                <td>llama-3-2-instruct</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(1) NVIDIA-H100-NVL</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-hibernated">Hibernated</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td><a href="#" class="table-link">hpe-demo</a></td>
+                                <td>llama-3-2-instruct</td>
+                                <td><span class="capability-badge">Text To Text</span><span class="capability-count">+ 1</span></td>
+                                <td>(16) Intel AMX vCPU</td>
+                                <td>admin</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('current-user').textContent = getCurrentUser();
+        checkAuth();
+    </script>
+</body>
+</html>

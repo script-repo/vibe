@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Nutanix Enterprise AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="dashboard">
+    <div class="app-container">
+        <div class="sidebar">
+            <button class="close-btn" onclick="window.history.back()">✕</button>
+            <a href="dashboard.html" class="sidebar-item active" data-page="dashboard">Dashboard</a>
+            <a href="models.html" class="sidebar-item" data-page="models">Models</a>
+            <a href="endpoints.html" class="sidebar-item" data-page="endpoints">Endpoints</a>
+            <a href="audit-events.html" class="sidebar-item" data-page="audit-events">Audit Events</a>
+            <a href="#" class="sidebar-item" data-page="infrastructure">Infrastructure</a>
+            <a href="#" class="sidebar-item" data-page="users">Users</a>
+            <div style="flex: 1;"></div>
+            <div class="sidebar-section">
+                <a href="#" class="sidebar-item" data-page="nai-labs">NAI Labs</a>
+                <a href="#" class="sidebar-item settings">Settings</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-title">Nutanix Enterprise AI</div>
+                <div class="user-menu" onclick="logout()">
+                    <span id="current-user">daemon.behr</span>
+                </div>
+            </div>
+            <div class="content-area">
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1 class="page-title">Dashboard</h1>
+                    <select class="time-selector">
+                        <option>Last 24 hours</option>
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                    </select>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Endpoints Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Endpoints Summary</h2>
+                            <span class="card-badge">Current</span>
+                        </div>
+                        <div class="chart-container">
+                            <div class="circular-chart">
+                                <canvas id="endpointsChart" width="160" height="160"></canvas>
+                                <div class="chart-center">
+                                    <span class="chart-label">Total</span>
+                                    <span class="chart-value">97</span>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-green"></span>
+                                        Active
+                                    </div>
+                                    <div class="legend-value">9</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-red"></span>
+                                        Failed
+                                    </div>
+                                    <div class="legend-value">0</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-yellow"></span>
+                                        Pending
+                                    </div>
+                                    <div class="legend-value">1</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-gray"></span>
+                                        Hibernated
+                                    </div>
+                                    <div class="legend-value">87</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <a href="endpoints.html" class="view-details">View All Endpoints</a>
+                        </div>
+                    </div>
+
+                    <!-- Infrastructure Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Infrastructure Summary</h2>
+                            <span class="card-badge">Current</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-label">
+                                    Service Health
+                                </div>
+                                <div class="info-value status-critical">Critical</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Memory Usage</div>
+                                <div class="info-value">10.21 %</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">CPU Usage</div>
+                                <div class="info-value">0.63 %</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Disk Usage</div>
+                                <div class="info-value">23.48 %</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Number of Accelerators</div>
+                                <div class="info-value">4</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <a href="#" class="view-details">View Details</a>
+                        </div>
+                    </div>
+
+                    <!-- Requests Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Requests Summary</h2>
+                        </div>
+                        <div class="chart-container">
+                            <div class="circular-chart">
+                                <canvas id="requestsChart" width="160" height="160"></canvas>
+                                <div class="chart-center">
+                                    <span class="chart-label">Total</span>
+                                    <span class="chart-value">48</span>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-green"></span>
+                                        Successful Requests
+                                    </div>
+                                    <div class="legend-value">43</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-red"></span>
+                                        Failed Requests
+                                    </div>
+                                    <div class="legend-value">4</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-label">
+                                        <span class="legend-dot dot-gray"></span>
+                                        Invalid Requests
+                                    </div>
+                                    <div class="legend-value">1</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requests Trend -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Requests Trend</h2>
+                        </div>
+                        <canvas id="trendChart" width="500" height="280"></canvas>
+                        <div style="margin-top: 16px; text-align: center; font-size: 12px; color: #718096;">
+                            <span style="margin-right: 20px;">● Successful Request</span>
+                            <span style="margin-right: 20px;">● Failed Request</span>
+                            <span>● Invalid Request</span>
+                        </div>
+                    </div>
+
+                    <!-- API Keys Table -->
+                    <div class="card full-width-table">
+                        <div class="card-header">
+                            <h2 class="card-title">API Keys (Top 5)</h2>
+                            <a href="#" class="view-details">All Requests ⋮</a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Key Name</th>
+                                    <th>Owner</th>
+                                    <th>Number of Requests</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ibrahim-ahmad</td>
+                                    <td>sales</td>
+                                    <td>39</td>
+                                </tr>
+                                <tr>
+                                    <td>ibrahim</td>
+                                    <td>admin</td>
+                                    <td>7</td>
+                                </tr>
+                                <tr>
+                                    <td>Peterif</td>
+                                    <td>peter.holmstrom</td>
+                                    <td>1</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Endpoints Table -->
+                    <div class="card full-width-table">
+                        <div class="card-header">
+                            <h2 class="card-title">Endpoints (Top 5)</h2>
+                            <a href="#" class="view-details">All Requests ⋮</a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Endpoints</th>
+                                    <th>Owner</th>
+                                    <th>Number of Requests</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ibm-embedding-model</td>
+                                    <td>sales</td>
+                                    <td>11</td>
+                                </tr>
+                                <tr>
+                                    <td>llama-1b-3-2</td>
+                                    <td>sales</td>
+                                    <td>11</td>
+                                </tr>
+                                <tr>
+                                    <td>ms-reranker</td>
+                                    <td>sales</td>
+                                    <td>10</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Draw Endpoints Chart
+        drawCircularChart('endpointsChart', [
+            { value: 9, total: 97, color: '#48BB78' },
+            { value: 0, total: 97, color: '#F56565' },
+            { value: 1, total: 97, color: '#ECC94B' },
+            { value: 87, total: 97, color: '#A0AEC0' }
+        ]);
+
+        // Draw Requests Chart
+        drawCircularChart('requestsChart', [
+            { value: 43, total: 48, color: '#48BB78' },
+            { value: 4, total: 48, color: '#F56565' },
+            { value: 1, total: 48, color: '#A0AEC0' }
+        ]);
+
+        // Draw Trend Chart
+        const trendData = [
+            { time: '03:52 PM', value: 0 },
+            { time: '05:52 PM', value: 0 },
+            { time: '07:52 PM', value: 0 },
+            { time: '09:52 PM', value: 0 },
+            { time: '11:52 PM', value: 0 },
+            { time: '01:52 AM', value: 0 },
+            { time: '03:52 AM', value: 1 },
+            { time: '05:52 AM', value: 5 }
+        ];
+        drawLineChart('trendChart', trendData);
+
+        // Set current user
+        document.getElementById('current-user').textContent = getCurrentUser();
+        checkAuth();
+    </script>
+</body>
+</html>
