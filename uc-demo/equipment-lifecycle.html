@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipment Lifecycle Tracking - Pattison AG</title>
+  <link rel="stylesheet" href="pattison.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">🚜</div>
+        <div>
+          <div class="sidebar-title">Pattison AG</div>
+          <div class="sidebar-subtitle">Equipment Lifecycle</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="#" class="nav-item active" data-page="dashboard">
+            <span class="nav-item-icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" class="nav-item" data-page="alerts">
+            <span class="nav-item-icon">🔔</span>
+            <span>Alerts</span>
+            <span class="nav-item-badge" id="alert-count">0</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Equipment</div>
+          <a href="#" class="nav-item" data-page="equipment">
+            <span class="nav-item-icon">🔧</span>
+            <span>All Equipment</span>
+          </a>
+          <a href="#" class="nav-item" data-page="lifecycle">
+            <span class="nav-item-icon">📈</span>
+            <span>Lifecycle Analysis</span>
+          </a>
+          <a href="#" class="nav-item" data-page="opportunities">
+            <span class="nav-item-icon">💰</span>
+            <span>Trade-In Opportunities</span>
+          </a>
+          <a href="#" class="nav-item" data-page="timeline">
+            <span class="nav-item-icon">📅</span>
+            <span>Event Timeline</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Analytics</div>
+          <a href="#" class="nav-item" data-page="health">
+            <span class="nav-item-icon">💚</span>
+            <span>Fleet Health</span>
+          </a>
+          <a href="#" class="nav-item" data-page="signals">
+            <span class="nav-item-icon">📡</span>
+            <span>Buying Signals</span>
+          </a>
+          <a href="#" class="nav-item" data-page="revenue">
+            <span class="nav-item-icon">💵</span>
+            <span>Revenue Calculator</span>
+          </a>
+          <a href="#" class="nav-item" data-page="territory">
+            <span class="nav-item-icon">🗺️</span>
+            <span>Territory Map</span>
+          </a>
+          <a href="#" class="nav-item" data-page="compare">
+            <span class="nav-item-icon">⚖️</span>
+            <span>Compare Equipment</span>
+          </a>
+          <a href="#" class="nav-item" data-page="activity">
+            <span class="nav-item-icon">📋</span>
+            <span>Activity Feed</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Customers</div>
+          <a href="#" class="nav-item" data-page="customers">
+            <span class="nav-item-icon">👥</span>
+            <span>Customer Portfolio</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="#" class="nav-item" data-page="console">
+            <span class="nav-item-icon">🖥️</span>
+            <span>Ralph Console</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1 class="header-title" id="page-title">Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" placeholder="Search equipment..." id="search-input">
+          </div>
+          <div class="user-menu">
+            <div class="user-avatar">JS</div>
+            <span>John Smith</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon green">🚜</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-total-equipment">--</div>
+                <div class="stat-label">Total Equipment</div>
+                <div class="stat-change positive">↑ Active tracking</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon yellow">⚠️</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-alerts">--</div>
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-change negative" id="stat-critical-alerts">-- critical</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red">📉</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-high-risk">--</div>
+                <div class="stat-label">High Risk Equipment</div>
+                <div class="stat-change">Needs attention</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">💰</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-trade-in">--</div>
+                <div class="stat-label">Trade-In Opportunities</div>
+                <div class="stat-change positive">Optimal window</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid Layout -->
+          <div class="grid-2">
+            <!-- Lifecycle Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📊 Lifecycle Distribution</h2>
+              </div>
+              <div class="card-body">
+                <div class="lifecycle-stages" id="lifecycle-distribution">
+                  <div class="lifecycle-stage new">New<br><span id="stage-new">0</span></div>
+                  <div class="lifecycle-stage growth">Growth<br><span id="stage-growth">0</span></div>
+                  <div class="lifecycle-stage mature">Mature<br><span id="stage-mature">0</span></div>
+                  <div class="lifecycle-stage decline">Decline<br><span id="stage-decline">0</span></div>
+                  <div class="lifecycle-stage eol">EOL<br><span id="stage-eol">0</span></div>
+                </div>
+                <div id="lifecycle-bars" style="margin-top: 20px;"></div>
+              </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">🔔 Recent Alerts</h2>
+                <button class="btn btn-outline" onclick="Dashboard.showPage('alerts')">View All</button>
+              </div>
+              <div class="card-body">
+                <div class="alert-list" id="recent-alerts">
+                  <div class="spinner"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipment Table -->
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">🚜 Equipment Overview</h2>
+              <button class="btn btn-primary" onclick="Dashboard.refreshData()">↻ Refresh</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Equipment</th>
+                    <th>Customer</th>
+                    <th>Lifecycle</th>
+                    <th>Stage</th>
+                    <th>Risk</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="equipment-table-body">
+                  <tr><td colspan="6" style="text-align: center; padding: 40px;"><div class="spinner" style="margin: 0 auto;"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts Page -->
+        <div id="page-alerts" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🔔 All Alerts</h2>
+              <div>
+                <button class="btn btn-outline" onclick="Dashboard.filterAlerts('all')">All</button>
+                <button class="btn btn-outline" onclick="Dashboard.filterAlerts('critical')">Critical</button>
+                <button class="btn btn-outline" onclick="Dashboard.filterAlerts('high')">High</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="alert-list" id="all-alerts">
+                <div class="spinner"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipment Page -->
+        <div id="page-equipment" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🔧 All Equipment</h2>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Model</th>
+                    <th>Customer</th>
+                    <th>Age (Years)</th>
+                    <th>Hours</th>
+                    <th>Stage</th>
+                    <th>Risk Score</th>
+                  </tr>
+                </thead>
+                <tbody id="all-equipment-table">
+                  <tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="spinner" style="margin: 0 auto;"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lifecycle Page -->
+        <div id="page-lifecycle" class="page">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon green">🌱</div>
+              <div class="stat-content">
+                <div class="stat-value" id="lifecycle-new">--</div>
+                <div class="stat-label">New (0-20%)</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">📈</div>
+              <div class="stat-content">
+                <div class="stat-value" id="lifecycle-growth">--</div>
+                <div class="stat-label">Growth (20-50%)</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon yellow">⚖️</div>
+              <div class="stat-content">
+                <div class="stat-value" id="lifecycle-mature">--</div>
+                <div class="stat-label">Mature (50-80%)</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red">📉</div>
+              <div class="stat-content">
+                <div class="stat-value" id="lifecycle-decline">--</div>
+                <div class="stat-label">Decline (80-100%)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">📈 Lifecycle Analysis Details</h2>
+            </div>
+            <div class="card-body" id="lifecycle-details">
+              <p>Loading lifecycle analysis...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities Page -->
+        <div id="page-opportunities" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">💰 Trade-In Opportunities</h2>
+            </div>
+            <div class="card-body">
+              <div id="opportunities-list">
+                <div class="spinner"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customers Page -->
+        <div id="page-customers" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">👥 Customer Portfolio</h2>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Territory</th>
+                    <th>Equipment</th>
+                    <th>Alerts</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-table">
+                  <tr><td colspan="5" style="text-align: center; padding: 40px;"><div class="spinner" style="margin: 0 auto;"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Console Page -->
+        <div id="page-console" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🖥️ Ralph Wiggum Loop Console</h2>
+              <button class="btn btn-secondary" onclick="Dashboard.runFullAnalysis()">🚀 Run Full Analysis</button>
+            </div>
+            <div class="card-body">
+              <p style="margin-bottom: 16px; color: var(--color-text-secondary);">
+                Watch the Ralph Wiggum Loop Framework process equipment data in real-time!
+              </p>
+              <div class="console-output" id="ralph-console">
+Welcome to the Ralph Wiggum Loop Console! 👦
+
+"I'm learnding about equipment!" - Ralph
+
+Click "Run Full Analysis" to see the framework in action...
+              </div>
+              <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-outline" onclick="Dashboard.runChooChooDemo()">🚂 Choo-Choo Loop</button>
+                <button class="btn btn-outline" onclick="Dashboard.runLearnding()">📚 Learnding Loop</button>
+                <button class="btn btn-outline" onclick="Dashboard.runLeprechaun()">🍀 Leprechaun Loop</button>
+                <button class="btn btn-outline" onclick="Dashboard.runIdaho()">🥔 Idaho Loop</button>
+                <button class="btn btn-outline" onclick="Dashboard.runBentWookiee()">🐻 Bent Wookiee</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Fleet Health Page -->
+        <div id="page-health" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">💚 Fleet Health Score</h2>
+                <button class="btn btn-primary" onclick="Dashboard.animateHealthGauge()">↻ Recalculate</button>
+              </div>
+              <div class="card-body">
+                <div class="health-gauge-container">
+                  <div class="health-gauge">
+                    <svg viewBox="0 0 200 200">
+                      <circle class="health-gauge-bg" cx="100" cy="100" r="80"></circle>
+                      <circle class="health-gauge-fill" id="health-gauge-fill" cx="100" cy="100" r="80"
+                        stroke-dasharray="502.65" stroke-dashoffset="502.65"></circle>
+                    </svg>
+                    <div class="health-gauge-center">
+                      <div class="health-gauge-value" id="health-score">--</div>
+                      <div class="health-gauge-label">Health Score</div>
+                    </div>
+                  </div>
+                  <div class="health-gauge-status" id="health-status">Calculating...</div>
+                  <div class="health-breakdown">
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-age">--</div>
+                      <div class="health-metric-label">Avg Age Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-usage">--</div>
+                      <div class="health-metric-label">Usage Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-maintenance">--</div>
+                      <div class="health-metric-label">Maintenance Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-risk">--</div>
+                      <div class="health-metric-label">Risk Score</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📊 Health by Category</h2>
+              </div>
+              <div class="card-body" id="health-by-category">
+                <div class="spinner" style="margin: 40px auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Buying Signals Page -->
+        <div id="page-signals" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📡 Conversation Analyzer</h2>
+              </div>
+              <div class="card-body">
+                <div class="conversation-analyzer">
+                  <div class="conversation-input">
+                    <select id="conversation-select" onchange="Dashboard.loadConversation()">
+                      <option value="">Select a customer conversation...</option>
+                      <option value="conv1">Green Valley Farms - Service Call</option>
+                      <option value="conv2">Prairie Wind Agriculture - Quarterly Review</option>
+                      <option value="conv3">Sunrise Cooperative - Equipment Inquiry</option>
+                      <option value="conv4">Heritage Family Farm - Complaint</option>
+                      <option value="conv5">Big Sky Ranch - Expansion Discussion</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="Dashboard.analyzeConversation()">🔍 Analyze Signals</button>
+                  </div>
+                  <div class="conversation-display" id="conversation-display">
+                    <p style="text-align: center; color: var(--color-text-secondary); padding: 20px;">
+                      Select a conversation to view and analyze for buying signals
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">🎯 Signal Analysis Results</h2>
+              </div>
+              <div class="card-body">
+                <div id="signal-results">
+                  <div class="overall-signal" style="background: var(--color-background); color: var(--color-text-secondary);">
+                    <div class="overall-signal-title">Overall Buying Signal</div>
+                    <div class="overall-signal-value">--</div>
+                    <div class="overall-signal-recommendation">Analyze a conversation to see results</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">📈 Signal History</h2>
+            </div>
+            <div class="card-body" id="signal-history">
+              <p style="text-align: center; color: var(--color-text-secondary);">
+                Signal analysis history will appear here after analyzing conversations
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Revenue Calculator Page -->
+        <div id="page-revenue" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">💵 Revenue Opportunity Calculator</h2>
+              <button class="btn btn-secondary" onclick="Dashboard.calculateRevenue()">📊 Calculate Revenue</button>
+            </div>
+            <div class="card-body">
+              <div class="revenue-calculator">
+                <div class="revenue-summary">
+                  <div class="revenue-total">
+                    <div class="revenue-total-label">Total Potential Revenue</div>
+                    <div class="revenue-total-value" id="revenue-total">$0</div>
+                    <div class="revenue-total-subtitle" id="revenue-opportunities">from 0 trade-in opportunities</div>
+                  </div>
+                  <div class="revenue-breakdown">
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🚜 Tractors</span>
+                      <span class="revenue-item-value" id="revenue-tractors">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🌾 Combines</span>
+                      <span class="revenue-item-value" id="revenue-combines">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">💧 Sprayers</span>
+                      <span class="revenue-item-value" id="revenue-sprayers">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🌱 Planters</span>
+                      <span class="revenue-item-value" id="revenue-planters">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🔧 Other</span>
+                      <span class="revenue-item-value" id="revenue-other">$0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="revenue-chart">
+                  <h3 style="margin-bottom: 16px;">Revenue by Equipment Type</h3>
+                  <div class="revenue-bar-chart" id="revenue-bars">
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Tractors</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill tractors" id="bar-tractors" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-tractors">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Combines</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill combines" id="bar-combines" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-combines">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Sprayers</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill sprayers" id="bar-sprayers" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-sprayers">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Planters</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill planters" id="bar-planters" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-planters">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Other</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill other" id="bar-other" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-other">$0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">🎯 Top Revenue Opportunities</h2>
+            </div>
+            <div class="card-body" id="top-opportunities">
+              <p style="text-align: center; color: var(--color-text-secondary);">
+                Click "Calculate Revenue" to see top opportunities
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Timeline Page -->
+        <div id="page-timeline" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">📅 Upcoming Events Timeline</h2>
+              <div class="timeline-filters">
+                <button class="timeline-filter active" data-filter="all" onclick="Dashboard.filterTimeline('all')">All</button>
+                <button class="timeline-filter" data-filter="warranty" onclick="Dashboard.filterTimeline('warranty')">🛡️ Warranty</button>
+                <button class="timeline-filter" data-filter="lease" onclick="Dashboard.filterTimeline('lease')">📋 Lease</button>
+                <button class="timeline-filter" data-filter="trade-in" onclick="Dashboard.filterTimeline('trade-in')">🔄 Trade-In</button>
+                <button class="timeline-filter" data-filter="maintenance" onclick="Dashboard.filterTimeline('maintenance')">🔧 Maintenance</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="timeline-container">
+                <div class="timeline" id="event-timeline">
+                  <div class="spinner" style="margin: 40px auto;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Territory Map Page -->
+        <div id="page-territory" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🗺️ Territory Health Map</h2>
+              <button class="btn btn-primary" onclick="Dashboard.refreshTerritoryMap()">↻ Refresh</button>
+            </div>
+            <div class="card-body">
+              <div class="territory-map" id="territory-map">
+                <div class="spinner" style="margin: 40px auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Compare Equipment Page -->
+        <div id="page-compare" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">⚖️ Equipment Comparison Tool</h2>
+              <button class="btn btn-secondary" onclick="Dashboard.clearComparison()">Clear</button>
+            </div>
+            <div class="card-body">
+              <div class="comparison-container">
+                <div class="comparison-selectors">
+                  <div class="comparison-selector" id="compare-slot-1" onclick="Dashboard.openEquipmentSelector(1)">
+                    <div class="comparison-selector-icon">🚜</div>
+                    <div class="comparison-selector-label">Click to select equipment</div>
+                    <div class="equipment-dropdown" id="dropdown-1"></div>
+                  </div>
+                  <div class="comparison-vs">VS</div>
+                  <div class="comparison-selector" id="compare-slot-2" onclick="Dashboard.openEquipmentSelector(2)">
+                    <div class="comparison-selector-icon">🚜</div>
+                    <div class="comparison-selector-label">Click to select equipment</div>
+                    <div class="equipment-dropdown" id="dropdown-2"></div>
+                  </div>
+                </div>
+                <div id="comparison-results" style="display: none;">
+                  <div class="comparison-table" id="comparison-table">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Activity Feed Page -->
+        <div id="page-activity" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📋 Live Activity Feed</h2>
+                <div class="activity-live-indicator">
+                  <div class="activity-live-dot"></div>
+                  <span>Live</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="activity-feed" id="activity-feed">
+                  <div class="spinner" style="margin: 40px auto;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📊 Activity Summary</h2>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon green" style="width: 40px; height: 40px; font-size: 18px;">📈</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-predictions">--</div>
+                      <div class="stat-label">Predictions Today</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon yellow" style="width: 40px; height: 40px; font-size: 18px;">🔔</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-alerts">--</div>
+                      <div class="stat-label">Alerts Generated</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon blue" style="width: 40px; height: 40px; font-size: 18px;">💰</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-opportunities">--</div>
+                      <div class="stat-label">Opportunities Found</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon red" style="width: 40px; height: 40px; font-size: 18px;">⚠️</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-risks">--</div>
+                      <div class="stat-label">Risk Alerts</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: var(--spacing-4);">
+                  <button class="btn btn-primary" onclick="Dashboard.simulateActivity()" style="width: 100%;">
+                    🚀 Simulate Live Activity
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Stats Ticker Bar -->
+  <div class="stats-ticker" id="stats-ticker">
+    <div class="stats-ticker-content" id="ticker-content">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Equipment Detail Modal -->
+  <div class="modal-overlay" id="equipment-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">
+          <span>🚜</span>
+          <span>Equipment Details</span>
+        </div>
+        <button class="modal-close" onclick="Dashboard.closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Ralph Mode Indicator -->
+  <div class="ralph-mode">
+    <span>👦</span>
+    <span>Ralph Mode Active</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="ralph-wiggum-loop.js"></script>
+  <script src="equipment-data.js"></script>
+  <script src="lifecycle-engine.js"></script>
+  <script src="alert-system.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
