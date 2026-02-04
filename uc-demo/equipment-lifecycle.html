@@ -69,6 +69,18 @@
             <span class="nav-item-icon">💵</span>
             <span>Revenue Calculator</span>
           </a>
+          <a href="#" class="nav-item" data-page="territory">
+            <span class="nav-item-icon">🗺️</span>
+            <span>Territory Map</span>
+          </a>
+          <a href="#" class="nav-item" data-page="compare">
+            <span class="nav-item-icon">⚖️</span>
+            <span>Compare Equipment</span>
+          </a>
+          <a href="#" class="nav-item" data-page="activity">
+            <span class="nav-item-icon">📋</span>
+            <span>Activity Feed</span>
+          </a>
         </div>
 
         <div class="nav-section">
@@ -593,8 +605,140 @@ Click "Run Full Analysis" to see the framework in action...
             </div>
           </div>
         </div>
+
+        <!-- NEW FEATURE: Territory Map Page -->
+        <div id="page-territory" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🗺️ Territory Health Map</h2>
+              <button class="btn btn-primary" onclick="Dashboard.refreshTerritoryMap()">↻ Refresh</button>
+            </div>
+            <div class="card-body">
+              <div class="territory-map" id="territory-map">
+                <div class="spinner" style="margin: 40px auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Compare Equipment Page -->
+        <div id="page-compare" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">⚖️ Equipment Comparison Tool</h2>
+              <button class="btn btn-secondary" onclick="Dashboard.clearComparison()">Clear</button>
+            </div>
+            <div class="card-body">
+              <div class="comparison-container">
+                <div class="comparison-selectors">
+                  <div class="comparison-selector" id="compare-slot-1" onclick="Dashboard.openEquipmentSelector(1)">
+                    <div class="comparison-selector-icon">🚜</div>
+                    <div class="comparison-selector-label">Click to select equipment</div>
+                    <div class="equipment-dropdown" id="dropdown-1"></div>
+                  </div>
+                  <div class="comparison-vs">VS</div>
+                  <div class="comparison-selector" id="compare-slot-2" onclick="Dashboard.openEquipmentSelector(2)">
+                    <div class="comparison-selector-icon">🚜</div>
+                    <div class="comparison-selector-label">Click to select equipment</div>
+                    <div class="equipment-dropdown" id="dropdown-2"></div>
+                  </div>
+                </div>
+                <div id="comparison-results" style="display: none;">
+                  <div class="comparison-table" id="comparison-table">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Activity Feed Page -->
+        <div id="page-activity" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📋 Live Activity Feed</h2>
+                <div class="activity-live-indicator">
+                  <div class="activity-live-dot"></div>
+                  <span>Live</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="activity-feed" id="activity-feed">
+                  <div class="spinner" style="margin: 40px auto;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📊 Activity Summary</h2>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon green" style="width: 40px; height: 40px; font-size: 18px;">📈</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-predictions">--</div>
+                      <div class="stat-label">Predictions Today</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon yellow" style="width: 40px; height: 40px; font-size: 18px;">🔔</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-alerts">--</div>
+                      <div class="stat-label">Alerts Generated</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon blue" style="width: 40px; height: 40px; font-size: 18px;">💰</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-opportunities">--</div>
+                      <div class="stat-label">Opportunities Found</div>
+                    </div>
+                  </div>
+                  <div class="stat-card" style="padding: var(--spacing-4);">
+                    <div class="stat-icon red" style="width: 40px; height: 40px; font-size: 18px;">⚠️</div>
+                    <div class="stat-content">
+                      <div class="stat-value" id="activity-risks">--</div>
+                      <div class="stat-label">Risk Alerts</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: var(--spacing-4);">
+                  <button class="btn btn-primary" onclick="Dashboard.simulateActivity()" style="width: 100%;">
+                    🚀 Simulate Live Activity
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
+  </div>
+
+  <!-- Stats Ticker Bar -->
+  <div class="stats-ticker" id="stats-ticker">
+    <div class="stats-ticker-content" id="ticker-content">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Equipment Detail Modal -->
+  <div class="modal-overlay" id="equipment-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">
+          <span>🚜</span>
+          <span>Equipment Details</span>
+        </div>
+        <button class="modal-close" onclick="Dashboard.closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Populated by JS -->
+      </div>
+    </div>
   </div>
 
   <!-- Toast Container -->

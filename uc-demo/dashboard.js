@@ -12,6 +12,9 @@ const Dashboard = (() => {
   let consoleBuffer = [];
   let signalHistory = [];
   let timelineEvents = [];
+  let activityFeed = [];
+  let compareSlot1 = null;
+  let compareSlot2 = null;
 
   // Console logging override
   const originalLog = console.log;
@@ -69,6 +72,9 @@ const Dashboard = (() => {
         showToast('Attention Required', `${criticalCount} critical alerts need your attention`, 'warning', 6000);
       }
     }, 2000);
+
+    // Initialize stats ticker
+    initStatsTicker();
   };
 
   /**
@@ -112,7 +118,10 @@ const Dashboard = (() => {
       'health': 'Fleet Health',
       'signals': 'Buying Signals',
       'revenue': 'Revenue Calculator',
-      'timeline': 'Event Timeline'
+      'timeline': 'Event Timeline',
+      'territory': 'Territory Map',
+      'compare': 'Compare Equipment',
+      'activity': 'Activity Feed'
     };
     document.getElementById('page-title').textContent = titles[pageId] || 'Dashboard';
 
@@ -126,6 +135,9 @@ const Dashboard = (() => {
     if (pageId === 'signals') loadSignalsPage();
     if (pageId === 'revenue') loadRevenuePage();
     if (pageId === 'timeline') loadTimelinePage();
+    if (pageId === 'territory') loadTerritoryPage();
+    if (pageId === 'compare') loadComparePage();
+    if (pageId === 'activity') loadActivityPage();
   };
 
   /**
@@ -263,7 +275,7 @@ const Dashboard = (() => {
       const stage = prediction.currentStage;
 
       return `
-        <tr>
+        <tr onclick="Dashboard.openEquipmentModal('${eq.id}')" style="cursor: pointer;">
           <td>
             <div style="display: flex; align-items: center; gap: 12px;">
               <div class="equipment-icon" style="width: 36px; height: 36px; font-size: 18px;">
@@ -1258,6 +1270,538 @@ const Dashboard = (() => {
     renderTimeline(filter);
   };
 
+  // ============================================
+  // FEATURE 6: Equipment Detail Modal
+  // ============================================
+  const openEquipmentModal = (equipmentId) => {
+    const equipment = MockDataStore.getEquipmentById(equipmentId);
+    const prediction = predictions.find(p => p.equipmentId === equipmentId);
+
+    if (!equipment) return;
+
+    const modal = document.getElementById('equipment-modal');
+    const title = document.getElementById('modal-title');
+    const body = document.getElementById('modal-body');
+
+    title.innerHTML = `
+      <span>${getEquipmentIcon(equipment.category)}</span>
+      <span>${equipment.model} - ${equipment.id}</span>
+    `;
+
+    const stage = prediction?.currentStage || { label: 'Unknown', id: 'new' };
+
+    body.innerHTML = `
+      <div class="modal-grid">
+        <div>
+          <div class="modal-section">
+            <div class="modal-section-title">Equipment Information</div>
+            <div class="detail-row">
+              <span class="detail-label">Serial Number</span>
+              <span class="detail-value">${equipment.serialNumber}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Category</span>
+              <span class="detail-value" style="text-transform: capitalize;">${equipment.category}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Purchase Date</span>
+              <span class="detail-value">${new Date(equipment.purchaseDate).toLocaleDateString()}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Age</span>
+              <span class="detail-value">${equipment.ageYears.toFixed(1)} years</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Current Hours</span>
+              <span class="detail-value">${equipment.currentHours.toLocaleString()} hrs</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Expected Life</span>
+              <span class="detail-value">${equipment.expectedHours.toLocaleString()} hrs</span>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">Customer</div>
+            <div class="detail-row">
+              <span class="detail-label">Name</span>
+              <span class="detail-value">${equipment.customerName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Location</span>
+              <span class="detail-value">${equipment.location}</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="modal-section">
+            <div class="modal-section-title">Lifecycle Analysis</div>
+            <div style="text-align: center; padding: var(--spacing-4); background: var(--color-background); border-radius: var(--radius-lg); margin-bottom: var(--spacing-4);">
+              <div style="font-size: var(--text-3xl); font-weight: bold;">${prediction?.lifecyclePercentage || '--'}%</div>
+              <div style="font-size: var(--text-sm); color: var(--color-text-secondary);">Lifecycle Progress</div>
+              <span class="badge badge-${stage.id}" style="margin-top: var(--spacing-2);">${stage.label}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Risk Score</span>
+              <span class="detail-value">
+                <span class="badge badge-${prediction?.failureRiskLevel || 'low'}">${prediction ? Math.round(prediction.riskScore * 100) : '--'}%</span>
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Trade-In</span>
+              <span class="detail-value">${prediction?.tradeInRecommendation.shouldTradeIn ? '✅ Recommended' : '❌ Not Yet'}</span>
+            </div>
+            ${prediction?.tradeInRecommendation.shouldTradeIn ? `
+            <div class="detail-row">
+              <span class="detail-label">Optimal Window</span>
+              <span class="detail-value">${prediction.tradeInRecommendation.optimalWindow}</span>
+            </div>
+            ` : ''}
+          </div>
+
+          <div class="modal-section">
+            <div class="modal-section-title">Warranty & Lease</div>
+            <div class="detail-row">
+              <span class="detail-label">Warranty Expires</span>
+              <span class="detail-value">${equipment.warrantyExpiry ? new Date(equipment.warrantyExpiry).toLocaleDateString() : 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Leased</span>
+              <span class="detail-value">${equipment.isLeased ? 'Yes' : 'No'}</span>
+            </div>
+            ${equipment.isLeased ? `
+            <div class="detail-row">
+              <span class="detail-label">Lease Expires</span>
+              <span class="detail-value">${new Date(equipment.leaseExpiry).toLocaleDateString()}</span>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section" style="margin-top: var(--spacing-6);">
+        <div class="modal-section-title">Service History (${equipment.serviceHistory.length} records)</div>
+        <div class="service-timeline">
+          ${equipment.serviceHistory.slice(0, 5).map(service => `
+            <div class="service-entry">
+              <span class="service-date">${new Date(service.date).toLocaleDateString()}</span>
+              <span class="service-type">${service.type}</span>
+              <span class="service-cost">${formatCurrency(service.cost)}</span>
+            </div>
+          `).join('') || '<p style="color: var(--color-text-secondary);">No service records</p>'}
+        </div>
+      </div>
+
+      <div style="margin-top: var(--spacing-6); display: flex; gap: var(--spacing-3);">
+        <button class="btn btn-primary" onclick="Dashboard.showToast('Action Scheduled', 'Contact scheduled for ${equipment.customerName}', 'success')">📞 Contact Customer</button>
+        <button class="btn btn-secondary" onclick="Dashboard.showToast('Report Generated', 'Equipment report exported', 'info')">📄 Export Report</button>
+        <button class="btn btn-outline" onclick="Dashboard.closeModal()">Close</button>
+      </div>
+    `;
+
+    modal.classList.add('active');
+  };
+
+  const closeModal = () => {
+    document.getElementById('equipment-modal').classList.remove('active');
+  };
+
+  // ============================================
+  // FEATURE 7: Territory Heat Map
+  // ============================================
+  const loadTerritoryPage = () => {
+    refreshTerritoryMap();
+  };
+
+  const refreshTerritoryMap = () => {
+    const territories = {};
+    const equipment = MockDataStore.getAllEquipment();
+    const customers = MockDataStore.getCustomers();
+
+    // Calculate territory stats
+    customers.forEach(customer => {
+      if (!territories[customer.territory]) {
+        territories[customer.territory] = {
+          name: customer.territory,
+          customers: [],
+          equipment: [],
+          totalHealth: 0,
+          alerts: 0,
+          opportunities: 0,
+          rep: customer.rep
+        };
+      }
+      territories[customer.territory].customers.push(customer);
+    });
+
+    equipment.forEach(eq => {
+      const customer = customers.find(c => c.id === eq.customerId);
+      if (customer && territories[customer.territory]) {
+        territories[customer.territory].equipment.push(eq);
+        const prediction = predictions.find(p => p.equipmentId === eq.id);
+        if (prediction) {
+          territories[customer.territory].totalHealth += (100 - prediction.lifecyclePercentage);
+          if (prediction.tradeInRecommendation.shouldTradeIn) {
+            territories[customer.territory].opportunities++;
+          }
+        }
+      }
+    });
+
+    // Calculate alerts by territory
+    alerts.forEach(alert => {
+      const customer = customers.find(c => c.id === alert.customerId);
+      if (customer && territories[customer.territory]) {
+        territories[customer.territory].alerts++;
+      }
+    });
+
+    const container = document.getElementById('territory-map');
+    container.innerHTML = Object.values(territories).map(territory => {
+      const avgHealth = territory.equipment.length > 0 ?
+        Math.round(territory.totalHealth / territory.equipment.length) : 0;
+
+      let healthClass;
+      if (avgHealth >= 70) healthClass = 'excellent';
+      else if (avgHealth >= 50) healthClass = 'good';
+      else if (avgHealth >= 30) healthClass = 'fair';
+      else healthClass = 'poor';
+
+      const initials = territory.rep.split(' ').map(n => n[0]).join('');
+
+      return `
+        <div class="territory-card ${healthClass}" onclick="Dashboard.showToast('Territory Selected', '${territory.name} - ${territory.equipment.length} equipment units', 'info')">
+          <div class="territory-header">
+            <div class="territory-name">🗺️ ${territory.name}</div>
+            <div class="territory-health ${healthClass}">${avgHealth}%</div>
+          </div>
+          <div class="territory-stats">
+            <div class="territory-stat">
+              <div class="territory-stat-value">${territory.customers.length}</div>
+              <div class="territory-stat-label">Customers</div>
+            </div>
+            <div class="territory-stat">
+              <div class="territory-stat-value">${territory.equipment.length}</div>
+              <div class="territory-stat-label">Equipment</div>
+            </div>
+            <div class="territory-stat">
+              <div class="territory-stat-value">${territory.alerts}</div>
+              <div class="territory-stat-label">Alerts</div>
+            </div>
+          </div>
+          <div class="territory-rep">
+            <div class="territory-rep-avatar">${initials}</div>
+            <div class="territory-rep-name">${territory.rep}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    showToast('Territory Map Updated', `${Object.keys(territories).length} territories loaded`, 'success');
+  };
+
+  // ============================================
+  // FEATURE 8: Equipment Comparison Tool
+  // ============================================
+  const loadComparePage = () => {
+    // Reset comparison
+    updateComparisonSlots();
+  };
+
+  const openEquipmentSelector = (slot) => {
+    const dropdown = document.getElementById(`dropdown-${slot}`);
+    const allDropdowns = document.querySelectorAll('.equipment-dropdown');
+
+    // Close other dropdowns
+    allDropdowns.forEach(d => d.classList.remove('active'));
+
+    if (dropdown.classList.contains('active')) {
+      dropdown.classList.remove('active');
+      return;
+    }
+
+    // Populate dropdown
+    const equipment = MockDataStore.getAllEquipment();
+    dropdown.innerHTML = equipment.slice(0, 20).map(eq => {
+      const prediction = predictions.find(p => p.equipmentId === eq.id);
+      return `
+        <div class="equipment-dropdown-item" onclick="event.stopPropagation(); Dashboard.selectEquipment(${slot}, '${eq.id}')">
+          <span>${getEquipmentIcon(eq.category)}</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 500;">${eq.model}</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary);">${eq.customerName}</div>
+          </div>
+          <span class="badge badge-${prediction?.currentStage.id || 'new'}">${prediction?.lifecyclePercentage || '--'}%</span>
+        </div>
+      `;
+    }).join('');
+
+    dropdown.classList.add('active');
+  };
+
+  const selectEquipment = (slot, equipmentId) => {
+    const equipment = MockDataStore.getEquipmentById(equipmentId);
+    if (!equipment) return;
+
+    if (slot === 1) {
+      compareSlot1 = equipment;
+    } else {
+      compareSlot2 = equipment;
+    }
+
+    document.querySelectorAll('.equipment-dropdown').forEach(d => d.classList.remove('active'));
+    updateComparisonSlots();
+
+    if (compareSlot1 && compareSlot2) {
+      runComparison();
+    }
+  };
+
+  const updateComparisonSlots = () => {
+    const slot1 = document.getElementById('compare-slot-1');
+    const slot2 = document.getElementById('compare-slot-2');
+
+    if (compareSlot1) {
+      slot1.classList.add('selected');
+      slot1.innerHTML = `
+        <div class="comparison-selector-icon">${getEquipmentIcon(compareSlot1.category)}</div>
+        <div style="font-weight: 600;">${compareSlot1.model}</div>
+        <div style="font-size: 12px; color: var(--color-text-secondary);">${compareSlot1.customerName}</div>
+        <div class="equipment-dropdown" id="dropdown-1"></div>
+      `;
+    } else {
+      slot1.classList.remove('selected');
+      slot1.innerHTML = `
+        <div class="comparison-selector-icon">🚜</div>
+        <div class="comparison-selector-label">Click to select equipment</div>
+        <div class="equipment-dropdown" id="dropdown-1"></div>
+      `;
+    }
+
+    if (compareSlot2) {
+      slot2.classList.add('selected');
+      slot2.innerHTML = `
+        <div class="comparison-selector-icon">${getEquipmentIcon(compareSlot2.category)}</div>
+        <div style="font-weight: 600;">${compareSlot2.model}</div>
+        <div style="font-size: 12px; color: var(--color-text-secondary);">${compareSlot2.customerName}</div>
+        <div class="equipment-dropdown" id="dropdown-2"></div>
+      `;
+    } else {
+      slot2.classList.remove('selected');
+      slot2.innerHTML = `
+        <div class="comparison-selector-icon">🚜</div>
+        <div class="comparison-selector-label">Click to select equipment</div>
+        <div class="equipment-dropdown" id="dropdown-2"></div>
+      `;
+    }
+  };
+
+  const runComparison = () => {
+    if (!compareSlot1 || !compareSlot2) return;
+
+    const pred1 = predictions.find(p => p.equipmentId === compareSlot1.id);
+    const pred2 = predictions.find(p => p.equipmentId === compareSlot2.id);
+
+    const metrics = [
+      { label: 'Age (Years)', val1: compareSlot1.ageYears.toFixed(1), val2: compareSlot2.ageYears.toFixed(1), better: 'lower' },
+      { label: 'Hours', val1: compareSlot1.currentHours, val2: compareSlot2.currentHours, better: 'lower' },
+      { label: 'Lifecycle %', val1: pred1?.lifecyclePercentage || 0, val2: pred2?.lifecyclePercentage || 0, better: 'lower' },
+      { label: 'Risk Score', val1: pred1 ? Math.round(pred1.riskScore * 100) : 0, val2: pred2 ? Math.round(pred2.riskScore * 100) : 0, better: 'lower' },
+      { label: 'Service Records', val1: compareSlot1.serviceHistory.length, val2: compareSlot2.serviceHistory.length, better: 'higher' }
+    ];
+
+    const table = document.getElementById('comparison-table');
+    table.innerHTML = `
+      <div class="comparison-row header">
+        <div class="comparison-cell">Metric</div>
+        <div class="comparison-cell">${compareSlot1.model}</div>
+        <div class="comparison-cell">${compareSlot2.model}</div>
+      </div>
+      ${metrics.map(m => {
+        const v1 = parseFloat(m.val1);
+        const v2 = parseFloat(m.val2);
+        const winner1 = m.better === 'lower' ? v1 < v2 : v1 > v2;
+        const winner2 = m.better === 'lower' ? v2 < v1 : v2 > v1;
+        const max = Math.max(v1, v2, 1);
+
+        return `
+          <div class="comparison-row">
+            <div class="comparison-cell metric">${m.label}</div>
+            <div class="comparison-cell ${winner1 ? 'winner' : ''}">
+              <div class="comparison-bar">
+                <div class="comparison-bar-fill" style="width: ${(v1 / max) * 100}%; background: ${winner1 ? 'var(--color-success)' : 'var(--color-border)'}"></div>
+              </div>
+              ${m.val1}${m.label.includes('%') ? '%' : ''}
+            </div>
+            <div class="comparison-cell ${winner2 ? 'winner' : ''}">
+              <div class="comparison-bar">
+                <div class="comparison-bar-fill" style="width: ${(v2 / max) * 100}%; background: ${winner2 ? 'var(--color-success)' : 'var(--color-border)'}"></div>
+              </div>
+              ${m.val2}${m.label.includes('%') ? '%' : ''}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    `;
+
+    document.getElementById('comparison-results').style.display = 'block';
+    showToast('Comparison Ready', `${compareSlot1.model} vs ${compareSlot2.model}`, 'success');
+  };
+
+  const clearComparison = () => {
+    compareSlot1 = null;
+    compareSlot2 = null;
+    updateComparisonSlots();
+    document.getElementById('comparison-results').style.display = 'none';
+  };
+
+  // ============================================
+  // FEATURE 9: Live Activity Feed
+  // ============================================
+  const loadActivityPage = () => {
+    generateInitialActivity();
+    renderActivityFeed();
+    updateActivityStats();
+  };
+
+  const generateInitialActivity = () => {
+    activityFeed = [];
+    const types = ['alert', 'trade-in', 'maintenance', 'risk'];
+    const icons = { alert: '🔔', 'trade-in': '💰', maintenance: '🔧', risk: '⚠️' };
+    const equipment = MockDataStore.getAllEquipment().slice(0, 15);
+
+    equipment.forEach((eq, i) => {
+      const type = types[i % types.length];
+      const prediction = predictions.find(p => p.equipmentId === eq.id);
+
+      let title, description;
+      switch (type) {
+        case 'alert':
+          title = 'Alert Generated';
+          description = `${eq.model} warranty expiring soon`;
+          break;
+        case 'trade-in':
+          title = 'Trade-In Opportunity';
+          description = `${eq.model} at ${prediction?.lifecyclePercentage || 75}% lifecycle`;
+          break;
+        case 'maintenance':
+          title = 'Maintenance Due';
+          description = `${eq.model} service recommended`;
+          break;
+        case 'risk':
+          title = 'Risk Detected';
+          description = `${eq.model} high failure risk`;
+          break;
+      }
+
+      activityFeed.push({
+        type,
+        icon: icons[type],
+        title,
+        description,
+        customer: eq.customerName,
+        time: `${Math.floor(Math.random() * 60)} min ago`
+      });
+    });
+  };
+
+  const renderActivityFeed = () => {
+    const container = document.getElementById('activity-feed');
+    container.innerHTML = activityFeed.map(activity => `
+      <div class="activity-item ${activity.type}">
+        <div class="activity-icon">${activity.icon}</div>
+        <div class="activity-content">
+          <div class="activity-title">${activity.title}</div>
+          <div class="activity-description">${activity.description} - ${activity.customer}</div>
+        </div>
+        <div class="activity-time">${activity.time}</div>
+      </div>
+    `).join('');
+  };
+
+  const updateActivityStats = () => {
+    document.getElementById('activity-predictions').textContent = predictions.length;
+    document.getElementById('activity-alerts').textContent = alerts.length;
+    document.getElementById('activity-opportunities').textContent =
+      predictions.filter(p => p.tradeInRecommendation.shouldTradeIn).length;
+    document.getElementById('activity-risks').textContent =
+      predictions.filter(p => p.failureRiskLevel === 'high').length;
+  };
+
+  const simulateActivity = () => {
+    const types = ['alert', 'trade-in', 'maintenance', 'risk'];
+    const icons = { alert: '🔔', 'trade-in': '💰', maintenance: '🔧', risk: '⚠️' };
+    const equipment = MockDataStore.getAllEquipment();
+
+    let count = 0;
+    const interval = setInterval(() => {
+      if (count >= 5) {
+        clearInterval(interval);
+        return;
+      }
+
+      const eq = equipment[Math.floor(Math.random() * equipment.length)];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const prediction = predictions.find(p => p.equipmentId === eq.id);
+
+      const titles = {
+        alert: 'New Alert',
+        'trade-in': 'Opportunity Detected',
+        maintenance: 'Service Required',
+        risk: 'Risk Alert'
+      };
+
+      const newActivity = {
+        type,
+        icon: icons[type],
+        title: titles[type],
+        description: `${eq.model} - ${eq.customerName}`,
+        customer: eq.customerName,
+        time: 'Just now'
+      };
+
+      activityFeed.unshift(newActivity);
+      renderActivityFeed();
+
+      showToast(newActivity.title, newActivity.description, type === 'risk' ? 'error' : 'info', 3000);
+      count++;
+    }, 1500);
+  };
+
+  // ============================================
+  // FEATURE 10: Stats Ticker Bar
+  // ============================================
+  const initStatsTicker = () => {
+    const equipment = MockDataStore.getAllEquipment();
+    const summary = AlertSystem.getAlertSummary(alerts);
+    const riskDist = LifecycleEngine.getRiskDistribution(predictions);
+    const opportunities = predictions.filter(p => p.tradeInRecommendation.shouldTradeIn).length;
+
+    const tickerItems = [
+      { icon: '🚜', value: equipment.length, label: 'Total Equipment' },
+      { icon: '👥', value: MockDataStore.getCustomers().length, label: 'Active Customers' },
+      { icon: '🔔', value: alerts.length, label: 'Active Alerts' },
+      { icon: '⚠️', value: summary.byPriority.critical, label: 'Critical Alerts' },
+      { icon: '💰', value: opportunities, label: 'Trade-In Opportunities' },
+      { icon: '📉', value: riskDist.high, label: 'High Risk Equipment' },
+      { icon: '✅', value: riskDist.low, label: 'Healthy Equipment' },
+      { icon: '🔧', value: summary.byType.maintenance, label: 'Maintenance Due' }
+    ];
+
+    // Duplicate for seamless scroll
+    const content = [...tickerItems, ...tickerItems].map(item => `
+      <span class="ticker-item">
+        <span class="ticker-icon">${item.icon}</span>
+        <span class="ticker-value">${item.value}</span>
+        <span class="ticker-label">${item.label}</span>
+      </span>
+      <span class="ticker-divider"></span>
+    `).join('');
+
+    document.getElementById('ticker-content').innerHTML = content;
+  };
+
   // Public API
   return {
     init,
@@ -1270,13 +1814,21 @@ const Dashboard = (() => {
     runLeprechaun,
     runIdaho,
     runBentWookiee,
-    // New features
+    // Features 1-5
     showToast,
     animateHealthGauge,
     loadConversation,
     analyzeConversation,
     calculateRevenue,
-    filterTimeline
+    filterTimeline,
+    // Features 6-10
+    openEquipmentModal,
+    closeModal,
+    refreshTerritoryMap,
+    openEquipmentSelector,
+    selectEquipment,
+    clearComparison,
+    simulateActivity
   };
 })();
 
