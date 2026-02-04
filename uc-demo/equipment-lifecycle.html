@@ -49,6 +49,26 @@
             <span class="nav-item-icon">💰</span>
             <span>Trade-In Opportunities</span>
           </a>
+          <a href="#" class="nav-item" data-page="timeline">
+            <span class="nav-item-icon">📅</span>
+            <span>Event Timeline</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Analytics</div>
+          <a href="#" class="nav-item" data-page="health">
+            <span class="nav-item-icon">💚</span>
+            <span>Fleet Health</span>
+          </a>
+          <a href="#" class="nav-item" data-page="signals">
+            <span class="nav-item-icon">📡</span>
+            <span>Buying Signals</span>
+          </a>
+          <a href="#" class="nav-item" data-page="revenue">
+            <span class="nav-item-icon">💵</span>
+            <span>Revenue Calculator</span>
+          </a>
         </div>
 
         <div class="nav-section">
@@ -343,9 +363,242 @@ Click "Run Full Analysis" to see the framework in action...
             </div>
           </div>
         </div>
+
+        <!-- NEW FEATURE: Fleet Health Page -->
+        <div id="page-health" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">💚 Fleet Health Score</h2>
+                <button class="btn btn-primary" onclick="Dashboard.animateHealthGauge()">↻ Recalculate</button>
+              </div>
+              <div class="card-body">
+                <div class="health-gauge-container">
+                  <div class="health-gauge">
+                    <svg viewBox="0 0 200 200">
+                      <circle class="health-gauge-bg" cx="100" cy="100" r="80"></circle>
+                      <circle class="health-gauge-fill" id="health-gauge-fill" cx="100" cy="100" r="80"
+                        stroke-dasharray="502.65" stroke-dashoffset="502.65"></circle>
+                    </svg>
+                    <div class="health-gauge-center">
+                      <div class="health-gauge-value" id="health-score">--</div>
+                      <div class="health-gauge-label">Health Score</div>
+                    </div>
+                  </div>
+                  <div class="health-gauge-status" id="health-status">Calculating...</div>
+                  <div class="health-breakdown">
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-age">--</div>
+                      <div class="health-metric-label">Avg Age Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-usage">--</div>
+                      <div class="health-metric-label">Usage Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-maintenance">--</div>
+                      <div class="health-metric-label">Maintenance Score</div>
+                    </div>
+                    <div class="health-metric">
+                      <div class="health-metric-value" id="health-risk">--</div>
+                      <div class="health-metric-label">Risk Score</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📊 Health by Category</h2>
+              </div>
+              <div class="card-body" id="health-by-category">
+                <div class="spinner" style="margin: 40px auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Buying Signals Page -->
+        <div id="page-signals" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">📡 Conversation Analyzer</h2>
+              </div>
+              <div class="card-body">
+                <div class="conversation-analyzer">
+                  <div class="conversation-input">
+                    <select id="conversation-select" onchange="Dashboard.loadConversation()">
+                      <option value="">Select a customer conversation...</option>
+                      <option value="conv1">Green Valley Farms - Service Call</option>
+                      <option value="conv2">Prairie Wind Agriculture - Quarterly Review</option>
+                      <option value="conv3">Sunrise Cooperative - Equipment Inquiry</option>
+                      <option value="conv4">Heritage Family Farm - Complaint</option>
+                      <option value="conv5">Big Sky Ranch - Expansion Discussion</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="Dashboard.analyzeConversation()">🔍 Analyze Signals</button>
+                  </div>
+                  <div class="conversation-display" id="conversation-display">
+                    <p style="text-align: center; color: var(--color-text-secondary); padding: 20px;">
+                      Select a conversation to view and analyze for buying signals
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">🎯 Signal Analysis Results</h2>
+              </div>
+              <div class="card-body">
+                <div id="signal-results">
+                  <div class="overall-signal" style="background: var(--color-background); color: var(--color-text-secondary);">
+                    <div class="overall-signal-title">Overall Buying Signal</div>
+                    <div class="overall-signal-value">--</div>
+                    <div class="overall-signal-recommendation">Analyze a conversation to see results</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">📈 Signal History</h2>
+            </div>
+            <div class="card-body" id="signal-history">
+              <p style="text-align: center; color: var(--color-text-secondary);">
+                Signal analysis history will appear here after analyzing conversations
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Revenue Calculator Page -->
+        <div id="page-revenue" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">💵 Revenue Opportunity Calculator</h2>
+              <button class="btn btn-secondary" onclick="Dashboard.calculateRevenue()">📊 Calculate Revenue</button>
+            </div>
+            <div class="card-body">
+              <div class="revenue-calculator">
+                <div class="revenue-summary">
+                  <div class="revenue-total">
+                    <div class="revenue-total-label">Total Potential Revenue</div>
+                    <div class="revenue-total-value" id="revenue-total">$0</div>
+                    <div class="revenue-total-subtitle" id="revenue-opportunities">from 0 trade-in opportunities</div>
+                  </div>
+                  <div class="revenue-breakdown">
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🚜 Tractors</span>
+                      <span class="revenue-item-value" id="revenue-tractors">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🌾 Combines</span>
+                      <span class="revenue-item-value" id="revenue-combines">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">💧 Sprayers</span>
+                      <span class="revenue-item-value" id="revenue-sprayers">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🌱 Planters</span>
+                      <span class="revenue-item-value" id="revenue-planters">$0</span>
+                    </div>
+                    <div class="revenue-item">
+                      <span class="revenue-item-label">🔧 Other</span>
+                      <span class="revenue-item-value" id="revenue-other">$0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="revenue-chart">
+                  <h3 style="margin-bottom: 16px;">Revenue by Equipment Type</h3>
+                  <div class="revenue-bar-chart" id="revenue-bars">
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Tractors</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill tractors" id="bar-tractors" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-tractors">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Combines</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill combines" id="bar-combines" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-combines">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Sprayers</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill sprayers" id="bar-sprayers" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-sprayers">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Planters</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill planters" id="bar-planters" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-planters">$0</span>
+                    </div>
+                    <div class="revenue-bar">
+                      <span class="revenue-bar-label">Other</span>
+                      <div class="revenue-bar-track">
+                        <div class="revenue-bar-fill other" id="bar-other" style="width: 0%"></div>
+                      </div>
+                      <span class="revenue-bar-value" id="bar-val-other">$0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">🎯 Top Revenue Opportunities</h2>
+            </div>
+            <div class="card-body" id="top-opportunities">
+              <p style="text-align: center; color: var(--color-text-secondary);">
+                Click "Calculate Revenue" to see top opportunities
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW FEATURE: Timeline Page -->
+        <div id="page-timeline" class="page">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">📅 Upcoming Events Timeline</h2>
+              <div class="timeline-filters">
+                <button class="timeline-filter active" data-filter="all" onclick="Dashboard.filterTimeline('all')">All</button>
+                <button class="timeline-filter" data-filter="warranty" onclick="Dashboard.filterTimeline('warranty')">🛡️ Warranty</button>
+                <button class="timeline-filter" data-filter="lease" onclick="Dashboard.filterTimeline('lease')">📋 Lease</button>
+                <button class="timeline-filter" data-filter="trade-in" onclick="Dashboard.filterTimeline('trade-in')">🔄 Trade-In</button>
+                <button class="timeline-filter" data-filter="maintenance" onclick="Dashboard.filterTimeline('maintenance')">🔧 Maintenance</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="timeline-container">
+                <div class="timeline" id="event-timeline">
+                  <div class="spinner" style="margin: 40px auto;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
 
   <!-- Ralph Mode Indicator -->
   <div class="ralph-mode">
