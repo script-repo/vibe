@@ -17,7 +17,262 @@ window.NAI_PLATFORM_BASELINE = {
     rwxNfsTiB: 2,
     s3CompatibleTiB: 1
   },
-  validatedCapacityNote: 'Validated baseline supports 50 inference endpoints, 150 API keys per endpoint, and 5 concurrent MLAdmin users. Dedicated GPU node pool required.'
+  validatedCapacityNote: 'Validated baseline supports 50 inference endpoints, 150 API keys per endpoint, and 5 concurrent MLAdmin users. Dedicated GPU node pool required.',
+  infrastructure: {
+    sourceDocuments: [
+      { document: 'Nutanix-Enterprise-AI-v2_6.pdf', pages: [16, 17, 18] },
+      { document: 'NX-G10 TDM.pdf', pages: [7, 10, 11, 12, 14, 19, 25, 31, 35, 36, 39, 52, 53, 57, 58, 63, 69, 70, 72, 73, 75, 76, 78, 80, 81] },
+      { document: 'NAI Design Patterns - 2026-03-10-Core.pdf', pages: [3, 4, 7, 8, 10, 11, 12] },
+      { document: 'Nutanix-Kubernetes-Platform-v2_16.pdf', pages: [55, 57, 58, 790] }
+    ],
+    foundation: {
+      topology: 'Select a pattern-backed NAI deployment: AI Pod, AI Factory, Multi-Site Nutanix AI Factory, Hybrid Cloud AI Factory, or Hybrid Inference AI Factory',
+      clusterMinNodes: 3,
+      clusterMaxNodes: 32,
+      clusterExpansionIncrement: 1,
+      minCpuCoresPerNode: 16,
+      cpuGuidance: 'Use Nutanix NX G10 nodes sized from the approved G10 platform catalog; prefer NX-8150G for on-prem GPU nodes and NX-8150/NX-8170 for management and storage tiers',
+      networking: 'Use G10-supported 25/100/200 GbE fabrics; design-pattern output should target 100 GbE or higher for AI Pod and AI Factory topologies',
+      storage: 'Prefer all-NVMe G10 configurations; use NX-8150/NX-8170 NVMe + NST only for dedicated NUS storage patterns',
+      replicationFactor: 2,
+      highAvailabilityReservation: 'Use the AI Pod / AI Factory pattern rather than GPT-in-a-Box split-node assumptions',
+      gpuGuidance: 'In G10 on-prem Nutanix hardware, the NAI-compatible GPU overlap is L40S and RTX PRO 6000 on NX-8150G G10. RTX PRO 6000 is marked post-GA / technical-feasibility dependent in the TDM.',
+      rack: {
+        racks: 1,
+        rackUnits: 42,
+        torSwitches: 2,
+        managementSwitches: 1
+      }
+    },
+    managementPlanes: {
+      ncp: 'NCP management plane',
+      nkp: 'NKP management plane',
+      nus: 'Nutanix Unified Storage for NFS and Object',
+      nci: 'Nutanix Cloud Infrastructure foundation'
+    },
+    nkp: {
+      productionMinimum: {
+        licenseTier: 'Pro or Ultimate',
+        controlPlane: { nodes: 3, vcpuPerNode: 4, memoryPerNodeGiB: 16, diskPerNodeGiB: 80 },
+        worker: { nodes: 4, vcpuPerNode: 8, memoryPerNodeGiB: 32, diskPerNodeGiB: 80 },
+        controlPlaneEndpoint: 'External load balancer recommended; built-in virtual IP is the fallback',
+        hostRequirements: [
+          'Root volume usage below 85%',
+          'Required NKP ports open',
+          'firewalld disabled',
+          'Swap disabled',
+          'Use a production CSI storage provider instead of localvolumeprovisioner'
+        ]
+      },
+      naiPatternBaseline: {
+        aiPodStartNodes: 3,
+        aiPodScaleLimitNodes: 32,
+        aiFactoryNotes: 'Use a dedicated management and storage cluster with separate GPU-enabled server tiers when the workload grows beyond a compact AI Pod.',
+        networking: [
+          'Cilium',
+          'Kube-VIP',
+          'MetalLB',
+          'Traefik',
+          'Istio Mesh',
+          'Cert-Manager'
+        ]
+      }
+    },
+    designPatterns: [
+      {
+        id: 'ai-pod',
+        name: 'AI Pod',
+        sourcePages: [7],
+        description: 'Integrated NAI + NKP + NUS + NCI full stack on a Nutanix AI Pod.',
+        deploymentModes: ['on-prem'],
+        summary: 'Start with a 3-node AI Pod and scale to 32 nodes in a pod.',
+        defaultNodeModel: 'nx-8150g-g10',
+        onPremRequired: true,
+        layers: [
+          'Generative AI app',
+          'Nutanix Enterprise AI',
+          'Nutanix Kubernetes Platform',
+          'Nutanix Unified Storage',
+          'Nutanix Cloud Infrastructure'
+        ]
+      },
+      {
+        id: 'ai-factory',
+        name: 'AI Factory',
+        sourcePages: [8],
+        description: 'Dedicated management and storage cluster with separate GPU-enabled inference tiers.',
+        deploymentModes: ['on-prem'],
+        summary: 'Use a management/storage cluster plus one or more GPU-enabled server pools.',
+        defaultNodeModel: 'nx-8150g-g10',
+        onPremRequired: true,
+        layers: [
+          'Generative AI app',
+          'NAI',
+          'NKP or partner Kubernetes',
+          'HCI management and storage cluster',
+          'GPU-enabled server tier'
+        ]
+      },
+      {
+        id: 'multi-site-ai-factory',
+        name: 'Multi-Site Nutanix AI Factory',
+        sourcePages: [10],
+        description: 'Two or more Nutanix sites expose local inference endpoints behind unified inferencing endpoints.',
+        deploymentModes: ['multi-site'],
+        summary: 'Use per-site inference endpoints with unified inferencing endpoints at each site.',
+        defaultNodeModel: 'nx-8150g-g10',
+        onPremRequired: true,
+        layers: [
+          'Site A AI Pod / AI Factory',
+          'Site B AI Pod / AI Factory',
+          'Unified inferencing endpoints'
+        ]
+      },
+      {
+        id: 'hybrid-cloud-ai-factory',
+        name: 'Hybrid Cloud AI Factory',
+        sourcePages: [11],
+        description: 'On-prem Nutanix site paired with hyperscaler GPU Kubernetes environments.',
+        deploymentModes: ['hybrid-cloud'],
+        summary: 'Blend on-prem NAI with EKS, AKS, or GKE GPU capacity.',
+        defaultNodeModel: 'nx-8150g-g10',
+        onPremRequired: false,
+        layers: [
+          'On-prem Nutanix Enterprise AI',
+          'Unified inferencing endpoint',
+          'Hyperscaler GPU Kubernetes site'
+        ]
+      },
+      {
+        id: 'hybrid-inference-ai-factory',
+        name: 'Hybrid Inference AI Factory',
+        sourcePages: [12],
+        description: 'On-prem NAI plus external OpenAI-compatible or Bedrock-style inference providers behind a unified endpoint.',
+        deploymentModes: ['hybrid-inference'],
+        summary: 'Use an AI gateway with token-based rate limiting, fallback, and HA across local and remote inference.',
+        defaultNodeModel: 'nx-8150g-g10',
+        onPremRequired: false,
+        layers: [
+          'On-prem inference endpoints',
+          'Unified endpoint / AI gateway',
+          'External inference providers'
+        ]
+      }
+    ],
+    g10Catalog: {
+      managementProfiles: [
+        {
+          id: 'nx-8150-g10',
+          label: 'NX-8150 G10',
+          role: 'Management / storage / dense HCI',
+          cpu: 'Dual Intel Xeon 6500P/6700P',
+          cores: '32-128 cores per node',
+          memory: '512 GB to 4 TB',
+          storage: '20 x NVMe',
+          networking: '0-3 NICs at 10/25/100/200 GbE',
+          notes: 'Primary G10 choice for NUS-heavy or management/storage clusters'
+        },
+        {
+          id: 'nx-8170-g10',
+          label: 'NX-8170 G10',
+          role: 'Dense 1U management / storage HCI',
+          cpu: 'Dual Intel Xeon 6500P/6700P',
+          cores: '16-72 cores per node',
+          memory: '256 GB to 4 TB',
+          storage: '12 x NVMe or SSD',
+          networking: '0-2 NICs at 10/25/100/200 GbE',
+          notes: 'Good fit when the management/storage cluster needs 1U density'
+        },
+        {
+          id: 'nx-1175s-g10',
+          label: 'NX-1175S G10',
+          role: 'Edge / ROBO adjunct',
+          cpu: 'Single Intel Xeon 6500P/6700P',
+          cores: '8-36 cores per node',
+          memory: '128 GB to 1 TB',
+          storage: '4 x LFF with NVMe or NVMe + HDD',
+          networking: '0-3 NICs at 10/25 GbE',
+          notes: 'Useful for edge or storage-adjacent roles, but not for current NAI validated GPU rows'
+        }
+      ],
+      gpuProfiles: [
+        {
+          id: 'nx-8150g-g10',
+          label: 'NX-8150G G10',
+          role: 'Primary G10 GPU node for on-prem NAI',
+          cpu: 'Dual Intel Xeon 6500P/6700P',
+          cores: '32-64 cores per node',
+          memory: '512 GB to 4 TB',
+          storage: '8 x NVMe',
+          networking: '0-3 NICs at 10/25/100/200 GbE',
+          supportedGpuCounts: {
+            l40s_48g: { maxPerNode: 2, availability: 'GA' },
+            rtx_pro_6000_96g: { maxPerNode: 2, availability: 'Post GA / technical-feasibility dependent' }
+          }
+        },
+        {
+          id: 'nx-8155as-g10',
+          label: 'NX-8155AS G10',
+          role: 'Single-socket AMD GPU-capable G10 node',
+          cpu: 'Single AMD EPYC 9005',
+          cores: '24-128 cores per node',
+          memory: '256 GB to 3,072 GB',
+          storage: '12 x NVMe',
+          networking: 'Up to 200 GbE',
+          supportedGpuCounts: {},
+          notes: 'Supports L4 and A16 only in the TDM, so it does not intersect with the current NAI validated on-prem GPU list'
+        }
+      ]
+    },
+    hardwareReference: {
+      profileId: 'g10-ai-pod-reference',
+      label: 'G10 AI Pod reference',
+      applicability: 'Reference topology aligned to the AI Pod design pattern and NX-G10 TDM',
+      rack: {
+        racks: 1,
+        rackUnits: 42,
+        torSwitches: 2,
+        managementSwitches: 1
+      },
+      cluster: {
+        podMinNodes: 3,
+        podScaleMaxNodes: 32,
+        primaryGpuNodeModel: 'NX-8150G G10',
+        managementNodeModel: 'NX-8150 G10'
+      },
+      managementNode: {
+        platform: 'NX-8150 G10',
+        cpu: 'Dual Intel Xeon 6500P/6700P',
+        memory: '512 GB to 4 TB',
+        storage: '20 x NVMe',
+        networking: '10/25/100/200 GbE'
+      },
+      gpuNode: {
+        platform: 'NX-8150G G10',
+        cpu: 'Dual Intel Xeon 6500P/6700P',
+        memory: '512 GB to 4 TB',
+        storage: '8 x NVMe',
+        networking: '10/25/100/200 GbE',
+        gpu: 'Up to 2 x L40S or 2 x RTX PRO 6000'
+      },
+      alternativeProfiles: [
+        {
+          platform: 'NX-8170 G10',
+          role: 'Dense management / storage cluster',
+          storage: '12 x NVMe or SSD',
+          notes: 'Use when the management and storage tier needs denser 1U packaging'
+        }
+      ],
+      bomRows: [
+        { item: 'AI Pod cluster nodes', quantity: 3, spec: '3-node AI Pod starting footprint', source: 'Design Patterns p7' },
+        { item: 'NX-8150G G10 GPU nodes', quantity: 3, spec: 'Dual Intel Xeon 6500P/6700P, 8 x NVMe, 0-3 NICs, 2 x L40S or 2 x RTX PRO 6000 per node', source: 'NX-G10 TDM p35-p36, p57-p58, p81' },
+        { item: 'NX-8150 G10 management/storage nodes', quantity: 3, spec: 'Dual Intel Xeon 6500P/6700P, 20 x NVMe, 10/25/100/200 GbE', source: 'NX-G10 TDM p70, p72, p80' },
+        { item: 'NX-8170 G10 alternative management/storage nodes', quantity: 3, spec: '1U dense management/storage option, 12 x NVMe/SSD, 10/25/100/200 GbE', source: 'NX-G10 TDM p25, p70, p72, p75-p76' },
+        { item: '100 GbE top-of-rack switches', quantity: 2, spec: 'Fabric for AI Pod / AI Factory networking', source: 'G10 network guidance + pattern output' },
+        { item: 'Management switch', quantity: 1, spec: 'Out-of-band management network', source: 'Pattern-aligned reference rack' }
+      ]
+    }
+  }
 };
 
 window.NAI_COMPONENT_OVERHEAD = [

@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Strict NAI v2.6 Advisor</title>
+  <title>Strict NAI G10 Pattern Advisor</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="bg-orb orb1"></div><div class="bg-orb orb2"></div><div class="bg-orb orb3"></div>
   <header class="topbar glass">
     <div>
       <div class="eyebrow">Strict Nutanix Enterprise AI v2.6 advisor</div>
-      <h1>Nutanix Enterprise AI Advisor</h1>
-    </div>
-    <div class="top-actions">
-      <button id="loadBtn" class="secondary">Load config ID</button>
-      <button id="saveBtn" class="primary">Save current config</button>
+      <h1>Nutanix Enterprise AI Stack Advisor</h1>
+      <p class="hero-copy">Layer validated use cases, map them to supported model and GPU rows, and align the resulting platform and hardware design to Nutanix NX G10 infrastructure and the current NAI design patterns.</p>
     </div>
   </header>
 
-  <main class="layout">
+  <main class="layout three-col">
     <aside class="glass side-panel">
-      <div class="panel-header"><h2>1. Pick a use case</h2></div>
+      <div class="panel-header"><h2>1. Draft a use case</h2></div>
       <label>Use case
         <select id="useCaseSelect"></select>
       </label>
@@ -30,7 +26,7 @@
       </label>
       <div id="useCaseMeta" class="meta-card"></div>
 
-      <div class="panel-header spaced"><h2>2. What the client knows</h2></div>
+      <div class="panel-header spaced"><h2>2. Demand profile</h2></div>
       <label>Total named users
         <input id="users" type="number" min="1" value="200" />
       </label>
@@ -77,36 +73,81 @@
         </label>
       </details>
 
-      <button id="recommendBtn" class="primary full">Generate sizing recommendation</button>
+      <div class="meta-card compact">
+        <div class="kv"><strong>Current use-case config ID</strong><span id="currentConfigId">Not saved yet</span></div>
+        <div class="kv"><strong>Editor mode</strong><span id="editingItemLabel">Current draft</span></div>
+      </div>
+
+      <div class="button-stack">
+        <button id="previewBtn" class="primary full">Refresh recommendation</button>
+        <button id="addToStackBtn" class="secondary full">Add current use case to stack</button>
+        <button id="saveUseCaseBtn" class="secondary full">Save use-case config ID</button>
+      </div>
     </aside>
 
     <section class="glass content-panel">
       <div class="panel-header"><h2>Recommendation</h2></div>
       <div id="emptyState" class="empty-state">
-        Select a use case and generate a sizing recommendation. The output will guide the SE on architecture, likely model placement, and what to validate with the client.
+        Build a draft or load a saved use-case config. The center view will show the current draft, while the right panel controls the active stack and stack config IDs.
       </div>
       <div id="results" class="hidden">
         <div class="result-grid">
-          <div class="result-card"><h3>Validation status</h3><div id="validationStatus"></div></div>
-          <div class="result-card"><h3>Validated endpoint topology</h3><div id="endpointSizing"></div></div>
+          <div class="result-card"><h3>Stack validation</h3><div id="validationStatus"></div></div>
+          <div class="result-card"><h3>Stack summary and topology</h3><div id="stackSummary"></div></div>
         </div>
         <div class="result-grid">
-          <div class="result-card"><h3>Scale-out plan</h3><div id="scalePlan"></div></div>
-          <div class="result-card"><h3>NAI platform baseline</h3><div id="platformBaseline"></div></div>
+          <div class="result-card"><h3>Current use case preview</h3><div id="endpointSizing"></div></div>
+          <div class="result-card"><h3>Current scale plan</h3><div id="scalePlan"></div></div>
+        </div>
+        <div class="result-card"><h3>Layered stack diagram</h3><div id="layerDiagram"></div></div>
+        <div class="result-card"><h3>G10 hardware infrastructure diagram</h3><div id="hardwareDiagram"></div></div>
+        <div class="result-card">
+          <h3>Reference G10 hardware BoM</h3>
+          <table>
+            <thead><tr><th>Component</th><th>Quantity</th><th>Specification</th><th>Source</th></tr></thead>
+            <tbody id="hardwareBom"></tbody>
+          </table>
         </div>
         <div class="result-card">
-          <h3>Supported GPU matrix</h3>
+          <h3>Active use case breakdown</h3>
           <table>
-            <thead><tr><th>GPU</th><th>Minimum per endpoint</th><th>Total for validated scale</th><th>Status</th></tr></thead>
+            <thead><tr><th>Use case</th><th>Config ID</th><th>Model / GPU</th><th>Status</th><th>Total endpoint GPUs</th></tr></thead>
+            <tbody id="stackTable"></tbody>
+          </table>
+        </div>
+        <div class="result-card">
+          <h3>GPU totals across the active stack</h3>
+          <table>
+            <thead><tr><th>GPU</th><th>Validated total</th><th>Active use cases</th><th>Status</th></tr></thead>
             <tbody id="gpuTable"></tbody>
           </table>
         </div>
-        <div class="result-card"><h3>Companion services</h3><ul id="companions"></ul></div>
+        <div class="result-card"><h3>Shared companion services</h3><ul id="companions"></ul></div>
         <div class="result-card"><h3>Platform component overhead</h3><div id="componentOverhead"></div></div>
-        <div class="result-card"><h3>Discovery questions still needed</h3><ul id="questions"></ul></div>
-        <div class="result-card"><h3>Configuration ID</h3><div id="configId">Not saved yet</div></div>
+        <div class="result-card"><h3>Open questions</h3><ul id="questions"></ul></div>
+        <div class="result-card"><h3>Source documents</h3><ul id="sourceDocuments"></ul></div>
       </div>
     </section>
+
+    <aside class="glass stack-panel">
+      <div class="panel-header"><h2>3. Config stack</h2></div>
+      <div class="meta-card compact">
+        <div class="kv"><strong>Stack config ID</strong><span id="stackConfigId">Not saved yet</span></div>
+        <div class="kv"><strong>Selection model</strong><span>Use the toggles below to include or exclude each saved use-case config from the shared stack.</span></div>
+      </div>
+
+      <div class="button-stack">
+        <button id="loadUseCaseBtn" class="secondary full">Load use-case config ID</button>
+        <button id="saveStackBtn" class="secondary full">Save stack config ID</button>
+        <button id="loadStackBtn" class="secondary full">Load stack config ID</button>
+        <button id="clearStackBtn" class="secondary full">Clear stack</button>
+      </div>
+
+      <div id="stackEmpty" class="empty-state compact-state">
+        No saved stack items yet. Add the current draft to create a multi-use-case stack.
+      </div>
+      <div id="stackList" class="stack-list"></div>
+    </aside>
   </main>
 
   <script src="use_cases_data.js"></script>

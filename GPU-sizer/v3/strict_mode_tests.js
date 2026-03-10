@@ -22,6 +22,16 @@ const baseline = window.NAI_PLATFORM_BASELINE;
 let failures = 0;
 let passes = 0;
 
+function advisorContext() {
+  return {
+    useCases,
+    models,
+    gpuCatalog: gpus,
+    platformBaseline: baseline,
+    componentOverhead: window.NAI_COMPONENT_OVERHEAD
+  };
+}
+
 function test(name, fn) {
   try {
     fn();
@@ -195,6 +205,263 @@ test('strict defaults use only exposed deployment and latency enums', () => {
     assert.ok(validDeployments.has(item.defaults.deployment), `${item.id} has invalid deployment ${item.defaults.deployment}`);
     assert.ok(validLatencies.has(item.defaults.latency), `${item.id} has invalid latency ${item.defaults.latency}`);
   });
+});
+
+test('platform baseline includes G10-only hardware and pattern guidance', () => {
+  assert.equal(baseline.infrastructure.foundation.clusterMinNodes, 3);
+  assert.equal(baseline.infrastructure.foundation.clusterMaxNodes, 32);
+  assert.equal(baseline.infrastructure.foundation.minCpuCoresPerNode, 16);
+  assert.equal(baseline.infrastructure.foundation.rack.torSwitches, 2);
+  assert.equal(baseline.infrastructure.nkp.productionMinimum.controlPlane.nodes, 3);
+  assert.equal(baseline.infrastructure.nkp.productionMinimum.worker.nodes, 4);
+  assert.equal(baseline.infrastructure.nkp.naiPatternBaseline.aiPodStartNodes, 3);
+  assert.equal(baseline.infrastructure.nkp.naiPatternBaseline.aiPodScaleLimitNodes, 32);
+  assert.deepEqual(
+    baseline.infrastructure.designPatterns.map(item => item.id),
+    ['ai-pod', 'ai-factory', 'multi-site-ai-factory', 'hybrid-cloud-ai-factory', 'hybrid-inference-ai-factory']
+  );
+  assert.equal(baseline.infrastructure.g10Catalog.gpuProfiles[0].id, 'nx-8150g-g10');
+  assert.equal(baseline.infrastructure.g10Catalog.gpuProfiles[0].supportedGpuCounts.l40s_48g.maxPerNode, 2);
+  assert.equal(baseline.infrastructure.g10Catalog.gpuProfiles[0].supportedGpuCounts.rtx_pro_6000_96g.maxPerNode, 2);
+  assert.ok(baseline.infrastructure.hardwareReference.bomRows.length >= 6);
+});
+
+test('on-prem deployment exposes only NX G10-mapped GPU rows', () => {
+  assert.deepEqual(
+    core.getEligibleGpusForDeployment(model('hf-meta-llama-3.1-70b-instruct'), gpus, 'private', baseline).map(item => item.id),
+    ['l40s_48g', 'rtx_pro_6000_96g']
+  );
+  assert.deepEqual(
+    core.getEligibleGpusForDeployment(model('hf-devstral-small-2507'), gpus, 'private', baseline).map(item => item.id),
+    ['rtx_pro_6000_96g']
+  );
+});
+
+test('cloud deployment preserves the broader validated GPU matrix', () => {
+  assert.deepEqual(
+    core.getEligibleGpusForDeployment(model('hf-meta-llama-3.1-70b-instruct'), gpus, 'cloud', baseline).map(item => item.id),
+    ['l40s_48g', 'a100_80g', 'h100_80g', 'h100_nvl_94g', 'h200_141g', 'rtx_pro_6000_96g']
+  );
+});
+
+test('explicit unsupported on-prem GPU requests are blocked', () => {
+  const recommendation = core.buildRecommendation({
+    useCase: useCase('code-assistant'),
+    model: model('hf-devstral-small-2507'),
+    gpuId: 'a100_80g',
+    gpuCatalog: gpus,
+    platformBaseline: baseline,
+    componentOverhead: window.NAI_COMPONENT_OVERHEAD,
+    catalog: models,
+    inputs: {
+      users: 500,
+      activePct: 10,
+      promptsPerHour: 5,
+      outputTokens: 520,
+      interaction: 'interactive',
+      deployment: 'private',
+      concurrency: 0
+    }
+  });
+
+  assert.equal(recommendation.validationStatus, 'Unsupported in NAI v2.6');
+  assert.equal(recommendation.statusTone, 'blocked');
+});
+
+test('stack aggregation sums endpoint GPUs and companion families', () => {
+  const stackResult = core.buildStackRecommendation({
+    stackItems: [
+      {
+        itemId: 'a',
+        configId: 'cfg-a',
+        selected: true,
+        config: {
+          useCaseId: 'internal-chatbot',
+          users: 2000,
+          activePct: 10,
+          promptsPerHour: 6,
+          outputTokens: 360,
+          interaction: 'interactive',
+          deployment: 'private',
+          modelSelect: 'hf-meta-llama-3.1-8b-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      },
+      {
+        itemId: 'b',
+        configId: 'cfg-b',
+        selected: true,
+        config: {
+          useCaseId: 'code-assistant',
+          users: 500,
+          activePct: 10,
+          promptsPerHour: 5,
+          outputTokens: 520,
+          interaction: 'interactive',
+          deployment: 'cloud',
+          modelSelect: 'hf-devstral-small-2507',
+          gpuSelect: 'a100_80g',
+          concurrency: 0
+        }
+      }
+    ]
+  }, advisorContext());
+
+  assert.equal(stackResult.validationStatus, 'Validated');
+  assert.equal(stackResult.activeCount, 2);
+  assert.equal(stackResult.deploymentMode, 'hybrid');
+  assert.equal(stackResult.topologyPattern.id, 'hybrid-cloud-ai-factory');
+  assert.equal(stackResult.gpuTotals.find(item => item.gpu.id === 'l40s_48g').validatedTotal, 2);
+  assert.equal(stackResult.gpuTotals.find(item => item.gpu.id === 'a100_80g').validatedTotal, 1);
+  assert.equal(stackResult.platformCapacityCheck.estimatedEndpointFamilies, 4);
+});
+
+test('small private stacks map to the AI Pod pattern', () => {
+  const stackResult = core.buildStackRecommendation({
+    stackItems: [
+      {
+        itemId: 'a',
+        configId: 'cfg-a',
+        selected: true,
+        config: {
+          useCaseId: 'internal-chatbot',
+          users: 200,
+          activePct: 10,
+          promptsPerHour: 6,
+          outputTokens: 360,
+          interaction: 'interactive',
+          deployment: 'private',
+          modelSelect: 'hf-meta-llama-3.1-8b-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      }
+    ]
+  }, advisorContext());
+
+  assert.equal(stackResult.topologyPattern.id, 'ai-pod');
+  assert.equal(stackResult.hardwarePlan.totalPodNodes, 3);
+  assert.equal(stackResult.hardwarePlan.nodeBoms.length, 1);
+  assert.equal(stackResult.hardwarePlan.nodeBoms[0].model, 'NX-8150G G10');
+});
+
+test('mixed private and edge stacks map to the multi-site AI Factory pattern', () => {
+  const stackResult = core.buildStackRecommendation({
+    stackItems: [
+      {
+        itemId: 'a',
+        configId: 'cfg-a',
+        selected: true,
+        config: {
+          useCaseId: 'internal-chatbot',
+          users: 200,
+          activePct: 10,
+          promptsPerHour: 6,
+          outputTokens: 360,
+          interaction: 'interactive',
+          deployment: 'private',
+          modelSelect: 'hf-meta-llama-3.1-8b-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      },
+      {
+        itemId: 'b',
+        configId: 'cfg-b',
+        selected: true,
+        config: {
+          useCaseId: 'edge-ocr',
+          users: 150,
+          activePct: 12,
+          promptsPerHour: 8,
+          outputTokens: 220,
+          interaction: 'near-real-time',
+          deployment: 'edge',
+          modelSelect: 'hf-meta-llama-3.2-11b-vision-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      }
+    ]
+  }, advisorContext());
+
+  assert.equal(stackResult.topologyPattern.id, 'multi-site-ai-factory');
+  assert.equal(stackResult.hardwarePlan.siteCount, 2);
+});
+
+test('hybrid deployment targets map to the hybrid inference AI Factory pattern', () => {
+  const stackResult = core.buildStackRecommendation({
+    stackItems: [
+      {
+        itemId: 'a',
+        configId: 'cfg-a',
+        selected: true,
+        config: {
+          useCaseId: 'internal-chatbot',
+          users: 200,
+          activePct: 10,
+          promptsPerHour: 6,
+          outputTokens: 360,
+          interaction: 'interactive',
+          deployment: 'hybrid',
+          modelSelect: 'hf-meta-llama-3.1-8b-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      }
+    ]
+  }, advisorContext());
+
+  assert.equal(stackResult.topologyPattern.id, 'hybrid-inference-ai-factory');
+});
+
+test('empty active stack returns a safe no-active-use-cases result', () => {
+  const stackResult = core.buildStackRecommendation({
+    stackItems: [
+      {
+        itemId: 'a',
+        configId: 'cfg-a',
+        selected: false,
+        config: {
+          useCaseId: 'internal-chatbot',
+          users: 2000,
+          activePct: 10,
+          promptsPerHour: 6,
+          outputTokens: 360,
+          interaction: 'interactive',
+          deployment: 'private',
+          modelSelect: 'hf-meta-llama-3.1-8b-instruct',
+          gpuSelect: 'l40s_48g',
+          concurrency: 0
+        }
+      }
+    ]
+  }, advisorContext());
+
+  assert.equal(stackResult.validationStatus, 'No active use cases');
+  assert.equal(stackResult.activeCount, 0);
+  assert.deepEqual(stackResult.gpuTotals, []);
+  assert.equal(stackResult.questions[0], 'Select at least one saved stack item or clear the stack to fall back to the current draft.');
+});
+
+test('saved record helpers preserve use-case and stack payloads', () => {
+  const useCaseRecord = core.buildUseCaseConfigRecord('cfg-1', {
+    useCaseId: 'internal-chatbot',
+    users: 200
+  });
+  const stackRecord = core.buildStackConfigRecord('stack-1', [
+    {
+      itemId: 'item-1',
+      configId: 'cfg-1',
+      selected: true,
+      config: { useCaseId: 'internal-chatbot', users: 200 }
+    }
+  ]);
+
+  assert.equal(core.parseStoredRecord(JSON.stringify(useCaseRecord)).kind, 'use-case-config');
+  assert.equal(core.parseStoredRecord(JSON.stringify(stackRecord)).kind, 'stack-config');
+  assert.equal(core.parseStoredRecord(JSON.stringify(stackRecord)).items[0].configId, 'cfg-1');
 });
 
 console.log(`\n${passes} passed, ${failures} failed`);
