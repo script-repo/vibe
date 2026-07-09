@@ -1,18 +1,8 @@
-// Roofline performance calculator for LLM sizing
-//
-// Model:
-//  - Weights memory = total params x weight bytes (MoE models load ALL experts).
-//  - KV cache/token = 2 (K+V) x layers x kv_heads x head_dim x kv_bytes (GQA-aware).
-//  - Prefill is compute-bound:  2 FLOPs/param/token over ACTIVE params,
-//    split ideally across GPUs (tensor parallel).
-//  - Decode (TPOT) is memory-bandwidth-bound: active params x weight bytes
-//    streamed per token, split ideally across GPUs.
-//  - Aggregate throughput assumes the batch shares each weight pass
-//    (continuous batching), i.e. concurrency x per-request throughput.
-// These are first-order estimates; real engines (vLLM, TGI, NIM/TRT-LLM)
-// typically achieve 50-80% of the roofline numbers.
+// Performance calculator for LLM sizing
 
-const BYTES_IN_GIB = 1_073_741_824;
+const BYTES_IN_GiB = 1_073_741_824;
+const DEFAULT_GPU_MEMORY_UTILIZATION = 0.90;
+const DEFAULT_RUNTIME_OVERHEAD_GB = 4.0;
 
 class PerformanceMetrics {
     constructor(kv_cache_tokens, max_concurrency, prefill_time_per_token_ms, tpot_ms,
@@ -29,18 +19,11 @@ class PerformanceMetrics {
 }
 
 class PerformanceCalculator {
-    // mem_utilization mirrors vLLM's gpu_memory_utilization: fraction of GPU
-    // memory usable for weights + KV cache (rest is activations/fragmentation).
-    constructor(num_gpu, precision, mem_utilization = 0.9) {
-        this.num_gpu = Math.max(1, num_gpu);
+    constructor(num_gpu, precision, memoryUtilization = DEFAULT_GPU_MEMORY_UTILIZATION, runtimeOverheadGb = DEFAULT_RUNTIME_OVERHEAD_GB) {
+        this.num_gpu = Math.max(1, Number(num_gpu) || 1);
         this.precision = precision;
-        this.mem_utilization = mem_utilization;
-    }
-
-    // Effective bytes/param: explicit precision override, else model native.
-    weightBytes(model) {
-        const b = this.precision.weight_bytes;
-        return (b === null || b === undefined) ? (model.native_weight_bytes || 2.0) : b;
+        this.memoryUtilization = Math.min(1, Math.max(0.1, Number(memoryUtilization) || DEFAULT_GPU_MEMORY_UTILIZATION));
+        this.runtimeOverheadGb = Math.max(0, Number(runtimeOverheadGb) || DEFAULT_RUNTIME_OVERHEAD_GB);
     }
 
     // ---------- Memory / capacity (all GiB) ----------
@@ -54,31 +37,59 @@ class PerformanceCalculator {
         return (model.params_billion * 1e9 * this.weightBytes(model)) / BYTES_IN_GIB;
     }
 
-    usableMemoryGib(gpu) {
-        return this.num_gpu * gpu.memory_gb * this.mem_utilization;
+    weightsMemoryGb(model) {
+        // params_billion * 1e9 params * bytes -> GiB approximated as GB for simplicity
+        // original repo used: params_billion * 2 (GB) for FP16. Keep same unit basis (GB)
+        const bytes_per_billion_params_gb = this.precision.weight_bytes;
+        const estimatedWeightGb = model.params_billion * bytes_per_billion_params_gb;
+        // Quantized and MoE models can have published NAI storage footprints that are
+        // larger than a raw parameter-count estimate. Use the larger value so the
+        // capacity check remains conservative for import/deploy planning.
+        return Math.max(estimatedWeightGb, model.size_gb || 0);
     }
 
-    totalMemoryFootprintGib(model, n_concurrent, context_window) {
-        const kv_total = this.kvCacheSizePerTokenGib(model) * context_window * n_concurrent;
-        return kv_total + this.weightsMemoryGib(model);
+    totalMemoryFootprintGb(model, n_concurrent, context_window) {
+        const kv_per_token_gib = this.kvCacheSizePerTokenGib(model);
+        const kv_total_gib = kv_per_token_gib * context_window * n_concurrent;
+        // Convert GiB to GB roughly 1:1 for this estimator like original (keeps consistency)
+        return kv_total_gib + this.weightsMemoryGb(model) + this.runtimeOverheadGb;
     }
 
     // Max KV-cache tokens that fit after loading weights (across all GPUs).
     maxKvTokens(gpu, model) {
-        const kv_per_token = this.kvCacheSizePerTokenGib(model);
-        if (kv_per_token <= 0) return 0;
-        const usable = Math.max(0, this.usableMemoryGib(gpu) - this.weightsMemoryGib(model));
-        return Math.floor(usable / kv_per_token);
-    }
-
-    // Max simultaneous requests at a given per-request context length.
-    maxConcurrency(gpu, model, context_window) {
-        if (context_window <= 0) return 0;
-        return Math.floor(this.maxKvTokens(gpu, model) / context_window);
+        const kv_per_token_gib = this.kvCacheSizePerTokenGib(model);
+        if (kv_per_token_gib <= 0) {
+            return 0;
+        }
+        const total_mem_gb = this.usableGpuMemoryGb(gpu);
+        // Convert GB to GiB roughly 1:1 to maintain simplicity
+        const usable_gb = Math.max(0.0, total_mem_gb - this.weightsMemoryGb(model) - this.runtimeOverheadGb);
+        return Math.floor(Math.max(0.0, usable_gb / kv_per_token_gib));
     }
 
     fitsMemory(gpu, model, n_concurrent, context_window) {
-        return this.totalMemoryFootprintGib(model, n_concurrent, context_window) <= this.usableMemoryGib(gpu);
+        return this.totalMemoryFootprintGb(model, n_concurrent, context_window) <= this.usableGpuMemoryGb(gpu);
+    }
+
+    usableGpuMemoryGb(gpu) {
+        return this.num_gpu * gpu.memory_gb * this.memoryUtilization;
+    }
+
+    minGpuCount(gpu, model, n_concurrent, context_window) {
+        const requiredGb = this.totalMemoryFootprintGb(model, n_concurrent, context_window);
+        const usablePerGpu = gpu.memory_gb * this.memoryUtilization;
+        return usablePerGpu > 0 ? Math.ceil(requiredGb / usablePerGpu) : Infinity;
+    }
+
+    validateRequest(model, prompt_tokens, response_tokens) {
+        const contextTokens = prompt_tokens + response_tokens;
+        if (!Number.isFinite(contextTokens) || contextTokens <= 0) {
+            return "Invalid token counts";
+        }
+        if (contextTokens > model.max_context_window) {
+            return `Context ${contextTokens.toLocaleString()} exceeds model window ${model.max_context_window.toLocaleString()}`;
+        }
+        return "";
     }
 
     // ---------- Time / performance ----------

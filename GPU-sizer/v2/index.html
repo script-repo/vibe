@@ -542,12 +542,8 @@
     <script src="js/calculator.js"></script>
     <script>
         // Global state
-        let selectedModels = ["Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3.3-70B-Instruct", "gpt-oss-120b"];
-        let selectedGPUs = ["H100-80G", "H200-141G"];
-        let lastResults = { memory: [], performance: [] };
-
-        const GPU_BY_KEY = {};
-        DEFAULT_GPUS.forEach(gpu => { GPU_BY_KEY[gpu.key] = gpu; });
+        let selectedModels = ["openai/gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
+        let selectedGPUs = ["NVIDIA L40S-48G", "NVIDIA RTX PRO 6000-96G"];
 
         // Initialize the page
         function init() {
@@ -647,43 +643,21 @@
             };
         }
 
-        function makeCalculator(inp) {
-            return new PerformanceCalculator(inp.numGPU, new PrecisionSpec(inp.weightBytes, inp.kvBytes), inp.memUtil);
-        }
-
-        // "2× H100-80G; 1× H200-141G" from the Table 8 validated counts
-        function formatValidatedConfigs(model) {
-            const parts = Object.entries(model.nai_gpu_counts)
-                .map(([key, count]) => GPU_BY_KEY[key] ? `${count}× ${GPU_BY_KEY[key].name}` : null)
-                .filter(Boolean);
-            return parts.length ? parts.join('; ') : '—';
-        }
-
-        function contextWarning(model, contextWindow) {
-            return (isLlmModel(model) && contextWindow > model.max_context_window)
-                ? ` ⚠ exceeds max context (${model.max_context_window.toLocaleString()})`
-                : '';
-        }
-
-        function buildMemoryRows(calc, models, inp) {
-            const contextWindow = inp.promptTokens + inp.responseTokens;
-            return models.map(model => {
-                const llm = isLlmModel(model);
-                const weightsGib = calc.weightsMemoryGib(model);
-                const kvPerTokenGib = calc.kvCacheSizePerTokenGib(model);
-                const kvTotalGib = llm ? kvPerTokenGib * contextWindow * inp.concurrency : 0;
-                return {
-                    "Model": model.name + contextWarning(model, contextWindow),
-                    "Type": model.model_type,
-                    "Params": model.active_params_billion !== model.params_billion
-                        ? `${model.params_billion}B (MoE, ${model.active_params_billion}B active)`
-                        : `${model.params_billion}B`,
-                    "Weights": `${weightsGib.toFixed(1)} GiB`,
-                    "KV Cache / Token": llm ? `${(kvPerTokenGib * 1024).toFixed(3)} MiB` : "N/A",
-                    "KV Cache Total": llm ? `${kvTotalGib.toFixed(1)} GiB` : "N/A",
-                    "Total Footprint": `${(weightsGib + kvTotalGib).toFixed(1)} GiB`,
-                    "NAI-Validated Configs": formatValidatedConfigs(model)
-                };
+            // Calculate memory footprint
+            const memRows = [];
+            models.forEach(model => {
+                const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
+                const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
+                memRows.push({
+                    "Model": model.name,
+                    "Input Size (tokens)": promptTokens,
+                    "Output Size (tokens)": responseTokens,
+                    "Concurrent Requests": concurrency,
+                    "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
+                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`,
+                    "Max Context Window": model.max_context_window.toLocaleString(),
+                    "NAI Model Size": `${model.size_gb.toFixed(0)} GB`
+                });
             });
         }
 
@@ -692,21 +666,23 @@
             const rows = [];
             models.forEach(model => {
                 gpus.forEach(gpu => {
-                    const validated = model.nai_gpu_counts[gpu.key];
-                    const base = {
-                        "Model": model.name + contextWarning(model, contextWindow),
-                        "GPU": `${inp.numGPU}× ${gpu.name}`,
-                        "NAI Validated": validated ? `✓ ${validated}× ${gpu.name}` : "—"
-                    };
-
-                    if (!isLlmModel(model)) {
-                        const fits = calc.weightsMemoryGib(model) <= calc.usableMemoryGib(gpu);
-                        rows.push({
-                            ...base,
-                            "Fits": fits ? "Yes" : "No (OOM)",
-                            "Max KV Tokens": "N/A", "Max Concurrent @ Context": "N/A",
-                            "Prefill (ms/token)": "N/A", "TPOT (ms)": "N/A", "TTFT (s)": "N/A",
-                            "E2E Latency (s)": "N/A", "Tokens/s (per request)": "N/A", "Tokens/s (aggregate)": "N/A"
+                    const validationError = calculator.validateRequest(model, promptTokens, responseTokens);
+                    const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
+                    if (validationError || !fits) {
+                        const minGpus = validationError ? "N/A" : calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString();
+                        perfRows.push({
+                            "Model": model.name,
+                            "GPU": gpu.name,
+                            "Input Size (tokens)": promptTokens,
+                            "Output Size (tokens)": responseTokens,
+                            "Concurrent Requests": concurrency,
+                            "Max # KV Cache Tokens": validationError || "OOM",
+                            "Min GPUs for Memory": minGpus,
+                            "Prefill Time": validationError || "OOM",
+                            "TPOT (ms)": "OOM",
+                            "TTFT": "OOM",
+                            "E2E Latency": "OOM",
+                            "Output Tokens Throughput": "OOM"
                         });
                         return;
                     }
@@ -725,17 +701,20 @@
                         return;
                     }
 
-                    rows.push({
-                        ...base,
-                        "Fits": "Yes",
-                        "Max KV Tokens": m.kv_cache_tokens.toLocaleString(),
-                        "Max Concurrent @ Context": m.max_concurrency.toLocaleString(),
-                        "Prefill (ms/token)": m.prefill_time_per_token_ms.toFixed(3),
-                        "TPOT (ms)": m.tpot_ms.toFixed(2),
-                        "TTFT (s)": m.ttft_s.toFixed(3),
-                        "E2E Latency (s)": m.e2e_latency_s.toFixed(2),
-                        "Tokens/s (per request)": m.throughput_tokens_per_s.toFixed(1),
-                        "Tokens/s (aggregate)": m.aggregate_throughput_tokens_per_s.toFixed(0)
+                    perfRows.push({
+                        "Model": model.name,
+                        "GPU": gpu.name,
+                        "Input Size (tokens)": promptTokens,
+                        "Output Size (tokens)": responseTokens,
+                        "Concurrent Requests": concurrency,
+                        "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                        "Min GPUs for Memory": calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString(),
+                        "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
+                        "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
+                        "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
+                        "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
+                        "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
+                            "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
                     });
                 });
             });
@@ -830,10 +809,102 @@
 
         // Export currently displayed results to CSV
         function exportCSV(type) {
-            const rows = lastResults[type];
-            if (!rows || rows.length === 0) {
-                alert('Run a calculation first.');
-                return;
+            // Re-calculate current results for export
+            calculateAndExport(type);
+        }
+
+        function calculateAndExport(type) {
+            const numGPU = parseInt(document.getElementById('num_gpu').value);
+            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
+            const responseTokens = parseInt(document.getElementById('response_tokens').value);
+            const concurrency = parseInt(document.getElementById('concurrency').value);
+            const weightBits = parseInt(document.getElementById('weight_precision').value);
+            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
+
+            const weightBytes = weightBits / 8.0;
+            const precision = new PrecisionSpec(weightBytes, kvBytes);
+            const calculator = new PerformanceCalculator(numGPU, precision);
+
+            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
+            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
+            const contextWindow = promptTokens + responseTokens;
+
+            let rows = [];
+
+            if (type === 'memory') {
+                models.forEach(model => {
+                    const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
+                    const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
+                    rows.push({
+                        "Model": model.name,
+                        "Input Size (tokens)": promptTokens,
+                        "Output Size (tokens)": responseTokens,
+                        "Concurrent Requests": concurrency,
+                        "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
+                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`,
+                        "Max Context Window": model.max_context_window.toLocaleString(),
+                        "NAI Model Size": `${model.size_gb.toFixed(0)} GB`
+                    });
+                });
+            } else {
+                models.forEach(model => {
+                    gpus.forEach(gpu => {
+                        const validationError = calculator.validateRequest(model, promptTokens, responseTokens);
+                        const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
+                        if (validationError || !fits) {
+                            const minGpus = validationError ? "N/A" : calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString();
+                            rows.push({
+                                "Model": model.name,
+                                "GPU": gpu.name,
+                                "Input Size (tokens)": promptTokens,
+                                "Output Size (tokens)": responseTokens,
+                                "Concurrent Requests": concurrency,
+                                "Max # KV Cache Tokens": validationError || "OOM",
+                                "Min GPUs for Memory": minGpus,
+                                "Prefill Time": validationError || "OOM",
+                                "TPOT (ms)": "OOM",
+                                "TTFT": "OOM",
+                                "E2E Latency": "OOM",
+                                "Output Tokens Throughput": "OOM"
+                            });
+                            return;
+                        }
+
+                        const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
+                        if (typeof metrics.prefill_time_per_token_ms === 'string') {
+                            rows.push({
+                                "Model": model.name,
+                                "GPU": gpu.name,
+                                "Input Size (tokens)": promptTokens,
+                                "Output Size (tokens)": responseTokens,
+                                "Concurrent Requests": concurrency,
+                                "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                                "Prefill Time": "OOM",
+                                "TPOT (ms)": "OOM",
+                                "TTFT": "OOM",
+                                "E2E Latency": "OOM",
+                                "Output Tokens Throughput": "OOM"
+                            });
+                            return;
+                        }
+
+                        rows.push({
+                            "Model": model.name,
+                            "GPU": gpu.name,
+                            "Input Size (tokens)": promptTokens,
+                            "Output Size (tokens)": responseTokens,
+                            "Concurrent Requests": concurrency,
+                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                            "Min GPUs for Memory": calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString(),
+                            "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
+                            "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
+                            "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
+                            "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
+                            "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
+                                "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
+                        });
+                    });
+                });
             }
             downloadCSV(rows, `llm_${type}_${new Date().toISOString().slice(0, 10)}.csv`);
         }
