@@ -322,6 +322,10 @@
             margin-bottom: 1rem;
         }
 
+        .table-scroll {
+            overflow-x: auto;
+        }
+
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -462,7 +466,8 @@
     <div class="container">
         <header class="header">
             <h1 class="title">NAI LLM Performance Calculator</h1>
-            <p class="subtitle">Calculate GPU memory requirements and performance for large language models</p>
+            <p class="subtitle">GPU memory &amp; performance estimates for the Nutanix Enterprise AI (NAI) 2.6 pre-validated model catalog</p>
+            <p class="subtitle" style="font-size: var(--font-size-sm); margin-top: 0.5rem;">First-order roofline estimates (ideal tensor parallel, continuous batching). Real-world throughput is typically 50&ndash;80% of these numbers.</p>
         </header>
 
         <div class="calculate-section">
@@ -489,17 +494,22 @@
                     <input type="number" id="concurrency" class="form-input" min="1" value="10" />
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="weight_precision">Weight Precision (bits)</label>
+                    <label class="form-label" for="weight_precision">Weight Precision</label>
                     <select id="weight_precision" class="form-input">
+                        <option value="native" selected>Model default (as shipped)</option>
                         <option value="32">FP32 - 32 bit</option>
-                        <option value="16" selected>FP16 - 16 bit</option>
-                        <option value="8">INT8 - 8 bit</option>
+                        <option value="16">FP16/BF16 - 16 bit</option>
+                        <option value="8">FP8/INT8 - 8 bit</option>
                         <option value="4">INT4 - 4 bit</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="kv_bytes">KV Cache Precision (bytes)</label>
-                    <input type="number" id="kv_bytes" class="form-input" min="0" step="0.1" value="2.0" />
+                    <input type="number" id="kv_bytes" class="form-input" min="0.5" step="0.1" value="2.0" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="mem_util">GPU Memory Utilization (weights + KV)</label>
+                    <input type="number" id="mem_util" class="form-input" min="0.3" max="1" step="0.05" value="0.9" />
                 </div>
             </div>
 
@@ -532,8 +542,12 @@
     <script src="js/calculator.js"></script>
     <script>
         // Global state
-        let selectedModels = ["gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
-        let selectedGPUs = ["L40s", "RTX Pro 6000 (Blackwell)"];
+        let selectedModels = ["Meta-Llama-3.1-8B-Instruct", "Meta-Llama-3.3-70B-Instruct", "gpt-oss-120b"];
+        let selectedGPUs = ["H100-80G", "H200-141G"];
+        let lastResults = { memory: [], performance: [] };
+
+        const GPU_BY_KEY = {};
+        DEFAULT_GPUS.forEach(gpu => { GPU_BY_KEY[gpu.key] = gpu; });
 
         // Initialize the page
         function init() {
@@ -541,26 +555,24 @@
             populateGPUs();
         }
 
-        // Populate model checkboxes
+        // Populate model checkboxes grouped by provider
         function populateModels() {
             const container = document.getElementById('models-container');
             const modelsByProvider = {};
 
-            // Group models by provider
             DEFAULT_MODELS.forEach(model => {
-                const provider = model.provider || "OpenAI";
+                const provider = model.provider || "Other";
                 if (!modelsByProvider[provider]) {
                     modelsByProvider[provider] = [];
                 }
                 modelsByProvider[provider].push(model);
             });
 
-            // Sort providers alphabetically
             const sortedProviders = Object.keys(modelsByProvider).sort();
 
             let html = '';
             sortedProviders.forEach(provider => {
-                const providerId = provider.replace(/\s+/g, '_').replace(/-/g, '_');
+                const providerId = provider.replace(/[^a-zA-Z0-9]/g, '_');
                 html += `<div class="provider-group">`;
                 html += `<div class="provider-header-row">`;
                 html += `<h4 class="provider-header">${escapeHtml(provider)}</h4>`;
@@ -575,7 +587,7 @@
                     const modelId = model.name.replace(/[^a-zA-Z0-9]/g, '_');
                     html += `<div class="model-checkbox">`;
                     html += `<input type="checkbox" name="model" value="${escapeHtml(model.name)}" ${checked ? 'checked' : ''} id="model_${modelId}" class="provider-${providerId}" onchange="updateSelectedModels()" />`;
-                    html += `<label for="model_${modelId}">${escapeHtml(model.name)}</label>`;
+                    html += `<label for="model_${modelId}" title="${escapeHtml(model.hub)} · ${escapeHtml(model.model_type)} · ${model.params_billion}B params">${escapeHtml(model.name)}</label>`;
                     html += `</div>`;
                 });
                 html += '</div>';
@@ -592,51 +604,147 @@
             let html = '';
             sortedGPUs.forEach(gpu => {
                 const checked = selectedGPUs.includes(gpu.name);
-                const gpuId = gpu.name.replace(/\s+/g, '_');
+                const gpuId = gpu.key;
                 html += `<div class="model-checkbox">`;
                 html += `<input type="checkbox" name="gpu" value="${escapeHtml(gpu.name)}" ${checked ? 'checked' : ''} id="gpu_${gpuId}" onchange="updateSelectedGPUs()" />`;
-                html += `<label for="gpu_${gpuId}">${escapeHtml(gpu.name)} (${gpu.memory_gb}GB)</label>`;
+                html += `<label for="gpu_${gpuId}">${escapeHtml(gpu.name)} (${gpu.memory_gb}GB · ${gpu.memory_bandwidth_gbps} GB/s)</label>`;
                 html += `</div>`;
             });
 
             container.innerHTML = html;
         }
 
-        // Toggle provider models
         function toggleProvider(providerId, checkState) {
-            const checkboxes = document.querySelectorAll(`.provider-${providerId}`);
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = checkState;
-            });
+            document.querySelectorAll(`.provider-${providerId}`).forEach(cb => { cb.checked = checkState; });
             updateSelectedModels();
         }
 
-        // Update selected models
         function updateSelectedModels() {
-            const checkboxes = document.querySelectorAll('input[name="model"]:checked');
-            selectedModels = Array.from(checkboxes).map(cb => cb.value);
+            selectedModels = Array.from(document.querySelectorAll('input[name="model"]:checked')).map(cb => cb.value);
         }
 
-        // Update selected GPUs
         function updateSelectedGPUs() {
-            const checkboxes = document.querySelectorAll('input[name="gpu"]:checked');
-            selectedGPUs = Array.from(checkboxes).map(cb => cb.value);
+            selectedGPUs = Array.from(document.querySelectorAll('input[name="gpu"]:checked')).map(cb => cb.value);
+        }
+
+        // Read and sanitize form inputs
+        function readInputs() {
+            const num = (id, def, min, max) => {
+                let v = parseFloat(document.getElementById(id).value);
+                if (!isFinite(v)) v = def;
+                return Math.min(max, Math.max(min, v));
+            };
+            const weightSel = document.getElementById('weight_precision').value;
+            return {
+                numGPU: Math.round(num('num_gpu', 1, 1, 64)),
+                promptTokens: Math.round(num('prompt_tokens', 4096, 1, 100_000_000)),
+                responseTokens: Math.round(num('response_tokens', 256, 1, 100_000_000)),
+                concurrency: Math.round(num('concurrency', 1, 1, 100000)),
+                weightBytes: weightSel === 'native' ? null : parseInt(weightSel, 10) / 8.0,
+                weightLabel: weightSel === 'native' ? 'model default' : `${weightSel}-bit`,
+                kvBytes: num('kv_bytes', 2.0, 0.5, 4),
+                memUtil: num('mem_util', 0.9, 0.3, 1.0)
+            };
+        }
+
+        function makeCalculator(inp) {
+            return new PerformanceCalculator(inp.numGPU, new PrecisionSpec(inp.weightBytes, inp.kvBytes), inp.memUtil);
+        }
+
+        // "2× H100-80G; 1× H200-141G" from the Table 8 validated counts
+        function formatValidatedConfigs(model) {
+            const parts = Object.entries(model.nai_gpu_counts)
+                .map(([key, count]) => GPU_BY_KEY[key] ? `${count}× ${GPU_BY_KEY[key].name}` : null)
+                .filter(Boolean);
+            return parts.length ? parts.join('; ') : '—';
+        }
+
+        function contextWarning(model, contextWindow) {
+            return (isLlmModel(model) && contextWindow > model.max_context_window)
+                ? ` ⚠ exceeds max context (${model.max_context_window.toLocaleString()})`
+                : '';
+        }
+
+        function buildMemoryRows(calc, models, inp) {
+            const contextWindow = inp.promptTokens + inp.responseTokens;
+            return models.map(model => {
+                const llm = isLlmModel(model);
+                const weightsGib = calc.weightsMemoryGib(model);
+                const kvPerTokenGib = calc.kvCacheSizePerTokenGib(model);
+                const kvTotalGib = llm ? kvPerTokenGib * contextWindow * inp.concurrency : 0;
+                return {
+                    "Model": model.name + contextWarning(model, contextWindow),
+                    "Type": model.model_type,
+                    "Params": model.active_params_billion !== model.params_billion
+                        ? `${model.params_billion}B (MoE, ${model.active_params_billion}B active)`
+                        : `${model.params_billion}B`,
+                    "Weights": `${weightsGib.toFixed(1)} GiB`,
+                    "KV Cache / Token": llm ? `${(kvPerTokenGib * 1024).toFixed(3)} MiB` : "N/A",
+                    "KV Cache Total": llm ? `${kvTotalGib.toFixed(1)} GiB` : "N/A",
+                    "Total Footprint": `${(weightsGib + kvTotalGib).toFixed(1)} GiB`,
+                    "NAI-Validated Configs": formatValidatedConfigs(model)
+                };
+            });
+        }
+
+        function buildPerfRows(calc, models, gpus, inp) {
+            const contextWindow = inp.promptTokens + inp.responseTokens;
+            const rows = [];
+            models.forEach(model => {
+                gpus.forEach(gpu => {
+                    const validated = model.nai_gpu_counts[gpu.key];
+                    const base = {
+                        "Model": model.name + contextWarning(model, contextWindow),
+                        "GPU": `${inp.numGPU}× ${gpu.name}`,
+                        "NAI Validated": validated ? `✓ ${validated}× ${gpu.name}` : "—"
+                    };
+
+                    if (!isLlmModel(model)) {
+                        const fits = calc.weightsMemoryGib(model) <= calc.usableMemoryGib(gpu);
+                        rows.push({
+                            ...base,
+                            "Fits": fits ? "Yes" : "No (OOM)",
+                            "Max KV Tokens": "N/A", "Max Concurrent @ Context": "N/A",
+                            "Prefill (ms/token)": "N/A", "TPOT (ms)": "N/A", "TTFT (s)": "N/A",
+                            "E2E Latency (s)": "N/A", "Tokens/s (per request)": "N/A", "Tokens/s (aggregate)": "N/A"
+                        });
+                        return;
+                    }
+
+                    const fits = calc.fitsMemory(gpu, model, inp.concurrency, contextWindow);
+                    const m = calc.computeMetrics(model, gpu, inp.promptTokens, inp.responseTokens, inp.concurrency);
+                    if (!fits) {
+                        rows.push({
+                            ...base,
+                            "Fits": "No (OOM)",
+                            "Max KV Tokens": m.kv_cache_tokens.toLocaleString(),
+                            "Max Concurrent @ Context": m.max_concurrency.toLocaleString(),
+                            "Prefill (ms/token)": "OOM", "TPOT (ms)": "OOM", "TTFT (s)": "OOM",
+                            "E2E Latency (s)": "OOM", "Tokens/s (per request)": "OOM", "Tokens/s (aggregate)": "OOM"
+                        });
+                        return;
+                    }
+
+                    rows.push({
+                        ...base,
+                        "Fits": "Yes",
+                        "Max KV Tokens": m.kv_cache_tokens.toLocaleString(),
+                        "Max Concurrent @ Context": m.max_concurrency.toLocaleString(),
+                        "Prefill (ms/token)": m.prefill_time_per_token_ms.toFixed(3),
+                        "TPOT (ms)": m.tpot_ms.toFixed(2),
+                        "TTFT (s)": m.ttft_s.toFixed(3),
+                        "E2E Latency (s)": m.e2e_latency_s.toFixed(2),
+                        "Tokens/s (per request)": m.throughput_tokens_per_s.toFixed(1),
+                        "Tokens/s (aggregate)": m.aggregate_throughput_tokens_per_s.toFixed(0)
+                    });
+                });
+            });
+            return rows;
         }
 
         // Calculate performance
         function calculatePerformance() {
-            const numGPU = parseInt(document.getElementById('num_gpu').value);
-            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
-            const responseTokens = parseInt(document.getElementById('response_tokens').value);
-            const concurrency = parseInt(document.getElementById('concurrency').value);
-            const weightBits = parseInt(document.getElementById('weight_precision').value);
-            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
-
-            const weightBytes = weightBits / 8.0;
-            const precision = new PrecisionSpec(weightBytes, kvBytes);
-            const calculator = new PerformanceCalculator(numGPU, precision);
-
-            // Filter models and GPUs
+            const inp = readInputs();
             const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
             const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
 
@@ -645,86 +753,17 @@
                 return;
             }
 
-            const contextWindow = promptTokens + responseTokens;
-
-            // Calculate memory footprint
-            const memRows = [];
-            models.forEach(model => {
-                const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
-                const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
-                memRows.push({
-                    "Model": model.name,
-                    "Input Size (tokens)": promptTokens,
-                    "Output Size (tokens)": responseTokens,
-                    "Concurrent Requests": concurrency,
-                    "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
-                });
-            });
-
-            // Calculate performance metrics
-            const perfRows = [];
-            models.forEach(model => {
-                gpus.forEach(gpu => {
-                    const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                    if (!fits) {
-                        perfRows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": "OOM",
-                            "Prefill Time": "OOM",
-                            "TPOT (ms)": "OOM",
-                            "TTFT": "OOM",
-                            "E2E Latency": "OOM",
-                            "Output Tokens Throughput": "OOM"
-                        });
-                        return;
-                    }
-
-                    const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
-                    if (typeof metrics.prefill_time_per_token_ms === 'string') {
-                        perfRows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                            "Prefill Time": "OOM",
-                            "TPOT (ms)": "OOM",
-                            "TTFT": "OOM",
-                            "E2E Latency": "OOM",
-                            "Output Tokens Throughput": "OOM"
-                        });
-                        return;
-                    }
-
-                    perfRows.push({
-                        "Model": model.name,
-                        "GPU": gpu.name,
-                        "Input Size (tokens)": promptTokens,
-                        "Output Size (tokens)": responseTokens,
-                        "Concurrent Requests": concurrency,
-                        "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                        "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
-                        "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
-                        "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
-                        "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
-                        "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
-                            "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
-                    });
-                });
-            });
-
-            displayResults(memRows, perfRows);
+            const calc = makeCalculator(inp);
+            lastResults.memory = buildMemoryRows(calc, models, inp);
+            lastResults.performance = buildPerfRows(calc, models, gpus, inp);
+            displayResults(lastResults.memory, lastResults.performance, inp);
         }
 
         // Display results
-        function displayResults(memRows, perfRows) {
+        function displayResults(memRows, perfRows, inp) {
             const container = document.getElementById('results-container');
+            const caption = `${inp.numGPU}× GPU · ${inp.promptTokens.toLocaleString()} prompt + ${inp.responseTokens.toLocaleString()} response tokens · ` +
+                `${inp.concurrency} concurrent · weights: ${inp.weightLabel} · KV: ${inp.kvBytes} B · mem util: ${(inp.memUtil * 100).toFixed(0)}%`;
 
             let html = '';
 
@@ -732,6 +771,7 @@
                 html += '<div class="results-section results-animated">';
                 html += '<div class="glass-card">';
                 html += '<h2 class="results-title">LLM Memory Footprint</h2>';
+                html += `<p class="subtitle" style="font-size: var(--font-size-sm); margin-bottom: 1rem;">${escapeHtml(caption)}</p>`;
                 html += createTable(memRows);
                 html += '<div class="export-section">';
                 html += '<button class="btn-secondary" onclick="exportCSV(\'memory\')">Download CSV</button>';
@@ -744,6 +784,7 @@
                 html += '<div class="results-section results-animated" id="performance-section">';
                 html += '<div class="glass-card">';
                 html += '<h2 class="results-title">LLM Performance & Capacity</h2>';
+                html += `<p class="subtitle" style="font-size: var(--font-size-sm); margin-bottom: 1rem;">${escapeHtml(caption)} — roofline estimates, N/A for non-LLM model types</p>`;
                 html += createTable(perfRows);
                 html += '<div class="export-section">';
                 html += '<button class="btn-secondary" onclick="exportCSV(\'performance\')">Download CSV</button>';
@@ -754,14 +795,10 @@
 
             container.innerHTML = html;
 
-            // Auto-scroll to performance section
             setTimeout(() => {
                 const performanceSection = document.getElementById('performance-section');
                 if (performanceSection) {
-                    performanceSection.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    performanceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }, 300);
         }
@@ -773,7 +810,7 @@
             }
 
             const headers = Object.keys(rows[0]);
-            let html = '<table class="results-table">';
+            let html = '<div class="table-scroll"><table class="results-table">';
             html += '<thead><tr>';
             headers.forEach(header => {
                 html += `<th>${escapeHtml(header)}</th>`;
@@ -783,112 +820,24 @@
             rows.forEach(row => {
                 html += '<tr>';
                 headers.forEach(header => {
-                    html += `<td>${escapeHtml(row[header] || '')}</td>`;
+                    html += `<td>${escapeHtml(row[header] ?? '')}</td>`;
                 });
                 html += '</tr>';
             });
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
             return html;
         }
 
-        // Export to CSV
+        // Export currently displayed results to CSV
         function exportCSV(type) {
-            // Re-calculate current results for export
-            calculateAndExport(type);
-        }
-
-        function calculateAndExport(type) {
-            const numGPU = parseInt(document.getElementById('num_gpu').value);
-            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
-            const responseTokens = parseInt(document.getElementById('response_tokens').value);
-            const concurrency = parseInt(document.getElementById('concurrency').value);
-            const weightBits = parseInt(document.getElementById('weight_precision').value);
-            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
-
-            const weightBytes = weightBits / 8.0;
-            const precision = new PrecisionSpec(weightBytes, kvBytes);
-            const calculator = new PerformanceCalculator(numGPU, precision);
-
-            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
-            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
-            const contextWindow = promptTokens + responseTokens;
-
-            let rows = [];
-
-            if (type === 'memory') {
-                models.forEach(model => {
-                    const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
-                    const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
-                    rows.push({
-                        "Model": model.name,
-                        "Input Size (tokens)": promptTokens,
-                        "Output Size (tokens)": responseTokens,
-                        "Concurrent Requests": concurrency,
-                        "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
-                    });
-                });
-            } else {
-                models.forEach(model => {
-                    gpus.forEach(gpu => {
-                        const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                        if (!fits) {
-                            rows.push({
-                                "Model": model.name,
-                                "GPU": gpu.name,
-                                "Input Size (tokens)": promptTokens,
-                                "Output Size (tokens)": responseTokens,
-                                "Concurrent Requests": concurrency,
-                                "Max # KV Cache Tokens": "OOM",
-                                "Prefill Time": "OOM",
-                                "TPOT (ms)": "OOM",
-                                "TTFT": "OOM",
-                                "E2E Latency": "OOM",
-                                "Output Tokens Throughput": "OOM"
-                            });
-                            return;
-                        }
-
-                        const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
-                        if (typeof metrics.prefill_time_per_token_ms === 'string') {
-                            rows.push({
-                                "Model": model.name,
-                                "GPU": gpu.name,
-                                "Input Size (tokens)": promptTokens,
-                                "Output Size (tokens)": responseTokens,
-                                "Concurrent Requests": concurrency,
-                                "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                                "Prefill Time": "OOM",
-                                "TPOT (ms)": "OOM",
-                                "TTFT": "OOM",
-                                "E2E Latency": "OOM",
-                                "Output Tokens Throughput": "OOM"
-                            });
-                            return;
-                        }
-
-                        rows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                            "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
-                            "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
-                            "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
-                            "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
-                            "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
-                                "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
-                        });
-                    });
-                });
+            const rows = lastResults[type];
+            if (!rows || rows.length === 0) {
+                alert('Run a calculation first.');
+                return;
             }
-
             downloadCSV(rows, `llm_${type}_${new Date().toISOString().slice(0, 10)}.csv`);
         }
 
-        // Download CSV function
         function downloadCSV(data, filename) {
             if (!data || data.length === 0) return;
 
@@ -897,10 +846,9 @@
 
             data.forEach(row => {
                 const values = headers.map(header => {
-                    const value = row[header] || '';
-                    // Escape quotes and wrap in quotes if contains comma
-                    if (value.toString().includes(',') || value.toString().includes('"')) {
-                        return '"' + value.toString().replace(/"/g, '""') + '"';
+                    const value = (row[header] ?? '').toString();
+                    if (value.includes(',') || value.includes('"')) {
+                        return '"' + value.replace(/"/g, '""') + '"';
                     }
                     return value;
                 });
