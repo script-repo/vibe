@@ -1,32 +1,34 @@
 // Model and GPU specifications for Nutanix Enterprise AI v2.7 sizing calculator
 
 class ModelSpec {
-    constructor(name, params_billion, d_model, n_heads, n_kv_heads, n_layers, max_context_window, hub = "", provider = "", model_type = "", size_gb = 0.0) {
-        this.name = name;
-        this.params_billion = params_billion;
-        this.d_model = d_model;
-        this.n_heads = n_heads;
-        this.n_kv_heads = n_kv_heads;
-        this.n_layers = n_layers;
-        this.max_context_window = max_context_window;
-        this.hub = hub;
-        this.provider = provider;
-        this.model_type = model_type;
-        this.size_gb = size_gb;
+    constructor(opts) {
+        // Defaults first, then opts override.
+        Object.assign(this, {
+            active_params_billion: opts.params_billion, // dense models: active == total
+            d_head: null,               // per-head dim; null -> d_model / n_heads
+            native_weight_bytes: 2.0,   // bytes/param as shipped (2 = FP16/BF16)
+            nai_gpu_counts: {},         // { gpu_key: validated GPU count } from Table 8
+        }, opts);
+    }
+
+    headDim() {
+        return this.d_head || this.d_model / this.n_heads;
     }
 }
 
 class GPUSpec {
-    constructor(name, fp16_tflops, memory_gb, memory_bandwidth_gbps) {
-        this.name = name;
-        this.fp16_tflops = fp16_tflops;
-        this.memory_gb = memory_gb;
-        this.memory_bandwidth_gbps = memory_bandwidth_gbps;
+    constructor(key, name, fp16_tflops, memory_gb, memory_bandwidth_gbps) {
+        this.key = key;                 // matches nai_gpu_counts keys
+        this.name = name;               // label as it appears in the NAI docs
+        this.fp16_tflops = fp16_tflops; // dense FP16 tensor TFLOPS (no sparsity)
+        this.memory_gb = memory_gb;     // HBM/GDDR capacity, treated as GiB
+        this.memory_bandwidth_gbps = memory_bandwidth_gbps; // GB/s
     }
 }
 
 class PrecisionSpec {
-    constructor(weight_bytes = 2.0, kv_bytes = 2.0) {
+    // weight_bytes = null means "model native" (per-model native_weight_bytes)
+    constructor(weight_bytes = null, kv_bytes = 2.0) {
         this.weight_bytes = weight_bytes;
         this.kv_bytes = kv_bytes;
     }

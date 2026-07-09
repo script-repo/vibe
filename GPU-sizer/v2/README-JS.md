@@ -1,32 +1,42 @@
 # NAI LLM Performance Calculator - JavaScript Version
 
-A static web application for estimating GPU memory requirements and performance metrics for Large Language Model (LLM) inference deployments. This JavaScript version can be deployed to GitHub Pages or any static hosting service.
+A static web application for estimating GPU memory requirements and performance metrics for Large Language Model (LLM) inference deployments on **Nutanix Enterprise AI (NAI)**. Runs entirely in the browser and can be deployed to GitHub Pages or any static hosting service.
+
+## Data Sources
+
+- **Models**: the 32 pre-validated models from the NAI 2.6 Admin Guide ("Pre-validated Models", Table 8), including the NAI-validated GPU count for every supported model + GPU combination.
+- **GPUs**: the 6 NAI 2.6 supported GPUs (Admin Guide "Requirements"): L40S-48G, A100-80G, H100-80G, H100 NVL-94G, RTX PRO 6000-96G (Blackwell Server Edition), H200-141G.
 
 ## Features
 
-🌐 **Static Web Application**
-- Pure JavaScript/HTML/CSS implementation
-- No server required - runs entirely in the browser
-- Responsive design with glass morphism styling
+🤖 **NAI 2.6 Pre-validated Catalog**
+- All 32 pre-validated models across Meta, Mistral AI, Google, Ai2, NVIDIA NIM, OpenAI (gpt-oss), and Black Forest Labs
+- Per-model **NAI-validated GPU configurations** (e.g. Llama-3.3-70B ⇒ 4× L40S / 2× H100-80G / 2× H200-141G) surfaced directly in the results
+- Provider-organized model selection with bulk All/None controls
+- CSV export of both result tables
 
-🤖 **Comprehensive Model Support**
-- **48 pre-validated enterprise AI models** across multiple providers
-- Real-time performance calculations
-- Provider-organized model selection with bulk controls
-- CSV export functionality
+⚡ **Roofline Performance Analysis**
+- Memory footprint: weights + GQA-aware KV cache (per token, total at your concurrency)
+- Performance: prefill time, TPOT, TTFT, E2E latency, per-request and aggregate throughput
+- Capacity: max KV-cache tokens and max concurrent requests at your context length
+- OOM detection with the validated GPU count shown as guidance
 
-⚡ **GPU Performance Analysis**
-- Support for enterprise GPUs: L4, L40s, H100 NVL, H200 NVL, RTX Pro 6000, MI300X
-- Memory footprint calculations with KV cache optimization
-- Performance metrics: TTFT, TPOT, E2E latency, throughput
-- Concurrent request capacity planning
+## Calculation Model (assumptions)
+
+- **Weights memory** = *total* parameters × bytes/param. MoE models (Mixtral, Llama-4-Scout, gpt-oss) load **all** experts.
+- **Weight precision** defaults to *model native*: FP16/BF16 for most models, FP8 for the NIM-optimized llama-3.3-70b-instruct, MXFP4 (~0.6 B/param) for gpt-oss. You can override to FP32/FP16/FP8/INT4.
+- **KV cache per token** = 2 (K+V) × layers × KV heads × head dim × KV bytes — GQA-aware, with explicit head dims where they differ from d_model/n_heads (Mistral family, Gemma 2, gpt-oss).
+- **Prefill** is compute-bound: 2 FLOPs per *active* param per token over dense FP16 TFLOPS, ideal tensor parallel across GPUs.
+- **Decode (TPOT)** is memory-bandwidth-bound: active params × bytes streamed per token.
+- **Aggregate throughput** assumes continuous batching (concurrency × per-request throughput).
+- **GPU memory utilization** (default 0.9, like vLLM's `gpu_memory_utilization`) reserves headroom for activations/fragmentation.
+- Non-autoregressive models (embedding, reranker, image classification/generation, document AI) get memory estimates only; latency columns show **N/A**.
+
+These are first-order roofline estimates. Real engines (vLLM, TGI, NIM/TRT-LLM) typically achieve 50–80% of these numbers.
 
 ## Quick Start
 
-### Local Development
 ```bash
-# Clone the repository
-git clone <repository-url>
 cd GPU-sizer/v2
 
 # Serve locally using Python
@@ -38,142 +48,47 @@ npx serve .
 # Open browser to http://localhost:8080
 ```
 
-### GitHub Pages Deployment
+### Validate the data and math
 
-1. **Fork/Clone** this repository
-2. **Enable GitHub Pages** in repository settings
-3. **Set source** to main branch / root folder
-4. **Access** your site at `https://yourusername.github.io/repository-name/`
+```bash
+cd GPU-sizer/v2
+node tests/validate.js
+```
+
+The suite checks schema integrity, exact KV-cache/weight values for known models, metric properties (GPU scaling, MoE active-vs-total params, aggregate throughput), OOM detection, and — most importantly — that **every NAI-validated (model, GPU, count) combination from Table 8 actually fits** at native precision according to the calculator.
 
 ## File Structure
 
 ```
 v2/
-├── index.html              # Main web application
+├── index.html              # Main web application (UI + presentation logic)
 ├── js/
-│   ├── specs.js           # Model and GPU specifications
-│   └── calculator.js      # Performance calculation engine
-├── README-JS.md           # This documentation
-└── README.md              # Original Python version docs
+│   ├── specs.js            # NAI 2.6 model & GPU specifications
+│   └── calculator.js       # Roofline calculation engine
+├── tests/
+│   └── validate.js         # Node validation suite (node tests/validate.js)
+└── README-JS.md            # This documentation
 ```
 
 ## How to Use
 
-### 1. Configure Your Deployment
-- **Number of GPUs**: Specify how many GPUs you plan to use
-- **Prompt Tokens**: Average input size you expect to process
-- **Response Tokens**: Average output size you expect to generate
-- **Concurrent Requests**: Number of simultaneous requests to handle
-- **Precision Settings**: Weight and KV cache precision
+1. **Configure**: GPUs per endpoint, prompt/response tokens, concurrency, weight/KV precision, memory utilization.
+2. **Select models**: browse by provider; hover a model for hub/type/size.
+3. **Select GPUs**: labels show memory and bandwidth.
+4. **Calculate**: review the memory footprint and performance tables. The *NAI Validated* column shows Nutanix's tested GPU count for that model+GPU; *Fits* reflects **your** chosen GPU count. Rows whose requested context exceeds the model maximum are flagged with ⚠.
+5. **Export**: download either table as CSV.
 
-### 2. Select AI Models
-- Browse models organized by provider (Meta, Google, NVIDIA, etc.)
-- Use **"All"/"None"** buttons for quick provider-wide selection
-- Choose from 48+ enterprise-validated models
+## Deployment
 
-### 3. Choose Target GPUs
-- Select from enterprise GPU options with memory specifications
-- Compare performance across different hardware configurations
-
-### 4. Calculate & Analyze
-- Click **"Calculate Performance"** to run the analysis
-- View memory footprint estimates and performance metrics
-- Export results to CSV for further analysis
-
-## Technical Implementation
-
-### Architecture
-- **Modular JavaScript**: Clean separation of concerns
-- **No Dependencies**: Pure vanilla JavaScript
-- **Client-Side Only**: All calculations run in the browser
-- **Memory Efficient**: Optimized for large model datasets
-
-### Key Components
-
-#### `specs.js`
-- Model specifications (ModelSpec class)
-- GPU specifications (GPUSpec class)
-- Precision configurations (PrecisionSpec class)
-- Default datasets for 48 models and 6 GPU types
-
-#### `calculator.js`
-- Performance calculation engine (PerformanceCalculator class)
-- Memory footprint calculations
-- Performance metrics computation
-- Multi-GPU scaling logic
-
-#### `index.html`
-- Complete web application UI
-- Modern glass morphism design
-- Real-time form handling
-- CSV export functionality
-
-### Calculations
-
-The calculator implements the same algorithms as the Python version:
-
-- **Memory Estimation**: Based on parameter count, precision, and KV cache requirements
-- **Performance Modeling**: Uses GPU specifications and attention mechanism complexity
-- **Throughput Analysis**: Considers memory bandwidth, compute capacity, and parallelization
-- **Capacity Planning**: Accounts for concurrent request batching and memory sharing
-
-## Browser Compatibility
-
-Works in all modern browsers:
-- Chrome/Chromium 80+
-- Firefox 75+
-- Safari 13+
-- Edge 80+
-
-## Deployment Options
-
-### GitHub Pages
-1. Push code to GitHub repository
-2. Enable Pages in Settings → Pages
-3. Select source branch (usually `main`)
-4. Access at `https://username.github.io/repo-name/`
-
-### Netlify
-1. Connect GitHub repository
-2. Build command: (none needed)
-3. Publish directory: `/` or `/v2`
-4. Deploy automatically on push
-
-### Vercel
-1. Import GitHub repository
-2. Framework preset: Other
-3. Build command: (none needed)
-4. Output directory: (none needed)
-
-### Custom Hosting
-Simply upload the files to any web server. The application is entirely static.
-
-## Migrating from Python Version
-
-The JavaScript version maintains full feature parity with the Python version:
-
-- ✅ All 48 model specifications preserved
-- ✅ All 6 GPU specifications maintained
-- ✅ Identical calculation algorithms
-- ✅ Same precision handling (FP32, FP16, INT8, INT4)
-- ✅ CSV export functionality
-- ✅ Responsive design maintained
-- ✅ Provider-based model organization
-
-### Key Differences
-- **No server required** - runs entirely in browser
-- **Instant deployment** - no Python environment needed
-- **GitHub Pages ready** - perfect for static hosting
-- **Same user experience** - maintained all original features
+Entirely static — host the `v2/` folder anywhere (GitHub Pages, Netlify, Vercel, any web server). No build step, no dependencies.
 
 ## Contributing
 
-To add new models or GPUs:
+To add or update models/GPUs when a new NAI release ships:
 
-1. Edit `js/specs.js`
-2. Add new `ModelSpec` or `GPUSpec` entries to the respective arrays
-3. Follow the existing naming and parameter conventions
-4. Test calculations with the new specifications
+1. Edit `js/specs.js` (models: architecture fields + `nai_gpu_counts` from the new release's Table; GPUs: dense FP16 TFLOPS, memory, bandwidth).
+2. Run `node tests/validate.js` — the Table-8 cross-check will catch mismatched parameters (update the expected model/GPU counts in the test's schema section).
+3. Test in the browser.
 
 ## License
 
@@ -181,4 +96,4 @@ Same license as the original Python version.
 
 ---
 
-*JavaScript version - Optimized for static deployment and GitHub Pages*
+*JavaScript version — optimized for static deployment and GitHub Pages*
