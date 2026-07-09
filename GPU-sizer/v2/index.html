@@ -532,8 +532,8 @@
     <script src="js/calculator.js"></script>
     <script>
         // Global state
-        let selectedModels = ["gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
-        let selectedGPUs = ["L40s", "RTX Pro 6000 (Blackwell)"];
+        let selectedModels = ["openai/gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
+        let selectedGPUs = ["NVIDIA L40S-48G", "NVIDIA RTX PRO 6000-96G"];
 
         // Initialize the page
         function init() {
@@ -658,7 +658,9 @@
                     "Output Size (tokens)": responseTokens,
                     "Concurrent Requests": concurrency,
                     "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
+                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`,
+                    "Max Context Window": model.max_context_window.toLocaleString(),
+                    "NAI Model Size": `${model.size_gb.toFixed(0)} GB`
                 });
             });
 
@@ -666,16 +668,19 @@
             const perfRows = [];
             models.forEach(model => {
                 gpus.forEach(gpu => {
+                    const validationError = calculator.validateRequest(model, promptTokens, responseTokens);
                     const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                    if (!fits) {
+                    if (validationError || !fits) {
+                        const minGpus = validationError ? "N/A" : calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString();
                         perfRows.push({
                             "Model": model.name,
                             "GPU": gpu.name,
                             "Input Size (tokens)": promptTokens,
                             "Output Size (tokens)": responseTokens,
                             "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": "OOM",
-                            "Prefill Time": "OOM",
+                            "Max # KV Cache Tokens": validationError || "OOM",
+                            "Min GPUs for Memory": minGpus,
+                            "Prefill Time": validationError || "OOM",
                             "TPOT (ms)": "OOM",
                             "TTFT": "OOM",
                             "E2E Latency": "OOM",
@@ -709,6 +714,7 @@
                         "Output Size (tokens)": responseTokens,
                         "Concurrent Requests": concurrency,
                         "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                        "Min GPUs for Memory": calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString(),
                         "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
                         "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
                         "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
@@ -825,22 +831,27 @@
                         "Output Size (tokens)": responseTokens,
                         "Concurrent Requests": concurrency,
                         "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
+                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`,
+                        "Max Context Window": model.max_context_window.toLocaleString(),
+                        "NAI Model Size": `${model.size_gb.toFixed(0)} GB`
                     });
                 });
             } else {
                 models.forEach(model => {
                     gpus.forEach(gpu => {
+                        const validationError = calculator.validateRequest(model, promptTokens, responseTokens);
                         const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                        if (!fits) {
+                        if (validationError || !fits) {
+                            const minGpus = validationError ? "N/A" : calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString();
                             rows.push({
                                 "Model": model.name,
                                 "GPU": gpu.name,
                                 "Input Size (tokens)": promptTokens,
                                 "Output Size (tokens)": responseTokens,
                                 "Concurrent Requests": concurrency,
-                                "Max # KV Cache Tokens": "OOM",
-                                "Prefill Time": "OOM",
+                                "Max # KV Cache Tokens": validationError || "OOM",
+                                "Min GPUs for Memory": minGpus,
+                                "Prefill Time": validationError || "OOM",
                                 "TPOT (ms)": "OOM",
                                 "TTFT": "OOM",
                                 "E2E Latency": "OOM",
@@ -874,6 +885,7 @@
                             "Output Size (tokens)": responseTokens,
                             "Concurrent Requests": concurrency,
                             "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
+                            "Min GPUs for Memory": calculator.minGpuCount(gpu, model, concurrency, contextWindow).toString(),
                             "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
                             "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
                             "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
