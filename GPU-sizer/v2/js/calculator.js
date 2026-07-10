@@ -1,12 +1,26 @@
-// Performance calculator for LLM sizing
+// Performance calculator for LLM sizing on Nutanix Enterprise AI.
+//
+// All memory math is done consistently in GiB (2^30 bytes). Compute/latency
+// math accounts for:
+//   - MoE models: compute & decode bandwidth use ACTIVE params/token, while
+//     capacity (weights in memory) uses TOTAL params.
+//   - Precision: decode (memory-bound) scales with the weight byte width, so
+//     INT8/INT4 quantization speeds up token generation.
+//   - Real-world efficiency: theoretical peak FLOPS/bandwidth are derated by
+//     tunable utilization factors (MFU / MBU).
 
 const BYTES_IN_GiB = 1_073_741_824;
 const DEFAULT_GPU_MEMORY_UTILIZATION = 0.90;
 const DEFAULT_RUNTIME_OVERHEAD_GB = 4.0;
 
+// Default real-world utilization factors (override via the calculator options).
+const DEFAULT_COMPUTE_EFFICIENCY = 0.30;   // MFU: fraction of peak FLOPS reached during prefill.
+const DEFAULT_BANDWIDTH_EFFICIENCY = 0.70; // MBU: fraction of peak mem bandwidth reached during decode.
+const DEFAULT_MEMORY_OVERHEAD = 1.15;      // Activations + CUDA/runtime overhead on top of weights.
+
 class PerformanceMetrics {
-    constructor(kv_cache_tokens, max_concurrency, prefill_time_per_token_ms, tpot_ms,
-                ttft_s, e2e_latency_s, throughput_tokens_per_s, aggregate_throughput_tokens_per_s) {
+    constructor(kv_cache_tokens, prefill_time_per_token_ms, tpot_ms, ttft_s,
+                e2e_latency_s, throughput_tokens_per_s, system_throughput_tokens_per_s = "N/A") {
         this.kv_cache_tokens = kv_cache_tokens;
         this.max_concurrency = max_concurrency;
         this.prefill_time_per_token_ms = prefill_time_per_token_ms;
@@ -14,100 +28,92 @@ class PerformanceMetrics {
         this.ttft_s = ttft_s;
         this.e2e_latency_s = e2e_latency_s;
         this.throughput_tokens_per_s = throughput_tokens_per_s;
-        this.aggregate_throughput_tokens_per_s = aggregate_throughput_tokens_per_s;
+        this.system_throughput_tokens_per_s = system_throughput_tokens_per_s;
     }
 }
 
 class PerformanceCalculator {
-    constructor(num_gpu, precision, memoryUtilization = DEFAULT_GPU_MEMORY_UTILIZATION, runtimeOverheadGb = DEFAULT_RUNTIME_OVERHEAD_GB) {
-        this.num_gpu = Math.max(1, Number(num_gpu) || 1);
+    /**
+     * @param {number} num_gpu
+     * @param {PrecisionSpec} precision
+     * @param {object} [options] { computeEfficiency, bandwidthEfficiency, memoryOverhead }
+     */
+    constructor(num_gpu, precision, options = {}) {
+        this.num_gpu = Math.max(1, num_gpu | 0);
         this.precision = precision;
-        this.memoryUtilization = Math.min(1, Math.max(0.1, Number(memoryUtilization) || DEFAULT_GPU_MEMORY_UTILIZATION));
-        this.runtimeOverheadGb = Math.max(0, Number(runtimeOverheadGb) || DEFAULT_RUNTIME_OVERHEAD_GB);
+        this.computeEfficiency = options.computeEfficiency ?? DEFAULT_COMPUTE_EFFICIENCY;
+        this.bandwidthEfficiency = options.bandwidthEfficiency ?? DEFAULT_BANDWIDTH_EFFICIENCY;
+        this.memoryOverhead = options.memoryOverhead ?? DEFAULT_MEMORY_OVERHEAD;
+    }
+
+    // ---------- Helpers ----------
+    activeParams(model) {
+        // Fall back to total params for dense models / older specs.
+        return (model.active_params_billion && model.active_params_billion > 0)
+            ? model.active_params_billion
+            : model.params_billion;
     }
 
     // ---------- Memory / capacity (all GiB) ----------
     kvCacheSizePerTokenGib(model) {
-        const d_head = model.d_head || (model.d_model / model.n_heads);
-        // 2x for K and V
-        return (2 * model.n_layers * model.n_kv_heads * d_head * this.precision.kv_bytes) / BYTES_IN_GIB;
+        if (!model.n_heads || !model.n_layers) return 0;
+        const d_head = model.d_model / model.n_heads;
+        // 2x for K and V; GQA/MQA uses n_kv_heads (< n_heads).
+        return (2 * model.n_layers * model.n_kv_heads * d_head * this.precision.kv_bytes) / BYTES_IN_GiB;
     }
 
     weightsMemoryGib(model) {
-        return (model.params_billion * 1e9 * this.weightBytes(model)) / BYTES_IN_GIB;
+        // Total (not active) params live in memory.
+        return (model.params_billion * 1e9 * this.precision.weight_bytes) / BYTES_IN_GiB;
     }
 
-    weightsMemoryGb(model) {
-        // params_billion * 1e9 params * bytes -> GiB approximated as GB for simplicity
-        // original repo used: params_billion * 2 (GB) for FP16. Keep same unit basis (GB)
-        const bytes_per_billion_params_gb = this.precision.weight_bytes;
-        const estimatedWeightGb = model.params_billion * bytes_per_billion_params_gb;
-        // Quantized and MoE models can have published NAI storage footprints that are
-        // larger than a raw parameter-count estimate. Use the larger value so the
-        // capacity check remains conservative for import/deploy planning.
-        return Math.max(estimatedWeightGb, model.size_gb || 0);
+    // Weights + framework/activation overhead reserved before any KV cache.
+    reservedMemoryGib(model) {
+        return this.weightsMemoryGib(model) * this.memoryOverhead;
     }
 
-    totalMemoryFootprintGb(model, n_concurrent, context_window) {
-        const kv_per_token_gib = this.kvCacheSizePerTokenGib(model);
-        const kv_total_gib = kv_per_token_gib * context_window * n_concurrent;
-        // Convert GiB to GB roughly 1:1 for this estimator like original (keeps consistency)
-        return kv_total_gib + this.weightsMemoryGb(model) + this.runtimeOverheadGb;
+    totalMemoryFootprintGib(model, n_concurrent, context_window) {
+        const kv_total = this.kvCacheSizePerTokenGib(model) * context_window * n_concurrent;
+        return this.reservedMemoryGib(model) + kv_total;
+    }
+
+    totalGpuMemoryGib(gpu) {
+        // GPU memory is quoted in GB (10^9); convert to GiB for consistent math.
+        return (this.num_gpu * gpu.memory_gb * 1e9) / BYTES_IN_GiB;
     }
 
     // Max KV-cache tokens that fit after loading weights (across all GPUs).
     maxKvTokens(gpu, model) {
-        const kv_per_token_gib = this.kvCacheSizePerTokenGib(model);
-        if (kv_per_token_gib <= 0) {
-            return 0;
-        }
-        const total_mem_gb = this.usableGpuMemoryGb(gpu);
-        // Convert GB to GiB roughly 1:1 to maintain simplicity
-        const usable_gb = Math.max(0.0, total_mem_gb - this.weightsMemoryGb(model) - this.runtimeOverheadGb);
-        return Math.floor(Math.max(0.0, usable_gb / kv_per_token_gib));
+        const kv_per_token = this.kvCacheSizePerTokenGib(model);
+        if (kv_per_token <= 0) return 0;
+        const usable = this.totalGpuMemoryGib(gpu) - this.reservedMemoryGib(model);
+        return Math.floor(Math.max(0.0, usable / kv_per_token));
     }
 
     fitsMemory(gpu, model, n_concurrent, context_window) {
-        return this.totalMemoryFootprintGb(model, n_concurrent, context_window) <= this.usableGpuMemoryGb(gpu);
-    }
-
-    usableGpuMemoryGb(gpu) {
-        return this.num_gpu * gpu.memory_gb * this.memoryUtilization;
-    }
-
-    minGpuCount(gpu, model, n_concurrent, context_window) {
-        const requiredGb = this.totalMemoryFootprintGb(model, n_concurrent, context_window);
-        const usablePerGpu = gpu.memory_gb * this.memoryUtilization;
-        return usablePerGpu > 0 ? Math.ceil(requiredGb / usablePerGpu) : Infinity;
-    }
-
-    validateRequest(model, prompt_tokens, response_tokens) {
-        const contextTokens = prompt_tokens + response_tokens;
-        if (!Number.isFinite(contextTokens) || contextTokens <= 0) {
-            return "Invalid token counts";
-        }
-        if (contextTokens > model.max_context_window) {
-            return `Context ${contextTokens.toLocaleString()} exceeds model window ${model.max_context_window.toLocaleString()}`;
-        }
-        return "";
+        return this.totalMemoryFootprintGib(model, n_concurrent, context_window)
+            <= this.totalGpuMemoryGib(gpu);
     }
 
     // ---------- Time / performance ----------
-    // Compute-bound: 2 FLOPs per active param per token.
-    // (active_params_billion * 1e9 * 2) / (num_gpu * tflops * 1e12) s = 2*P_act/(N*T) ms
+    // Prefill is compute-bound: ~2 FLOPs per active parameter per token.
     prefillTimePerTokenMs(model, gpu) {
-        return (2 * model.active_params_billion / this.num_gpu) / gpu.fp16_tflops;
+        const flops_per_token = 2 * this.activeParams(model) * 1e9;
+        const peak_flops = gpu.fp16_tflops * 1e12 * this.computeEfficiency * this.num_gpu;
+        if (peak_flops <= 0) return Infinity;
+        return (flops_per_token / peak_flops) * 1000; // seconds -> ms
     }
 
-    // Bandwidth-bound: stream active params once per generated token.
-    // (active_params_billion * 1e9 * bytes) / (num_gpu * BW * 1e9) s -> ms
+    // Decode is memory-bandwidth-bound: read active weights (at weight precision) per token.
     tpotMs(model, gpu) {
-        const bytes_per_token_gb = model.active_params_billion * this.weightBytes(model);
-        return (bytes_per_token_gb / this.num_gpu) / Math.max(1e-9, gpu.memory_bandwidth_gbps) * 1000;
+        const bytes_per_token = this.activeParams(model) * 1e9 * this.precision.weight_bytes;
+        const peak_bw = gpu.memory_bandwidth_gbps * 1e9 * this.bandwidthEfficiency * this.num_gpu;
+        if (peak_bw <= 0) return Infinity;
+        return (bytes_per_token / peak_bw) * 1000; // seconds -> ms
     }
 
     ttftS(prefill_ms, tpot_ms, prompt_tokens) {
-        // Prefill the entire prompt, then generate the first token.
+        // Prefill the whole prompt, then emit the first token.
         return (prompt_tokens * prefill_ms + tpot_ms) / 1000.0;
     }
 
@@ -115,23 +121,40 @@ class PerformanceCalculator {
         return (prompt_tokens * prefill_ms + response_tokens * tpot_ms) / 1000.0;
     }
 
-    computeMetrics(model, gpu, prompt_tokens, response_tokens, concurrency = 1) {
-        const context = prompt_tokens + response_tokens;
+    computeMetrics(model, gpu, prompt_tokens, response_tokens, n_concurrent = 1) {
         const kv_tokens = this.maxKvTokens(gpu, model);
         const max_conc = this.maxConcurrency(gpu, model, context);
         const prefill_ms = this.prefillTimePerTokenMs(model, gpu);
         const tpot_ms = this.tpotMs(model, gpu);
+
+        if (!isFinite(prefill_ms) || !isFinite(tpot_ms) || prefill_ms < 0 || tpot_ms < 0) {
+            return new PerformanceMetrics(kv_tokens, "OOM", "OOM", "OOM", "OOM", "OOM", "OOM");
+        }
+
         const ttft_s = this.ttftS(prefill_ms, tpot_ms, prompt_tokens);
         const e2e_s = this.e2eLatencyS(prefill_ms, tpot_ms, prompt_tokens, response_tokens);
-        const per_request = e2e_s > 0 ? response_tokens / e2e_s : 0;
-        const aggregate = per_request * Math.max(1, concurrency);
 
-        return new PerformanceMetrics(kv_tokens, max_conc, prefill_ms, tpot_ms,
-                                      ttft_s, e2e_s, per_request, aggregate);
+        // Per-request output throughput (single stream).
+        const per_request = e2e_s > 0 ? response_tokens / e2e_s : "OOM";
+        // System throughput: batched decode amortizes weight reads across
+        // concurrent requests, so aggregate decode rate ~ concurrency / tpot.
+        const per_user_decode = tpot_ms > 0 ? 1000 / tpot_ms : 0;
+        const system = per_user_decode > 0 ? per_user_decode * Math.max(1, n_concurrent) : "OOM";
+
+        return new PerformanceMetrics(
+            kv_tokens, prefill_ms, tpot_ms, ttft_s, e2e_s, per_request, system
+        );
     }
 }
 
-// Export for use in other modules
+// Export for use in other modules (Node/testing).
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { PerformanceCalculator, PerformanceMetrics, BYTES_IN_GIB };
+    module.exports = {
+        PerformanceCalculator,
+        PerformanceMetrics,
+        BYTES_IN_GiB,
+        DEFAULT_COMPUTE_EFFICIENCY,
+        DEFAULT_BANDWIDTH_EFFICIENCY,
+        DEFAULT_MEMORY_OVERHEAD,
+    };
 }
