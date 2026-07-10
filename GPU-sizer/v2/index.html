@@ -322,10 +322,6 @@
             margin-bottom: 1rem;
         }
 
-        .table-scroll {
-            overflow-x: auto;
-        }
-
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -714,7 +710,7 @@
             attachHelpHandlers();
         }
 
-        // Populate model checkboxes grouped by provider
+        // Populate model checkboxes
         function populateModels() {
             const container = document.getElementById('models-container');
             const modelsByProvider = {};
@@ -728,11 +724,12 @@
                 modelsByProvider[provider].push(model);
             });
 
+            // Sort providers alphabetically
             const sortedProviders = Object.keys(modelsByProvider).sort();
 
             let html = '';
             sortedProviders.forEach(provider => {
-                const providerId = provider.replace(/[^a-zA-Z0-9]/g, '_');
+                const providerId = provider.replace(/\s+/g, '_').replace(/-/g, '_');
                 html += `<div class="provider-group">`;
                 html += `<div class="provider-header-row">`;
                 html += `<h4 class="provider-header">${escapeHtml(provider)}</h4>`;
@@ -766,27 +763,35 @@
             let html = '';
             sortedGPUs.forEach(gpu => {
                 const checked = selectedGPUs.includes(gpu.name);
-                const gpuId = gpu.key;
+                const gpuId = gpu.name.replace(/\s+/g, '_');
                 html += `<div class="model-checkbox">`;
                 html += `<input type="checkbox" name="gpu" value="${escapeHtml(gpu.name)}" ${checked ? 'checked' : ''} id="gpu_${gpuId}" onchange="updateSelectedGPUs()" />`;
-                html += `<label for="gpu_${gpuId}">${escapeHtml(gpu.name)} (${gpu.memory_gb}GB · ${gpu.memory_bandwidth_gbps} GB/s)</label>`;
+                html += `<label for="gpu_${gpuId}">${escapeHtml(gpu.name)} (${gpu.memory_gb}GB)</label>`;
                 html += `</div>`;
             });
 
             container.innerHTML = html;
         }
 
+        // Toggle provider models
         function toggleProvider(providerId, checkState) {
-            document.querySelectorAll(`.provider-${providerId}`).forEach(cb => { cb.checked = checkState; });
+            const checkboxes = document.querySelectorAll(`.provider-${providerId}`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checkState;
+            });
             updateSelectedModels();
         }
 
+        // Update selected models
         function updateSelectedModels() {
-            selectedModels = Array.from(document.querySelectorAll('input[name="model"]:checked')).map(cb => cb.value);
+            const checkboxes = document.querySelectorAll('input[name="model"]:checked');
+            selectedModels = Array.from(checkboxes).map(cb => cb.value);
         }
 
+        // Update selected GPUs
         function updateSelectedGPUs() {
-            selectedGPUs = Array.from(document.querySelectorAll('input[name="gpu"]:checked')).map(cb => cb.value);
+            const checkboxes = document.querySelectorAll('input[name="gpu"]:checked');
+            selectedGPUs = Array.from(checkboxes).map(cb => cb.value);
         }
 
         // ---------- Custom model / GPU ----------
@@ -1033,10 +1038,8 @@
         }
 
         // Display results
-        function displayResults(memRows, perfRows, inp) {
+        function displayResults(memRows, perfRows) {
             const container = document.getElementById('results-container');
-            const caption = `${inp.numGPU}× GPU · ${inp.promptTokens.toLocaleString()} prompt + ${inp.responseTokens.toLocaleString()} response tokens · ` +
-                `${inp.concurrency} concurrent · weights: ${inp.weightLabel} · KV: ${inp.kvBytes} B · mem util: ${(inp.memUtil * 100).toFixed(0)}%`;
 
             let html = '';
 
@@ -1044,7 +1047,6 @@
                 html += '<div class="results-section results-animated">';
                 html += '<div class="glass-card">';
                 html += '<h2 class="results-title">LLM Memory Footprint</h2>';
-                html += `<p class="subtitle" style="font-size: var(--font-size-sm); margin-bottom: 1rem;">${escapeHtml(caption)}</p>`;
                 html += createTable(memRows);
                 html += '<div class="export-section">';
                 html += '<button class="btn-secondary" onclick="exportCSV(\'memory\')">Download CSV</button>';
@@ -1057,7 +1059,6 @@
                 html += '<div class="results-section results-animated" id="performance-section">';
                 html += '<div class="glass-card">';
                 html += '<h2 class="results-title">LLM Performance & Capacity</h2>';
-                html += `<p class="subtitle" style="font-size: var(--font-size-sm); margin-bottom: 1rem;">${escapeHtml(caption)} — roofline estimates, N/A for non-LLM model types</p>`;
                 html += createTable(perfRows);
                 html += '<div class="export-section">';
                 html += '<button class="btn-secondary" onclick="exportCSV(\'performance\')">Download CSV</button>';
@@ -1068,10 +1069,14 @@
 
             container.innerHTML = html;
 
+            // Auto-scroll to performance section
             setTimeout(() => {
                 const performanceSection = document.getElementById('performance-section');
                 if (performanceSection) {
-                    performanceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    performanceSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
             }, 300);
         }
@@ -1083,7 +1088,7 @@
             }
 
             const headers = Object.keys(rows[0]);
-            let html = '<div class="table-scroll"><table class="results-table">';
+            let html = '<table class="results-table">';
             html += '<thead><tr>';
             headers.forEach(header => {
                 html += `<th>${escapeHtml(header)}</th>`;
@@ -1093,15 +1098,15 @@
             rows.forEach(row => {
                 html += '<tr>';
                 headers.forEach(header => {
-                    html += `<td>${escapeHtml(row[header] ?? '')}</td>`;
+                    html += `<td>${escapeHtml(row[header] || '')}</td>`;
                 });
                 html += '</tr>';
             });
-            html += '</tbody></table></div>';
+            html += '</tbody></table>';
             return html;
         }
 
-        // Export currently displayed results to CSV
+        // Export to CSV
         function exportCSV(type) {
             // Re-calculate current results for export
             calculateAndExport(type);
@@ -1113,6 +1118,7 @@
             downloadCSV(rows, `llm_${type}_${new Date().toISOString().slice(0, 10)}.csv`);
         }
 
+        // Download CSV function
         function downloadCSV(data, filename) {
             if (!data || data.length === 0) return;
 
@@ -1121,9 +1127,10 @@
 
             data.forEach(row => {
                 const values = headers.map(header => {
-                    const value = (row[header] ?? '').toString();
-                    if (value.includes(',') || value.includes('"')) {
-                        return '"' + value.replace(/"/g, '""') + '"';
+                    const value = row[header] || '';
+                    // Escape quotes and wrap in quotes if contains comma
+                    if (value.toString().includes(',') || value.toString().includes('"')) {
+                        return '"' + value.toString().replace(/"/g, '""') + '"';
                     }
                     return value;
                 });

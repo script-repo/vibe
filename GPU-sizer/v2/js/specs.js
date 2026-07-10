@@ -66,8 +66,7 @@ class GPUSpec {
 }
 
 class PrecisionSpec {
-    // weight_bytes = null means "model native" (per-model native_weight_bytes)
-    constructor(weight_bytes = null, kv_bytes = 2.0) {
+    constructor(weight_bytes = 2.0, kv_bytes = 2.0) {
         this.weight_bytes = weight_bytes;
         this.kv_bytes = kv_bytes;
     }
