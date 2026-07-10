@@ -1,13 +1,25 @@
 # NAI LLM Performance Calculator - JavaScript Version
 
-A static web application for estimating GPU memory requirements and performance metrics for Large Language Model (LLM) inference deployments. This JavaScript version can be deployed to GitHub Pages or any static hosting service.
+A static web application for estimating GPU memory requirements and performance metrics for Large Language Model (LLM) inference deployments on **Nutanix Enterprise AI (NAI)**. Runs entirely in the browser and can be deployed to GitHub Pages or any static hosting service.
+
+## Data Sources
+
+- **Models**: the 32 pre-validated models from the NAI 2.6 Admin Guide ("Pre-validated Models", Table 8), including the NAI-validated GPU count for every supported model + GPU combination.
+- **GPUs**: the 6 NAI 2.6 supported GPUs (Admin Guide "Requirements"): L40S-48G, A100-80G, H100-80G, H100 NVL-94G, RTX PRO 6000-96G (Blackwell Server Edition), H200-141G.
 
 ## Features
 
-🌐 **Static Web Application**
-- Pure JavaScript/HTML/CSS implementation
-- No server required - runs entirely in the browser
-- Responsive design with glass morphism styling
+🤖 **NAI 2.6 Pre-validated Catalog**
+- All 32 pre-validated models across Meta, Mistral AI, Google, Ai2, NVIDIA NIM, OpenAI (gpt-oss), and Black Forest Labs
+- Per-model **NAI-validated GPU configurations** (e.g. Llama-3.3-70B ⇒ 4× L40S / 2× H100-80G / 2× H200-141G) surfaced directly in the results
+- Provider-organized model selection with bulk All/None controls
+- CSV export of both result tables
+
+⚡ **Roofline Performance Analysis**
+- Memory footprint: weights + GQA-aware KV cache (per token, total at your concurrency)
+- Performance: prefill time, TPOT, TTFT, E2E latency, per-request and aggregate throughput
+- Capacity: max KV-cache tokens and max concurrent requests at your context length
+- OOM detection with the validated GPU count shown as guidance
 
 🤖 **Comprehensive Model Support**
 - **All Nutanix Enterprise AI 2.7 pre-validated models** (Table 37, ~78 catalog rows across Hugging Face and NVIDIA NGC), including MoE models (Mixtral, gpt-oss, Llama 4 Scout, Nemotron-3-Nano, Gemma 4)
@@ -30,10 +42,7 @@ A static web application for estimating GPU memory requirements and performance 
 
 ## Quick Start
 
-### Local Development
 ```bash
-# Clone the repository
-git clone <repository-url>
 cd GPU-sizer/v2
 
 # Serve locally using Python
@@ -45,23 +54,26 @@ npx serve .
 # Open browser to http://localhost:8080
 ```
 
-### GitHub Pages Deployment
+### Validate the data and math
 
-1. **Fork/Clone** this repository
-2. **Enable GitHub Pages** in repository settings
-3. **Set source** to main branch / root folder
-4. **Access** your site at `https://yourusername.github.io/repository-name/`
+```bash
+cd GPU-sizer/v2
+node tests/validate.js
+```
+
+The suite checks schema integrity, exact KV-cache/weight values for known models, metric properties (GPU scaling, MoE active-vs-total params, aggregate throughput), OOM detection, and — most importantly — that **every NAI-validated (model, GPU, count) combination from Table 8 actually fits** at native precision according to the calculator.
 
 ## File Structure
 
 ```
 v2/
-├── index.html              # Main web application
+├── index.html              # Main web application (UI + presentation logic)
 ├── js/
-│   ├── specs.js           # Model and GPU specifications
-│   └── calculator.js      # Performance calculation engine
-├── README-JS.md           # This documentation
-└── README.md              # Original Python version docs
+│   ├── specs.js            # NAI 2.6 model & GPU specifications
+│   └── calculator.js       # Roofline calculation engine
+├── tests/
+│   └── validate.js         # Node validation suite (node tests/validate.js)
+└── README-JS.md            # This documentation
 ```
 
 ## How to Use
@@ -181,12 +193,11 @@ The JavaScript version maintains full feature parity with the Python version and
 
 ## Contributing
 
-To add new models or GPUs:
+To add or update models/GPUs when a new NAI release ships:
 
-1. Edit `js/specs.js`
-2. Add new `ModelSpec` or `GPUSpec` entries to the respective arrays
-3. Follow the existing naming and parameter conventions
-4. Test calculations with the new specifications
+1. Edit `js/specs.js` (models: architecture fields + `nai_gpu_counts` from the new release's Table; GPUs: dense FP16 TFLOPS, memory, bandwidth).
+2. Run `node tests/validate.js` — the Table-8 cross-check will catch mismatched parameters (update the expected model/GPU counts in the test's schema section).
+3. Test in the browser.
 
 ## License
 
@@ -194,4 +205,4 @@ Same license as the original Python version.
 
 ---
 
-*JavaScript version - Optimized for static deployment and GitHub Pages*
+*JavaScript version — optimized for static deployment and GitHub Pages*

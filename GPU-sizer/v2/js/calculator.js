@@ -10,6 +10,8 @@
 //     tunable utilization factors (MFU / MBU).
 
 const BYTES_IN_GiB = 1_073_741_824;
+const DEFAULT_GPU_MEMORY_UTILIZATION = 0.90;
+const DEFAULT_RUNTIME_OVERHEAD_GB = 4.0;
 
 // Default real-world utilization factors (override via the calculator options).
 const DEFAULT_COMPUTE_EFFICIENCY = 0.30;   // MFU: fraction of peak FLOPS reached during prefill.
@@ -20,6 +22,7 @@ class PerformanceMetrics {
     constructor(kv_cache_tokens, prefill_time_per_token_ms, tpot_ms, ttft_s,
                 e2e_latency_s, throughput_tokens_per_s, system_throughput_tokens_per_s = "N/A") {
         this.kv_cache_tokens = kv_cache_tokens;
+        this.max_concurrency = max_concurrency;
         this.prefill_time_per_token_ms = prefill_time_per_token_ms;
         this.tpot_ms = tpot_ms;
         this.ttft_s = ttft_s;
@@ -79,6 +82,7 @@ class PerformanceCalculator {
         return (this.num_gpu * gpu.memory_gb * 1e9) / BYTES_IN_GiB;
     }
 
+    // Max KV-cache tokens that fit after loading weights (across all GPUs).
     maxKvTokens(gpu, model) {
         const kv_per_token = this.kvCacheSizePerTokenGib(model);
         if (kv_per_token <= 0) return 0;
@@ -119,6 +123,7 @@ class PerformanceCalculator {
 
     computeMetrics(model, gpu, prompt_tokens, response_tokens, n_concurrent = 1) {
         const kv_tokens = this.maxKvTokens(gpu, model);
+        const max_conc = this.maxConcurrency(gpu, model, context);
         const prefill_ms = this.prefillTimePerTokenMs(model, gpu);
         const tpot_ms = this.tpotMs(model, gpu);
 
