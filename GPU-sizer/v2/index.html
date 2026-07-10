@@ -456,13 +456,124 @@
             text-align: center;
             margin-top: 1rem;
         }
+
+        /* Configuration layout with right-side info pane */
+        .config-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .config-main {
+            min-width: 0;
+        }
+
+        .info-pane {
+            position: sticky;
+            top: 1rem;
+            background: rgba(147, 51, 234, 0.07);
+            border: 1px solid rgba(147, 51, 234, 0.28);
+            border-radius: 16px;
+            padding: var(--space-20);
+            min-height: 240px;
+        }
+
+        .info-pane-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-pane-body {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: var(--font-size-sm);
+            line-height: 1.65;
+        }
+
+        .info-pane-body p {
+            margin-bottom: 0.6rem;
+        }
+
+        .info-pane-body .impact {
+            display: block;
+            margin-top: 0.4rem;
+            color: #c084fc;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .info-pane-body code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        [data-help] {
+            cursor: help;
+        }
+
+        .form-group.help-active .form-label,
+        .help-active > .provider-header,
+        .help-active > .form-title {
+            color: #c084fc;
+        }
+
+        /* Custom model / GPU entry forms */
+        .custom-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.22);
+            border-radius: 12px;
+        }
+
+        .custom-form h5 {
+            color: #ffffff;
+            font-size: var(--font-size-sm);
+            margin-bottom: 0.6rem;
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .custom-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .custom-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .custom-grid .custom-field label {
+            font-size: var(--font-size-xs);
+            color: rgba(255, 255, 255, 0.7);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .custom-grid .form-input {
+            padding: 8px 10px;
+            font-size: var(--font-size-sm);
+        }
+
+        @media (max-width: 900px) {
+            .config-layout {
+                grid-template-columns: 1fr;
+            }
+            .info-pane {
+                position: static;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
             <h1 class="title">NAI LLM Performance Calculator</h1>
-            <p class="subtitle">Calculate GPU memory requirements and performance for large language models</p>
+            <p class="subtitle">GPU memory &amp; performance sizing for Nutanix Enterprise AI 2.7 pre-validated models</p>
         </header>
 
         <div class="calculate-section">
@@ -470,52 +581,103 @@
         </div>
 
         <section class="glass-card">
-            <h2 class="form-title">Configuration</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label" for="num_gpu">Number of GPUs</label>
-                    <input type="number" id="num_gpu" class="form-input" min="1" value="1" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="prompt_tokens">Prompt Tokens</label>
-                    <input type="number" id="prompt_tokens" class="form-input" min="1" value="4096" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="response_tokens">Response Tokens</label>
-                    <input type="number" id="response_tokens" class="form-input" min="1" value="256" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="concurrency">Concurrent Requests</label>
-                    <input type="number" id="concurrency" class="form-input" min="1" value="10" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="weight_precision">Weight Precision (bits)</label>
-                    <select id="weight_precision" class="form-input">
-                        <option value="32">FP32 - 32 bit</option>
-                        <option value="16" selected>FP16 - 16 bit</option>
-                        <option value="8">INT8 - 8 bit</option>
-                        <option value="4">INT4 - 4 bit</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="kv_bytes">KV Cache Precision (bytes)</label>
-                    <input type="number" id="kv_bytes" class="form-input" min="0" step="0.1" value="2.0" />
-                </div>
-            </div>
+            <div class="config-layout">
+                <div class="config-main">
+                    <h2 class="form-title">Configuration</h2>
+                    <div class="form-grid">
+                        <div class="form-group" data-help="num_gpu">
+                            <label class="form-label" for="num_gpu">Number of GPUs</label>
+                            <input type="number" id="num_gpu" class="form-input" min="1" value="1" />
+                        </div>
+                        <div class="form-group" data-help="prompt_tokens">
+                            <label class="form-label" for="prompt_tokens">Prompt Tokens</label>
+                            <input type="number" id="prompt_tokens" class="form-input" min="1" value="4096" />
+                        </div>
+                        <div class="form-group" data-help="response_tokens">
+                            <label class="form-label" for="response_tokens">Response Tokens</label>
+                            <input type="number" id="response_tokens" class="form-input" min="1" value="256" />
+                        </div>
+                        <div class="form-group" data-help="concurrency">
+                            <label class="form-label" for="concurrency">Concurrent Requests</label>
+                            <input type="number" id="concurrency" class="form-input" min="1" value="10" />
+                        </div>
+                        <div class="form-group" data-help="weight_precision">
+                            <label class="form-label" for="weight_precision">Weight Precision</label>
+                            <select id="weight_precision" class="form-input">
+                                <option value="4">FP32 / TF32 — 32-bit (4 bytes)</option>
+                                <option value="2" selected>FP16 / BF16 / INT16 — 16-bit (2 bytes)</option>
+                                <option value="1">FP8 / INT8 — 8-bit (1 byte)</option>
+                                <option value="0.5">INT4 / NF4 — 4-bit (0.5 bytes)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-help="kv_bytes">
+                            <label class="form-label" for="kv_bytes">KV Cache Precision</label>
+                            <select id="kv_bytes" class="form-input">
+                                <option value="4">FP32 — 32-bit (4 bytes)</option>
+                                <option value="2" selected>FP16 / BF16 / INT16 — 16-bit (2 bytes)</option>
+                                <option value="1">FP8 / INT8 — 8-bit (1 byte)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-help="compute_eff">
+                            <label class="form-label" for="compute_eff">Compute Efficiency (MFU, prefill)</label>
+                            <input type="number" id="compute_eff" class="form-input" min="0.05" max="1" step="0.05" value="0.30" />
+                        </div>
+                        <div class="form-group" data-help="bandwidth_eff">
+                            <label class="form-label" for="bandwidth_eff">Bandwidth Efficiency (MBU, decode)</label>
+                            <input type="number" id="bandwidth_eff" class="form-input" min="0.05" max="1" step="0.05" value="0.70" />
+                        </div>
+                        <div class="form-group" data-help="mem_overhead">
+                            <label class="form-label" for="mem_overhead">Memory Overhead Factor</label>
+                            <input type="number" id="mem_overhead" class="form-input" min="1" max="2" step="0.05" value="1.15" />
+                        </div>
+                    </div>
 
-            <div class="model-section">
-                <div class="glass-card">
-                    <h3 class="form-title">Select Models</h3>
-                    <div class="models-container" id="models-container">
-                        <!-- Models will be populated by JavaScript -->
+                    <div class="model-section">
+                        <div class="glass-card" data-help="models">
+                            <h3 class="form-title">Select Models</h3>
+                            <div class="models-container" id="models-container">
+                                <!-- Models will be populated by JavaScript -->
+                            </div>
+                            <div class="custom-form" data-help="custom_model">
+                                <h5>Add a Custom Model</h5>
+                                <div class="custom-grid">
+                                    <div class="custom-field"><label for="cm_name">Name</label><input type="text" id="cm_name" class="form-input" placeholder="my-custom-llm" /></div>
+                                    <div class="custom-field"><label for="cm_params">Total Params (B)</label><input type="number" id="cm_params" class="form-input" min="0" step="0.1" placeholder="7" /></div>
+                                    <div class="custom-field"><label for="cm_active">Active Params (B, MoE)</label><input type="number" id="cm_active" class="form-input" min="0" step="0.1" placeholder="= total" /></div>
+                                    <div class="custom-field"><label for="cm_layers">Layers</label><input type="number" id="cm_layers" class="form-input" min="1" placeholder="32" /></div>
+                                    <div class="custom-field"><label for="cm_dmodel">Hidden Size (d_model)</label><input type="number" id="cm_dmodel" class="form-input" min="1" placeholder="4096" /></div>
+                                    <div class="custom-field"><label for="cm_heads">Attention Heads</label><input type="number" id="cm_heads" class="form-input" min="1" placeholder="32" /></div>
+                                    <div class="custom-field"><label for="cm_kv">KV Heads (GQA)</label><input type="number" id="cm_kv" class="form-input" min="1" placeholder="8" /></div>
+                                    <div class="custom-field"><label for="cm_ctx">Max Context (tokens)</label><input type="number" id="cm_ctx" class="form-input" min="1" placeholder="131072" /></div>
+                                </div>
+                                <button type="button" class="btn-secondary" onclick="addCustomModel()">+ Add Model</button>
+                            </div>
+                        </div>
+                        <div class="glass-card gpu-section" data-help="gpus">
+                            <h3 class="form-title">Select GPUs</h3>
+                            <div class="gpu-container" id="gpu-container">
+                                <!-- GPUs will be populated by JavaScript -->
+                            </div>
+                            <div class="custom-form" data-help="custom_gpu">
+                                <h5>Add a Custom GPU</h5>
+                                <div class="custom-grid">
+                                    <div class="custom-field"><label for="cg_name">Name</label><input type="text" id="cg_name" class="form-input" placeholder="My GPU" /></div>
+                                    <div class="custom-field"><label for="cg_mem">Memory (GB)</label><input type="number" id="cg_mem" class="form-input" min="1" placeholder="80" /></div>
+                                    <div class="custom-field"><label for="cg_bw">Bandwidth (GB/s)</label><input type="number" id="cg_bw" class="form-input" min="1" placeholder="3350" /></div>
+                                    <div class="custom-field"><label for="cg_tflops">FP16 TFLOPS (dense)</label><input type="number" id="cg_tflops" class="form-input" min="1" placeholder="989" /></div>
+                                </div>
+                                <button type="button" class="btn-secondary" onclick="addCustomGPU()">+ Add GPU</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="glass-card gpu-section">
-                    <h3 class="form-title">Select GPUs</h3>
-                    <div class="gpu-container" id="gpu-container">
-                        <!-- GPUs will be populated by JavaScript -->
+
+                <aside class="info-pane">
+                    <div class="info-pane-title" id="info-pane-title">Configuration Help</div>
+                    <div class="info-pane-body" id="info-pane-body">
+                        <p>Hover over any option on the left to see a detailed explanation of what it does and how it affects GPU sizing.</p>
                     </div>
-                </div>
+                </aside>
             </div>
         </section>
 
@@ -532,13 +694,20 @@
     <script src="js/calculator.js"></script>
     <script>
         // Global state
-        let selectedModels = ["gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
-        let selectedGPUs = ["L40s", "RTX Pro 6000 (Blackwell)"];
+        let selectedModels = ["openai/gpt-oss-20b", "meta-llama/Llama-3.3-70B-Instruct", "google/gemma-2-9b-it"];
+        let selectedGPUs = ["L40S", "H100 NVL"];
+        let customModels = [];
+        let customGPUs = [];
+
+        // Combined built-in + user-defined specs.
+        function getAllModels() { return DEFAULT_MODELS.concat(customModels); }
+        function getAllGPUs() { return DEFAULT_GPUS.concat(customGPUs); }
 
         // Initialize the page
         function init() {
             populateModels();
             populateGPUs();
+            attachHelpHandlers();
         }
 
         // Populate model checkboxes
@@ -547,7 +716,7 @@
             const modelsByProvider = {};
 
             // Group models by provider
-            DEFAULT_MODELS.forEach(model => {
+            getAllModels().forEach(model => {
                 const provider = model.provider || "OpenAI";
                 if (!modelsByProvider[provider]) {
                     modelsByProvider[provider] = [];
@@ -573,9 +742,11 @@
                 modelsByProvider[provider].sort((a, b) => a.name.localeCompare(b.name)).forEach(model => {
                     const checked = selectedModels.includes(model.name);
                     const modelId = model.name.replace(/[^a-zA-Z0-9]/g, '_');
+                    const typeTag = model.model_type ? ` <span style="color: rgba(255,255,255,0.45);">· ${escapeHtml(model.model_type)}</span>` : '';
+                    const estTag = model.estimated ? ` <span title="Architecture estimated - config not yet public" style="color: #f59e0b;">(est.)</span>` : '';
                     html += `<div class="model-checkbox">`;
                     html += `<input type="checkbox" name="model" value="${escapeHtml(model.name)}" ${checked ? 'checked' : ''} id="model_${modelId}" class="provider-${providerId}" onchange="updateSelectedModels()" />`;
-                    html += `<label for="model_${modelId}">${escapeHtml(model.name)}</label>`;
+                    html += `<label for="model_${modelId}">${escapeHtml(model.name)}${typeTag}${estTag}</label>`;
                     html += `</div>`;
                 });
                 html += '</div>';
@@ -587,7 +758,7 @@
         // Populate GPU checkboxes
         function populateGPUs() {
             const container = document.getElementById('gpu-container');
-            const sortedGPUs = [...DEFAULT_GPUS].sort((a, b) => a.memory_gb - b.memory_gb);
+            const sortedGPUs = [...getAllGPUs()].sort((a, b) => a.memory_gb - b.memory_gb);
 
             let html = '';
             sortedGPUs.forEach(gpu => {
@@ -623,103 +794,247 @@
             selectedGPUs = Array.from(checkboxes).map(cb => cb.value);
         }
 
-        // Calculate performance
-        function calculatePerformance() {
+        // ---------- Custom model / GPU ----------
+        function numOrNull(id) {
+            const v = parseFloat(document.getElementById(id).value);
+            return isNaN(v) ? null : v;
+        }
+
+        function addCustomModel() {
+            const name = (document.getElementById('cm_name').value || '').trim();
+            const params = numOrNull('cm_params');
+            const layers = numOrNull('cm_layers');
+            const dModel = numOrNull('cm_dmodel');
+            const heads = numOrNull('cm_heads');
+            const kv = numOrNull('cm_kv') || heads;
+            const ctx = numOrNull('cm_ctx');
+            const active = numOrNull('cm_active');
+
+            if (!name || !params || !layers || !dModel || !heads || !ctx) {
+                alert('Custom model needs at least: Name, Total Params, Layers, Hidden Size, Attention Heads, and Max Context.');
+                return;
+            }
+            if (getAllModels().some(m => m.name === name)) {
+                alert('A model with that name already exists.');
+                return;
+            }
+
+            const sizeGb = Math.round(params * 2); // rough FP16 footprint for display
+            const model = new ModelSpec(name, params, dModel, heads, kv, layers, ctx,
+                "Custom", "Custom", "Custom", sizeGb, active, false);
+            customModels.push(model);
+            selectedModels.push(name);
+            populateModels();
+
+            ['cm_name', 'cm_params', 'cm_active', 'cm_layers', 'cm_dmodel', 'cm_heads', 'cm_kv', 'cm_ctx']
+                .forEach(id => { document.getElementById(id).value = ''; });
+        }
+
+        function addCustomGPU() {
+            const name = (document.getElementById('cg_name').value || '').trim();
+            const mem = numOrNull('cg_mem');
+            const bw = numOrNull('cg_bw') || 2000;        // sensible defaults if omitted
+            const tflops = numOrNull('cg_tflops') || 500;
+
+            if (!name || !mem) {
+                alert('Custom GPU needs at least a Name and Memory (GB).');
+                return;
+            }
+            if (getAllGPUs().some(g => g.name === name)) {
+                alert('A GPU with that name already exists.');
+                return;
+            }
+
+            customGPUs.push(new GPUSpec(name, tflops, mem, bw));
+            selectedGPUs.push(name);
+            populateGPUs();
+
+            ['cg_name', 'cg_mem', 'cg_bw', 'cg_tflops'].forEach(id => { document.getElementById(id).value = ''; });
+        }
+
+        // ---------- Right-side help pane ----------
+        const HELP = {
+            num_gpu: {
+                title: "Number of GPUs",
+                body: `<p>How many GPUs the endpoint uses (tensor/pipeline parallel). Their memory and compute are pooled.</p>
+                       <span class="impact">Sizing impact: multiplies total VRAM (more room for weights, KV cache and concurrency) and roughly divides prefill/decode latency.</span>`
+            },
+            prompt_tokens: {
+                title: "Prompt Tokens (input)",
+                body: `<p>Average number of input tokens per request (the context you send in).</p>
+                       <span class="impact">Sizing impact: drives <code>prefill</code> time and dominates <code>TTFT</code>; adds to the KV cache that must be held per concurrent request.</span>`
+            },
+            response_tokens: {
+                title: "Response Tokens (output)",
+                body: `<p>Average number of tokens generated per request.</p>
+                       <span class="impact">Sizing impact: each output token costs one decode step (<code>TPOT</code>), so this dominates end-to-end latency and per-request throughput.</span>`
+            },
+            concurrency: {
+                title: "Concurrent Requests",
+                body: `<p>How many requests are served at the same time (batch size).</p>
+                       <span class="impact">Sizing impact: linearly multiplies KV cache memory (each request keeps its own), and raises system throughput because batched decode amortizes weight reads.</span>`
+            },
+            weight_precision: {
+                title: "Weight Precision",
+                body: `<p>Numeric format used to store model weights. Options are grouped by byte width because sizing depends only on <em>bytes per parameter</em>:</p>
+                       <p><code>FP32/TF32</code> = 4 B · <code>FP16/BF16/INT16</code> = 2 B · <code>FP8/INT8</code> = 1 B · <code>INT4/NF4</code> = 0.5 B.</p>
+                       <span class="impact">Sizing impact: scales weight memory directly (INT4 ≈ ¼ of FP16) and speeds up memory-bound decode (<code>TPOT</code>) by the same factor.</span>`
+            },
+            kv_bytes: {
+                title: "KV Cache Precision",
+                body: `<p>Numeric format for cached keys/values. FP16/BF16 = 2 bytes, FP8/INT8 = 1 byte, FP32 = 4 bytes.</p>
+                       <span class="impact">Sizing impact: scales KV cache size per token, which sets how much context × concurrency fits in VRAM.</span>`
+            },
+            compute_eff: {
+                title: "Compute Efficiency (MFU)",
+                body: `<p>Model FLOPs Utilization — the fraction of the GPU's peak FLOPS actually reached during the compute-bound <em>prefill</em> phase. Real vLLM/TRT-LLM values are typically 0.2–0.5.</p>
+                       <span class="impact">Sizing impact: lower MFU increases prefill time and <code>TTFT</code>. Does not affect memory.</span>`
+            },
+            bandwidth_eff: {
+                title: "Bandwidth Efficiency (MBU)",
+                body: `<p>Memory Bandwidth Utilization — the fraction of peak HBM bandwidth reached during the memory-bound <em>decode</em> phase. Typically 0.6–0.8.</p>
+                       <span class="impact">Sizing impact: lower MBU increases <code>TPOT</code> and lowers throughput. Does not affect memory.</span>`
+            },
+            mem_overhead: {
+                title: "Memory Overhead Factor",
+                body: `<p>Multiplier applied to weight memory to reserve room for activations, CUDA/runtime context and fragmentation (e.g. 1.15 = +15%).</p>
+                       <span class="impact">Sizing impact: reduces VRAM available for KV cache, lowering max context/concurrency and the fit check.</span>`
+            },
+            models: {
+                title: "Select Models",
+                body: `<p>Choose which NAI 2.7 pre-validated models to size. Grouped by provider; use All/None per group.</p>
+                       <p><code>(est.)</code> marks models whose architecture is estimated (config not yet public).</p>
+                       <span class="impact">Sizing impact: each model's parameters and attention shape drive weight memory, KV cache and latency.</span>`
+            },
+            gpus: {
+                title: "Select GPUs",
+                body: `<p>Choose which GPUs to evaluate. Each is compared against every selected model.</p>
+                       <span class="impact">Sizing impact: a GPU's memory sets whether the model fits; its bandwidth and TFLOPS set decode/prefill speed.</span>`
+            },
+            custom_model: {
+                title: "Add a Custom Model",
+                body: `<p>Define a model not in the catalog. Required: Name, Total Params, Layers, Hidden Size, Attention Heads, Max Context.</p>
+                       <p><strong>Active Params</strong> is optional — set it for MoE models (params used per token); leave blank for dense models.</p>
+                       <p><strong>KV Heads</strong> defaults to Attention Heads (no GQA) if left blank.</p>
+                       <span class="impact">Values come from the model's Hugging Face <code>config.json</code>.</span>`
+            },
+            custom_gpu: {
+                title: "Add a Custom GPU",
+                body: `<p>Define hardware not in the list. Only Name and Memory (GB) are required for memory sizing.</p>
+                       <p><strong>Bandwidth</strong> and <strong>TFLOPS</strong> are optional (defaults 2000 GB/s / 500 TFLOPS) but needed for accurate latency and throughput.</p>
+                       <span class="impact">Memory sets the fit check; bandwidth/TFLOPS set decode/prefill performance.</span>`
+            }
+        };
+
+        function showHelp(key, el) {
+            const h = HELP[key];
+            if (!h) return;
+            document.querySelectorAll('.help-active').forEach(x => x.classList.remove('help-active'));
+            if (el) el.classList.add('help-active');
+            document.getElementById('info-pane-title').textContent = h.title;
+            document.getElementById('info-pane-body').innerHTML = h.body;
+        }
+
+        function attachHelpHandlers() {
+            const handler = (e) => {
+                const el = e.target.closest('[data-help]');
+                if (!el) return;
+                showHelp(el.getAttribute('data-help'), el);
+            };
+            // Delegation handles nested and dynamically-added elements; closest() picks the innermost.
+            document.addEventListener('mouseover', handler);
+            document.addEventListener('focusin', handler);
+        }
+
+        // Read all inputs and build a configured calculator + selected specs.
+        function readCalcContext() {
             const numGPU = parseInt(document.getElementById('num_gpu').value);
             const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
             const responseTokens = parseInt(document.getElementById('response_tokens').value);
             const concurrency = parseInt(document.getElementById('concurrency').value);
-            const weightBits = parseInt(document.getElementById('weight_precision').value);
+            // Precision selects carry bytes-per-value directly (e.g. FP16 = 2 bytes).
+            const weightBytes = parseFloat(document.getElementById('weight_precision').value);
             const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
+            const computeEff = parseFloat(document.getElementById('compute_eff').value);
+            const bandwidthEff = parseFloat(document.getElementById('bandwidth_eff').value);
+            const memOverhead = parseFloat(document.getElementById('mem_overhead').value);
 
-            const weightBytes = weightBits / 8.0;
             const precision = new PrecisionSpec(weightBytes, kvBytes);
-            const calculator = new PerformanceCalculator(numGPU, precision);
+            const calculator = new PerformanceCalculator(numGPU, precision, {
+                computeEfficiency: computeEff,
+                bandwidthEfficiency: bandwidthEff,
+                memoryOverhead: memOverhead
+            });
 
-            // Filter models and GPUs
-            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
-            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
+            const models = getAllModels().filter(m => selectedModels.includes(m.name));
+            const gpus = getAllGPUs().filter(g => selectedGPUs.includes(g.name));
 
-            if (models.length === 0 || gpus.length === 0) {
-                alert('Please select at least one model and one GPU.');
-                return;
-            }
+            return {
+                numGPU, promptTokens, responseTokens, concurrency,
+                calculator, models, gpus,
+                contextWindow: promptTokens + responseTokens
+            };
+        }
 
-            const contextWindow = promptTokens + responseTokens;
-
-            // Calculate memory footprint
-            const memRows = [];
-            models.forEach(model => {
+        function buildMemoryRows(ctx) {
+            const { calculator, models, promptTokens, responseTokens, concurrency, contextWindow } = ctx;
+            return models.map(model => {
                 const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
-                const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
-                memRows.push({
+                const totalMemGib = calculator.totalMemoryFootprintGib(model, concurrency, contextWindow);
+                const weightsGib = calculator.weightsMemoryGib(model);
+                return {
                     "Model": model.name,
                     "Input Size (tokens)": promptTokens,
                     "Output Size (tokens)": responseTokens,
                     "Concurrent Requests": concurrency,
+                    "Weights Memory": `${weightsGib.toFixed(2)} GiB`,
                     "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                    "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
-                });
+                    "Total Memory Footprint": `${totalMemGib.toFixed(2)} GiB`
+                };
             });
+        }
 
-            // Calculate performance metrics
-            const perfRows = [];
+        function buildPerformanceRows(ctx) {
+            const { calculator, models, gpus, promptTokens, responseTokens, concurrency, contextWindow } = ctx;
+            const rows = [];
             models.forEach(model => {
                 gpus.forEach(gpu => {
-                    const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                    if (!fits) {
-                        perfRows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": "OOM",
-                            "Prefill Time": "OOM",
-                            "TPOT (ms)": "OOM",
-                            "TTFT": "OOM",
-                            "E2E Latency": "OOM",
-                            "Output Tokens Throughput": "OOM"
-                        });
-                        return;
-                    }
-
-                    const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
-                    if (typeof metrics.prefill_time_per_token_ms === 'string') {
-                        perfRows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                            "Prefill Time": "OOM",
-                            "TPOT (ms)": "OOM",
-                            "TTFT": "OOM",
-                            "E2E Latency": "OOM",
-                            "Output Tokens Throughput": "OOM"
-                        });
-                        return;
-                    }
-
-                    perfRows.push({
+                    const base = {
                         "Model": model.name,
                         "GPU": gpu.name,
                         "Input Size (tokens)": promptTokens,
                         "Output Size (tokens)": responseTokens,
-                        "Concurrent Requests": concurrency,
+                        "Concurrent Requests": concurrency
+                    };
+
+                    const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
+                    const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens, concurrency);
+                    const oom = !fits || typeof metrics.prefill_time_per_token_ms === 'string';
+
+                    rows.push(Object.assign(base, {
                         "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                        "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
-                        "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
-                        "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
-                        "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
-                        "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
-                            "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
-                    });
+                        "Prefill Time": oom ? "OOM" : `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
+                        "TPOT (ms)": oom ? "OOM" : `${metrics.tpot_ms.toFixed(3)} ms`,
+                        "TTFT": oom ? "OOM" : `${metrics.ttft_s.toFixed(3)} s`,
+                        "E2E Latency": oom ? "OOM" : `${metrics.e2e_latency_s.toFixed(1)} s`,
+                        "Per-Request Throughput": oom ? "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`,
+                        "System Throughput": oom ? "OOM" : `${metrics.system_throughput_tokens_per_s.toFixed(2)} tokens/sec`
+                    }));
                 });
             });
+            return rows;
+        }
 
-            displayResults(memRows, perfRows);
+        // Calculate performance
+        function calculatePerformance() {
+            const ctx = readCalcContext();
+
+            if (ctx.models.length === 0 || ctx.gpus.length === 0) {
+                alert('Please select at least one model and one GPU.');
+                return;
+            }
+
+            displayResults(buildMemoryRows(ctx), buildPerformanceRows(ctx));
         }
 
         // Display results
@@ -798,93 +1113,8 @@
         }
 
         function calculateAndExport(type) {
-            const numGPU = parseInt(document.getElementById('num_gpu').value);
-            const promptTokens = parseInt(document.getElementById('prompt_tokens').value);
-            const responseTokens = parseInt(document.getElementById('response_tokens').value);
-            const concurrency = parseInt(document.getElementById('concurrency').value);
-            const weightBits = parseInt(document.getElementById('weight_precision').value);
-            const kvBytes = parseFloat(document.getElementById('kv_bytes').value);
-
-            const weightBytes = weightBits / 8.0;
-            const precision = new PrecisionSpec(weightBytes, kvBytes);
-            const calculator = new PerformanceCalculator(numGPU, precision);
-
-            const models = DEFAULT_MODELS.filter(m => selectedModels.includes(m.name));
-            const gpus = DEFAULT_GPUS.filter(g => selectedGPUs.includes(g.name));
-            const contextWindow = promptTokens + responseTokens;
-
-            let rows = [];
-
-            if (type === 'memory') {
-                models.forEach(model => {
-                    const kvPerTokenGib = calculator.kvCacheSizePerTokenGib(model);
-                    const totalMemGb = calculator.totalMemoryFootprintGb(model, concurrency, contextWindow);
-                    rows.push({
-                        "Model": model.name,
-                        "Input Size (tokens)": promptTokens,
-                        "Output Size (tokens)": responseTokens,
-                        "Concurrent Requests": concurrency,
-                        "KV Cache Size per Token": `${kvPerTokenGib.toFixed(6)} GiB/token`,
-                        "Memory Footprint": `${totalMemGb.toFixed(2)} GB`
-                    });
-                });
-            } else {
-                models.forEach(model => {
-                    gpus.forEach(gpu => {
-                        const fits = calculator.fitsMemory(gpu, model, concurrency, contextWindow);
-                        if (!fits) {
-                            rows.push({
-                                "Model": model.name,
-                                "GPU": gpu.name,
-                                "Input Size (tokens)": promptTokens,
-                                "Output Size (tokens)": responseTokens,
-                                "Concurrent Requests": concurrency,
-                                "Max # KV Cache Tokens": "OOM",
-                                "Prefill Time": "OOM",
-                                "TPOT (ms)": "OOM",
-                                "TTFT": "OOM",
-                                "E2E Latency": "OOM",
-                                "Output Tokens Throughput": "OOM"
-                            });
-                            return;
-                        }
-
-                        const metrics = calculator.computeMetrics(model, gpu, promptTokens, responseTokens);
-                        if (typeof metrics.prefill_time_per_token_ms === 'string') {
-                            rows.push({
-                                "Model": model.name,
-                                "GPU": gpu.name,
-                                "Input Size (tokens)": promptTokens,
-                                "Output Size (tokens)": responseTokens,
-                                "Concurrent Requests": concurrency,
-                                "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                                "Prefill Time": "OOM",
-                                "TPOT (ms)": "OOM",
-                                "TTFT": "OOM",
-                                "E2E Latency": "OOM",
-                                "Output Tokens Throughput": "OOM"
-                            });
-                            return;
-                        }
-
-                        rows.push({
-                            "Model": model.name,
-                            "GPU": gpu.name,
-                            "Input Size (tokens)": promptTokens,
-                            "Output Size (tokens)": responseTokens,
-                            "Concurrent Requests": concurrency,
-                            "Max # KV Cache Tokens": metrics.kv_cache_tokens.toString(),
-                            "Prefill Time": `${metrics.prefill_time_per_token_ms.toFixed(3)} ms`,
-                            "TPOT (ms)": `${metrics.tpot_ms.toFixed(3)} ms`,
-                            "TTFT": `${metrics.ttft_s.toFixed(3)} s`,
-                            "E2E Latency": `${metrics.e2e_latency_s.toFixed(1)} s`,
-                            "Output Tokens Throughput": typeof metrics.throughput_tokens_per_s === 'string' ?
-                                "OOM" : `${metrics.throughput_tokens_per_s.toFixed(2)} tokens/sec`
-                        });
-                    });
-                });
-            }
-
+            const ctx = readCalcContext();
+            const rows = (type === 'memory') ? buildMemoryRows(ctx) : buildPerformanceRows(ctx);
             downloadCSV(rows, `llm_${type}_${new Date().toISOString().slice(0, 10)}.csv`);
         }
 

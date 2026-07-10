@@ -10,16 +10,23 @@ A static web application for estimating GPU memory requirements and performance 
 - Responsive design with glass morphism styling
 
 🤖 **Comprehensive Model Support**
-- **48 pre-validated enterprise AI models** across multiple providers
-- Real-time performance calculations
+- **All Nutanix Enterprise AI 2.7 pre-validated models** (Table 37, ~78 catalog rows across Hugging Face and NVIDIA NGC), including MoE models (Mixtral, gpt-oss, Llama 4 Scout, Nemotron-3-Nano, Gemma 4)
+- MoE-aware performance math (uses *active* parameters/token for compute, *total* for memory)
 - Provider-organized model selection with bulk controls
+- Models with not-yet-public configs are flagged `(est.)`
 - CSV export functionality
 
 ⚡ **GPU Performance Analysis**
-- Support for enterprise GPUs: L4, L40s, H100 NVL, H200 NVL, RTX Pro 6000, MI300X
-- Memory footprint calculations with KV cache optimization
-- Performance metrics: TTFT, TPOT, E2E latency, throughput
-- Concurrent request capacity planning
+- NAI 2.7 supported GPUs: L40S, A100, H100, H100 NVL, H200, RTX PRO 6000 Blackwell, B300 (Blackwell Ultra) — plus L4 and MI300X
+- Memory footprint calculations with KV cache + activation/runtime overhead
+- Performance metrics: TTFT, TPOT, E2E latency, per-request and system throughput
+- Precision-aware (FP32/TF32, FP16/BF16/INT16, FP8/INT8, INT4/NF4) and concurrency capacity planning
+
+🛠️ **Custom specs & guided help**
+- **Add a Custom GPU** — define your own name, memory, bandwidth and TFLOPS (only name + memory required for memory sizing)
+- **Add a Custom Model** — define params, layers, hidden size, heads, KV heads, context, and optional MoE active params
+- **Right-side help pane** — hover any configuration option for a detailed explanation of what it does and its effect on sizing
+- Precision options are grouped by byte width (formats with the same width, e.g. FP16/BF16/INT16, share one entry since sizing depends only on bytes/parameter)
 
 ## Quick Start
 
@@ -67,9 +74,9 @@ v2/
 - **Precision Settings**: Weight and KV cache precision
 
 ### 2. Select AI Models
-- Browse models organized by provider (Meta, Google, NVIDIA, etc.)
+- Browse models organized by provider (Meta, Google, NVIDIA, Mistral AI, OpenAI, etc.)
 - Use **"All"/"None"** buttons for quick provider-wide selection
-- Choose from 48+ enterprise-validated models
+- Choose from the full NAI 2.7 pre-validated catalog; each entry shows its capability and an `(est.)` marker when its architecture is estimated
 
 ### 3. Choose Target GPUs
 - Select from enterprise GPU options with memory specifications
@@ -91,10 +98,10 @@ v2/
 ### Key Components
 
 #### `specs.js`
-- Model specifications (ModelSpec class)
+- Model specifications (ModelSpec class, incl. `active_params_billion` for MoE and an `estimated` flag)
 - GPU specifications (GPUSpec class)
 - Precision configurations (PrecisionSpec class)
-- Default datasets for 48 models and 6 GPU types
+- NAI 2.7 datasets: full pre-validated model catalog and 9 GPU types
 
 #### `calculator.js`
 - Performance calculation engine (PerformanceCalculator class)
@@ -110,12 +117,18 @@ v2/
 
 ### Calculations
 
-The calculator implements the same algorithms as the Python version:
+All memory math is done in GiB (2^30 bytes) for consistency.
 
-- **Memory Estimation**: Based on parameter count, precision, and KV cache requirements
-- **Performance Modeling**: Uses GPU specifications and attention mechanism complexity
-- **Throughput Analysis**: Considers memory bandwidth, compute capacity, and parallelization
-- **Capacity Planning**: Accounts for concurrent request batching and memory sharing
+- **Weights memory** = `total_params × weight_bytes` (INT8/INT4 quantization reduces this).
+- **KV cache per token** = `2 × n_layers × n_kv_heads × (d_model / n_heads) × kv_bytes` (GQA/MQA aware).
+- **Total footprint** = `weights × overhead_factor + kv_per_token × context × concurrency`, where the overhead factor (default 1.15) covers activations and CUDA/runtime memory.
+- **Fit / max KV tokens**: available memory after reserving weights+overhead, divided by KV size per token.
+- **Prefill (compute-bound)**: `2 × active_params` FLOPs/token divided by `peak_TFLOPS × MFU × num_gpu` (default MFU 0.30).
+- **Decode / TPOT (bandwidth-bound)**: `active_params × weight_bytes` bytes/token divided by `bandwidth × MBU × num_gpu` (default MBU 0.70).
+- **MoE handling**: compute and decode use **active** parameters per token; capacity uses **total** parameters.
+- **Throughput**: per-request (single stream) and system (batched decode ≈ `concurrency / TPOT`).
+
+MFU, MBU, and the memory overhead factor are exposed as inputs in the UI so you can tune to your inference engine and hardware.
 
 ## Browser Compatibility
 
@@ -150,12 +163,12 @@ Simply upload the files to any web server. The application is entirely static.
 
 ## Migrating from Python Version
 
-The JavaScript version maintains full feature parity with the Python version:
+The JavaScript version maintains full feature parity with the Python version and extends it:
 
-- ✅ All 48 model specifications preserved
-- ✅ All 6 GPU specifications maintained
-- ✅ Identical calculation algorithms
-- ✅ Same precision handling (FP32, FP16, INT8, INT4)
+- ✅ Full NAI 2.7 pre-validated model catalog
+- ✅ NAI 2.7 supported GPUs (+ L4, MI300X)
+- ✅ Improved, MoE-aware calculation engine
+- ✅ Precision handling (FP32, FP16, INT8, INT4)
 - ✅ CSV export functionality
 - ✅ Responsive design maintained
 - ✅ Provider-based model organization
